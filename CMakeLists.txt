@@ -4,5 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 project(nanoros LANGUAGES CXX VERSION 0.0.1)
 
 
+add_subdirectory(include)
+add_subdirectorY(src)
 
 add_subdirectory(apps)

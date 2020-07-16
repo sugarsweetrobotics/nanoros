@@ -1,6 +1,6 @@
 include_directories(${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME})
 
-set(EXT_LIBRARIES )
+set(EXT_LIBRARIES nanoros)
 
 
 function(add_app NAME)
