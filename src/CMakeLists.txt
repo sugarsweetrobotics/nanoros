@@ -1,12 +1,13 @@
 set(_srcs
 
 rosmaster.cpp
+os.cpp
 
 )
 
 
 
-include_directories(${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME})
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 
 foreach(a IN ITEMS ${nanoros_headers})
