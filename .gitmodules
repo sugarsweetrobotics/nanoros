@@ -1,0 +1,3 @@
+[submodule "thirdparty/XmlRpc"]
+	path = thirdparty/XmlRpc
+	url = https://github.com/sugarsweetrobotics/XmlRpc.git
