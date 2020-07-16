@@ -1,13 +1,16 @@
 set(_srcs
 
 rosmaster.cpp
+rosutil.cpp
 os.cpp
 
 )
 
-
+set(EXT_LIBRARIES XmlRpc)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/XmlRpc/include)
 
 
 foreach(a IN ITEMS ${nanoros_headers})
@@ -15,6 +18,7 @@ foreach(a IN ITEMS ${nanoros_headers})
 endforeach()
 
 add_library(${PROJECT_NAME} SHARED ${_srcs} ${nanoros_hdrs})
+target_link_libraries(${PROJECT_NAME} ${EXT_LIBRARIES})			    
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
