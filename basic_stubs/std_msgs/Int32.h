@@ -10,12 +10,12 @@ namespace ssr {
             struct Int32 : public ROSMsg {
                 int32_t data;
 
-                Int32(int32_t d) : data(d) {}
+                Int32(const int32_t& arg0) : data(arg0) {}
                 virtual ~Int32() {}
 
-                virtual std::string prettyString() const {
+                virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
-                    ss << "data" << ':' << data << std::endl;
+                    ss << indent << "data" << ':' << data;
                     return ss.str();
                 }
             };

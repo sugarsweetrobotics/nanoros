@@ -78,7 +78,8 @@ int main(const int argc, const char* argv[]) {
         auto stub = getROSMsgStubFactory()->getStub(topicTypeName);
         auto node = registerROSNode("/nanorostopic");
         node->subscribe(topicName, stub, [](auto& topic) {
-					   std::cout << topic->prettyString() << std::endl;
+					   std::cout << topic->prettyString() << std::endl 
+                       << "---" << std::endl;
         });
         node->spin();
       }

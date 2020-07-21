@@ -19,3 +19,4 @@ endfunction(add_stub)
 
 
 add_stub(std_msgs Int32)
+add_stub(std_msgs Header)

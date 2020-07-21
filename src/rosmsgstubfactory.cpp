@@ -2,6 +2,7 @@
 #include "nanoros/dllproxy.h"
 #include "nanoros/stringutil.h"
 #include <map>
+#include <iostream>
 
 using namespace ssr::nanoros;
 
@@ -30,6 +31,7 @@ public:
         if (stubs_.count(topicTypeName) == 0) return nullptr;
         return stubs_[topicTypeName];
       }
+      std::cout << "WARN: Can not load DLL (" << topicTypeName << ")" << std::endl;
       return nullptr;
     }
     return stubs_[topicTypeName];
@@ -44,7 +46,10 @@ public:
     auto dllproxy = createDLLProxy(tokens[0], tokens[1]);
     if (!dllproxy) return false;
     auto func = dllproxy->functionSymbol("init_" + tokens[0] + "_" + tokens[1]);
-    if (!func)  return false;
+    if (!func)  {
+      std::cout << "WARN: Can not find symbol (" << "init_" + tokens[0] + "_" + tokens[1] << ")" << std::endl;
+      return false;
+    }
     dllproxies_[topicTypeName] = dllproxy;
     func(this);
     return true;

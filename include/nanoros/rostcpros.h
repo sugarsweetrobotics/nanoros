@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <optional>
 
+#include "nanoros/rosmsg.h"
 namespace ssr {
     namespace nanoros {
 
@@ -44,12 +45,23 @@ namespace ssr {
             std::optional<int32_t> popInt32() { return popInt32(this->popedCount_); } 
 
             std::optional<int32_t> popInt32(int32_t& popedCount) const {
-                if (bytes_.size() < popedCount+sizeof(int)) return std::nullopt;
+                if (bytes_.size() < popedCount+sizeof(int32_t)) return std::nullopt;
                 int32_t buf = 0;
                 for(int i = 0;i < 4;i++) {
                     buf |= ((int32_t)(bytes_[popedCount++])) << (8* (i)); 
                 }
                 //popedCount += 4;
+                return buf;
+            }
+
+            std::optional<uint32_t> popUint32() { return popUint32(this->popedCount_); } 
+
+            std::optional<uint32_t> popUint32(int32_t& popedCount) const {
+                if (bytes_.size() < popedCount+sizeof(uint32_t)) return std::nullopt;
+                uint32_t buf = 0;
+                for(int i = 0;i < 4;i++) {
+                    buf |= ((uint32_t)(bytes_[popedCount++])) << (8* (i)); 
+                }
                 return buf;
             }
 
@@ -68,6 +80,15 @@ namespace ssr {
                 auto str = std::string((const char*)(&(bytes_[popedCount])), size.value());
                 popedCount += size.value();
                 return str;
+            }
+
+            std::optional<ssr::nanoros::time> popTime(int32_t& popedCount) const {
+                ssr::nanoros::time t;
+                auto arg0 = popUint32(popedCount);
+                if (!arg0) return std::nullopt;
+                auto arg1 = popUint32(popedCount);
+                if (!arg1) return std::nullopt;
+                return ssr::nanoros::time{arg0.value(), arg1.value()};
             }
 
         public:
