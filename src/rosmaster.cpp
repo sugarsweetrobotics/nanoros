@@ -86,6 +86,19 @@ public:
     
   }
 
+  virtual std::optional<SubscribersInfo> registerPublisher(const std::string& caller_id, const std::string& topicName, const std::string& topicType, const std::string& caller_api) { 
+    XmlRpc::XmlRpcValue v, result;
+    v[0] = caller_id;
+    v[1] = topicName;
+    v[2] = topicType;
+    v[3] = caller_api;
+    if (client_.execute("registerPublisher", v, result)) {
+      return SubscribersInfo(result[0], result[1], forEach<std::string>(result[2], [](auto& v) -> std::string {
+										    return std::string(v); }));
+    }
+    return std::nullopt;
+  }  
+
 };
 
 

@@ -10,6 +10,7 @@ rosnode.cpp
 rosslave.cpp
 rosslaveserver.cpp
 rossubscriber.cpp
+rospublisher.cpp
 rostcpros.cpp
 
 )

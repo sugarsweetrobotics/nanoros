@@ -10,6 +10,8 @@
 
 using namespace ssr::nanoros;
 
+
+
 class ROSSubscriberWorker {
 public:
 	ROSSubscriberWorker() {}
@@ -49,29 +51,13 @@ public:
 
   virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
 	if (!tcpros_) return false;
-	TCPROSPacket packet;
-	packet.push("callerid="+caller_id);
-	packet.push("topic="+topicName);
-	packet.push("type="+topicTypeName);
-	packet.push("md5sum="+md5sum);
-	packet.push("latching="+std::to_string(latching ? 1 : 0));
-	return tcpros_->sendPacket(std::move(packet));
+	return tcpros_->sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
   }
 
   virtual std::map<std::string, std::string> receiveHeader(const double timeout) {
-	std::map<std::string, std::string> hdr;
-	if (!tcpros_) return hdr;
-	auto maybePacket = tcpros_->receivePacket(timeout);
-	if (!maybePacket) { return hdr; }
-
-	while(true) {	
-		auto tokens = stringSplit(maybePacket->popString(), '=');
-		if (!tokens) break;
-		if (tokens->size() == 2) {
-			hdr[tokens.value()[0]] = tokens.value()[1];
-		}
-	}
-	return hdr;
+	if (!tcpros_) return {};
+	return tcpros_->receiveHeader(timeout);
+	
   }
 
   virtual bool negotiateHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {		

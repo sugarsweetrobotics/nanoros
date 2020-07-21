@@ -17,6 +17,7 @@ namespace ssr {
       virtual std::string md5sum() const { return ""; }
       virtual std::string typeName() const { return ""; }
       virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) const { return nullptr; }
+      virtual std::shared_ptr<const ROSMsg> fromString(const std::string& str) { return nullptr; }
     };
 
   }

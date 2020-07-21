@@ -93,6 +93,9 @@ namespace ssr {
 
         public:
            operator bool&() { return fail_; }
+
+
+        public:
         };
 
         class TCPROS {
@@ -105,6 +108,10 @@ namespace ssr {
         public:
             virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) { return std::nullopt; }
             virtual bool sendPacket(TCPROSPacket&& pkt) { return false; }
+          virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
+              return false;
+          }
+          virtual std::map<std::string, std::string> receiveHeader(const double timeout) { return {}; }
         };
 
         std::shared_ptr<TCPROS> tcpros_connect(const std::string& host, const int32_t port);

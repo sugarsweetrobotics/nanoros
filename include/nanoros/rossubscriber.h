@@ -20,6 +20,7 @@ namespace ssr {
       ROSSubscriber() {}
       virtual ~ROSSubscriber() {}
     public:
+      
       virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) { return false;}
       virtual void spinOnce() {}
     };

@@ -11,6 +11,11 @@
 using namespace ssr::nanoros;
 using namespace XmlRpc;
 
+const int32_t port_base = 30000;
+
+
+class ROSSlaveServerImpl;
+
 class GetBusStats : public XmlRpcServerMethod {
 public:
   GetBusStats(XmlRpcServer* s) : XmlRpcServerMethod("getBusStats", s) {}
@@ -35,10 +40,18 @@ public:
 
   }
 };
+class RequestTopic : public XmlRpcServerMethod {
+private:
+  ROSSlaveServerImpl* slaveServerImpl_;
+public:
+  RequestTopic(class ROSSlaveServerImpl * si);
+
+  void execute(XmlRpcValue& params, XmlRpcValue& result);
+};
 
 
 class ROSSlaveServerImpl : public ROSSlaveServer {
-private:
+public:
   const std::shared_ptr<ROSMaster> master_;
   const std::string ip_;
   const int32_t port_;
@@ -48,6 +61,8 @@ private:
   GetBusInfo getBusInfo_;
   GetBusInfo getBusStats_;
   GetMasterUri getMasterUri_;
+
+
 public:
   ROSSlaveServerImpl(ROSNode* rosnode, const std::shared_ptr<ROSMaster>& master, const std::string& ip, const int32_t port): 
     rosnode_(rosnode), 
@@ -79,8 +94,53 @@ public:
   virtual std::string getSlaveIP() const {
     return ip_;
   }
+
+
+  virtual bool standByNode(const std::string& topicName, const std::string& caller_id, const std::string& selfIP, const int32_t port) override {
+    auto pub = rosnode_->getPublisher(topicName);
+    if (!pub) return false;
+
+    return pub->standBy(caller_id, selfIP, port);
+  }
 };
 
 std::shared_ptr<ROSSlaveServer> ssr::nanoros::rosslaveserver(ROSNode* rosnode, const std::shared_ptr<ROSMaster>& master, const std::string& ip, const int32_t port) {
   return std::static_pointer_cast<ROSSlaveServer>(std::make_shared<ROSSlaveServerImpl>(rosnode, master, ip, port));
+}
+
+
+RequestTopic::RequestTopic(ROSSlaveServerImpl* si) : XmlRpcServerMethod("requestTopic", si->server_.get()), slaveServerImpl_(si) {
+
+}  
+
+void RequestTopic::execute(XmlRpcValue& params, XmlRpcValue& result) {
+  const std::string caller_id = params[0];
+  const std::string topicName = params[1];
+  if (params[2].getType() != XmlRpcValue::TypeArray) {
+    return;
+  }
+  for(int i = 0;i < params[2].size();i++) {
+    const std::string protocolName = params[2][i][0];
+    std::vector<std::string> args;
+    for(int j = 1;j < params[2][i].size();j++) {
+      args.push_back(params[2][i][j]);
+    }
+
+    if (protocolName == "TCPROS") {
+      const std::string selfIP = getSelfIP();
+      auto port = getEmptyPort(port_base);
+      if (!slaveServerImpl_->standByNode(topicName, caller_id, selfIP, port)) continue;
+      const std::string portStr = std::to_string(port);
+      result[0] = 1;
+      result[1] = "Publisher is waiting on uri:" + selfIP + ":" + portStr;
+      result[2][0] = "TCPROS";
+      result[2][1] = selfIP;
+      result[2][2] = port;
+      return;
+    }
+
+      
+  }
+  result[0] = -1;
+  result[1] = "None of suggested protocol is available in publisher.";
 }
