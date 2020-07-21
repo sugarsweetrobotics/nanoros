@@ -1,5 +1,7 @@
 #include <iostream>
 #include <set>
+#include <thread>
+
 #include "nanoros/os.h"
 #include "nanoros/nanoros.h"
 #include "nanoros/rosutil.h"
@@ -99,7 +101,11 @@ int main(const int argc, const char* argv[]) {
         }
         auto node = registerROSNode("/nanorostopic_pub");
         auto pub =node->advertise(topicName, stub);
-        pub->publish(stub->fromString(topicDataStr));
+        while(1) {
+          std::this_thread::sleep_for(std::chrono::seconds(3));
+          pub->publish(stub->fromString(topicDataStr));
+          node->spinOnce();
+        }
       }
 
     }

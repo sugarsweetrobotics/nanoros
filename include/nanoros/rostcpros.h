@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
+#include <map>
 
 #include "nanoros/rosmsg.h"
 namespace ssr {
@@ -107,6 +108,8 @@ namespace ssr {
             virtual bool okay() { return false; }
         public:
             virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) { return std::nullopt; }
+
+            virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {return false; }
             virtual bool sendPacket(TCPROSPacket&& pkt) { return false; }
           virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
               return false;
@@ -115,6 +118,7 @@ namespace ssr {
         };
 
         std::shared_ptr<TCPROS> tcpros_connect(const std::string& host, const int32_t port);
+        std::shared_ptr<TCPROS> tcpros_listen(const std::string& host, const int32_t port);
         bool tcpros_disconnect(const std::shared_ptr<TCPROS>& tcpros);
     }
 }

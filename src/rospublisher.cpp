@@ -2,7 +2,8 @@
 
 
 #include "nanoros/rospublisher.h"
-#include "nanoros/"
+#include "nanoros/rostcpros.h"
+#include "nanoros/rosmsgstub.h"
 #include <vector>
 #include <thread>
 
@@ -16,16 +17,14 @@ class ROSPublisherWorker {
 
 	std::shared_ptr<TCPROS> tcpros_;
 public:
-    ROSPublisherWorker& wait(const std::string& caller_id, const std::string& selfIP, const int32_t port) {
-        thread_ = std::thread([this, caller_id, selfIP, port]() {
+    ROSPublisherWorker& wait(const std::string& caller_id, const std::string& selfIP, const int32_t port, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+        thread_ = std::thread([this, caller_id, selfIP, port, topicName, topicTypeName, md5sum, latching, timeout]() {
             try {
-                serverSocket_.bind(port);
-                serverSocket_.listen(5);
-                serverSocket_.accept(-1);
-
-                negotiateHeader();
-
+                tcpros_ = tcpros_listen("0.0.0.0", port);
+                negotiateHeader(caller_id, topicName, topicTypeName, md5sum, latching, timeout);
             } catch (ssr::aqua2::SocketException& ex) {
+                serverSocket_.close();
+            } catch (std::exception& ex) {
                 serverSocket_.close();
             }
         });
@@ -34,7 +33,7 @@ public:
 
     virtual bool negotiateHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {		
         auto hdr = receiveHeader(timeout);
-        sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
+        if (!sendHeader(caller_id, topicName, topicTypeName, md5sum, latching)) return false;
         if (hdr["topic"] != topicName) return false;
         return true; 
     }
@@ -47,6 +46,12 @@ public:
     virtual std::map<std::string, std::string> receiveHeader(const double timeout) {
         if (!tcpros_) return {};
         return tcpros_->receiveHeader(timeout);
+    }
+
+    virtual void sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {
+        if (tcpros_) {
+            tcpros_->sendPacket(pkt);
+        }
     }
 };
 
@@ -61,13 +66,20 @@ public:
     virtual ~ROSPublisherImpl() {}
 
 public:
-    virtual bool publish(const std::shared_ptr<const ROSMsg>& msg) override {
-
+    virtual bool publish(const std::shared_ptr<ROSMsg>& msg) override {
+        auto pkt = stub_->toPacket(msg);
+        if (pkt) {
+            for(auto& worker : workers_) {
+                worker->sendPacket(pkt);
+            }
+        }
+        return true;
     }
 
     virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) override  {
         auto worker = std::make_shared<ROSPublisherWorker>();
-        worker->wait(caller_id, selfIP, port);
+        worker->wait(caller_id, selfIP, port, topicName(), stub_->typeName(), stub_->md5sum(), false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         workers_.emplace_back(std::move(worker));
         return true;
     }

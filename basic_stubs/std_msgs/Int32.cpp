@@ -15,13 +15,26 @@ namespace ssr::nanoros {
             virtual ~Int32Stub() {}
 
         public:
-            virtual std::string md5sum() const { return "da5909fbe378aeaf85e547e830cc1bb7"; }
-            virtual std::string typeName() const { return "std_msgs/Int32"; }
-            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) const { 
+            virtual std::string md5sum() const override { return "da5909fbe378aeaf85e547e830cc1bb7"; }
+            virtual std::string typeName() const override { return "std_msgs/Int32"; }
+            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) const override { 
                 int32_t popedCount = 0;
                 auto v = msg->popInt32(popedCount);
                 if (!v) {  return nullptr; }
                 return std::make_shared<Int32>(v.value());
+            }
+
+            
+            virtual std::shared_ptr<TCPROSPacket> toPacket(const std::shared_ptr<ROSMsg>& msg) const {
+                const auto val = std::static_pointer_cast<const Int32>(msg);
+                auto pkt = std::make_shared<TCPROSPacket>();
+                pkt->push(val->data);
+                return pkt; 
+            }
+
+            virtual std::shared_ptr<ROSMsg> fromString(const std::string& str) override { 
+                int32_t val = atoi(str.c_str());
+                return std::make_shared<Int32>(val); 
             }
         };
     }

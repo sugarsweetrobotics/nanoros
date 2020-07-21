@@ -61,6 +61,7 @@ public:
   GetBusInfo getBusInfo_;
   GetBusInfo getBusStats_;
   GetMasterUri getMasterUri_;
+  RequestTopic requestTopic_;
 
 
 public:
@@ -70,7 +71,8 @@ public:
     port_(port), server_(std::make_shared<XmlRpcServer>()),
     getBusInfo_(server_.get()),
     getBusStats_(server_.get()),
-    getMasterUri_(server_.get())
+    getMasterUri_(server_.get()),
+    requestTopic_(this)
   {
 
 
@@ -87,11 +89,11 @@ public:
   }
 
 
-  virtual std::string getSlaveUri() const {
+  virtual std::string getSlaveUri() const override {
     return "http://" + ip_ + ":" + std::to_string(port_);
   }
 
-  virtual std::string getSlaveIP() const {
+  virtual std::string getSlaveIP() const override  {
     return ip_;
   }
 

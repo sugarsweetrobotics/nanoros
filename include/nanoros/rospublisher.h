@@ -18,7 +18,7 @@ namespace ssr {
 
       virtual std::string topicName() const { return topicName_; }
     public:
-      virtual bool publish(const std::shared_ptr<const ROSMsg>& msg) {return false; }
+      virtual bool publish(const std::shared_ptr<ROSMsg>& msg) {return false; }
       virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) { return false; }
 
     };

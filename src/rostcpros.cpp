@@ -1,6 +1,7 @@
 #include "nanoros/rostcpros.h"
-
+#include "nanoros/stringutil.h"
 #include "aqua2/socket.h"
+#include "aqua2/serversocket.h"
 
 
 using namespace ssr::nanoros;
@@ -8,20 +9,37 @@ using namespace ssr::nanoros;
 
 class TCPROSImpl : public TCPROS {
 private:
+    ssr::aqua2::ServerSocket serverSocket_;
     ssr::aqua2::Socket socket_;
     bool okay_;
 public:
     TCPROSImpl(const std::string& host, const int32_t port): socket_(host.c_str(), port) {
     }
 
+
+    TCPROSImpl() {
+    }
+
     virtual ~TCPROSImpl() {
         if(socket_.okay()) socket_.close();
+        serverSocket_.close();
     }
 
 public:
     virtual bool okay() { return socket_.okay(); }
 
     virtual bool close() { return socket_.close(); }
+
+    virtual bool listen(const std::string& host, const int32_t port, const int32_t timeoutUsec = 3000*1000) {
+        try {
+            serverSocket_.bind(port);
+            serverSocket_.listen(5);
+            socket_ = serverSocket_.accept();
+        } catch (ssr::aqua2::SocketException& ex) {
+            return false;
+        }
+        return true;
+    }
 public:
 
     virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) { 
@@ -38,6 +56,16 @@ public:
         return TCPROSPacket(std::move(val)); 
     }
 
+    virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) { 
+        int32_t size = pkt->bytes().size();
+        int32_t byte = size; // htonl(size);
+        socket_.write(&byte, 4);
+        for(int i = 0;i < size;i++) {
+            uint8_t b = pkt->bytes()[i];
+            socket_.write(&b, 1);
+        }
+        return true;
+    }
 
     virtual bool sendPacket(TCPROSPacket&& pkt) { 
         int32_t size = pkt.bytes().size();
@@ -47,9 +75,6 @@ public:
             uint8_t b = pkt.bytes()[i];
             socket_.write(&b, 1);
         }
-        //uint8_t b = '\n';
-        //socket_.write(&b, 1);
-        //socket_.write(&(pkt.bytes()), size);
         return true;
     }
     
@@ -83,6 +108,11 @@ private:
 };
 
 
+std::shared_ptr<TCPROS> ssr::nanoros::tcpros_listen(const std::string& host, const int32_t port) {
+    auto tcpros = std::make_shared<TCPROSImpl>();
+    tcpros->listen(host, port);
+    return tcpros;
+}
 
 std::shared_ptr<TCPROS> ssr::nanoros::tcpros_connect(const std::string& host, const int32_t port) {
     return std::static_pointer_cast<TCPROS>(std::make_shared<TCPROSImpl>(host, port));
