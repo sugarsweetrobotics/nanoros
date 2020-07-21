@@ -1,8 +1,16 @@
 set(_srcs
 
+nanoros.cpp
 rosmaster.cpp
 rosutil.cpp
 os.cpp
+dllproxy.cpp
+rosmsgstubfactory.cpp
+rosnode.cpp
+rosslave.cpp
+rosslaveserver.cpp
+rossubscriber.cpp
+rostcpros.cpp
 
 )
 
@@ -11,6 +19,7 @@ set(EXT_LIBRARIES XmlRpc)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/XmlRpc/include)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
 
 
 foreach(a IN ITEMS ${nanoros_headers})

@@ -5,6 +5,8 @@
 #include <optional>
 #include <memory>
 
+#include "nanoros/rosutil.h"
+
 #define NANOROS_API
 
 
@@ -74,17 +76,27 @@ namespace ssr {
       virtual ~TopicTypes() {}
     };
 
+    struct PublishersInfo : public MasterMsg {
+      std::vector<std::string> publishers;
+      virtual ~PublishersInfo() {}
+      PublishersInfo(const int32_t _code, const  std::string& _statusMessage, const std::vector<std::string>& _publishers): MasterMsg(_code, _statusMessage), publishers(_publishers) {}
+    };
     class NANOROS_API ROSMaster {
     public:
       ROSMaster() {};
       virtual ~ROSMaster() {};
     public:
 
-      virtual std::optional<SystemState> getSystemState(const std::string& caller_id) { return std::nullopt; }
-      virtual std::optional<TopicTypes>  getTopicTypes(const std::string& caller_id) { return std::nullopt; }
+    virtual std::optional<SystemState> getSystemState(const std::string& caller_id) { return std::nullopt; }
+    virtual std::optional<TopicTypes>  getTopicTypes(const std::string& caller_id) { return std::nullopt; }
+    virtual std::optional<PublishersInfo> registerSubscriber(const std::string& caller_id, const std::string& topicName, const std::string& topicType, const std::string& caller_api) { return std::nullopt; }
     };
     
     NANOROS_API std::shared_ptr<ROSMaster> rosmaster(const std::string& addr, const int32_t port);
-    
+    inline NANOROS_API std::shared_ptr<ROSMaster> rosmaster() {
+      auto info = getROSMasterInfo();
+      if (!info) { return std::make_shared<ROSMaster>(); }
+      return rosmaster(info->first, info->second);
+    }
   }
 }

@@ -1,6 +1,7 @@
 set(_headers
 
 rosmaster.h
+rospublisher.h
 
 )
 

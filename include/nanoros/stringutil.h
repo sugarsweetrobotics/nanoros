@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 namespace ssr {
   namespace nanoros {
@@ -40,6 +41,11 @@ namespace ssr {
             result.push_back(str.substr(begin, i-begin));//std::string(begin, pstr));
         } while (0 != str[i++]);
         return result;
+    }
+
+    inline std::optional<std::vector<std::string>> stringSplit(const std::optional<const std::string>& str, const char sep=' ') {
+        if (!str) return std::nullopt;
+        return stringSplit(str.value(), sep);
     }
   }
 }

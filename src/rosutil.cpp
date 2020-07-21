@@ -1,14 +1,15 @@
 #include <iostream>
+#include <random>
 
 #include "nanoros/rosutil.h"
 #include "nanoros/stringutil.h"
 #include "nanoros/os.h"
 
+#include "aqua2/socket.h"
+#include "aqua2/serversocket.h"
 
-
-
-std::optional<std::pair<std::string, int32_t>> ssr::nanoros::getROSMasterInfo() {
-  auto uri = ssr::nanoros::getEnv("ROS_MASTER_URI");
+std::optional<std::pair<std::string, int32_t>> ssr::nanoros::splitUri(const std::string& uri_) {
+  std::string uri = uri_;
   if (uri.find("http://") != 0) {
     return std::nullopt;
   } else {
@@ -19,5 +20,36 @@ std::optional<std::pair<std::string, int32_t>> ssr::nanoros::getROSMasterInfo() 
     return std::make_pair(vs[0], atoi(vs[1].c_str()));
   } else {
     return std::make_pair(vs[0], ROS_MASTER_DEFAULT_PORT);
+  }
+
+}
+
+std::optional<std::pair<std::string, int32_t>> ssr::nanoros::getROSMasterInfo() {
+  return ssr::nanoros::splitUri(ssr::nanoros::getEnv("ROS_MASTER_URI"));
+}
+
+std::string ssr::nanoros::getSelfIP() {
+  return getEnv("ROS_IP");
+}
+
+int32_t ssr::nanoros::getEmptyPort(const std::pair<int32_t, int32_t>& range) {
+  try {
+    std::mt19937 mt{ std::random_device{}() };
+    std::uniform_int_distribution<int> dist(range.first, range.second);
+    
+    while (true) {
+      try {
+        int port = dist(mt);
+        ssr::aqua2::ServerSocket ss;
+        ss.bind(port);
+        ss.close();
+        return port;
+        //break;
+      } catch (ssr::aqua2::SocketException& bind) {
+	
+      }
+    }
+  } catch (std::exception& e) {
+    return -1;
   }
 }

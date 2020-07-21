@@ -71,12 +71,25 @@ public:
     }
     return std::nullopt;
   }
+  
+  virtual std::optional<PublishersInfo> registerSubscriber(const std::string& caller_id, const std::string& topicName, const std::string& topicType, const std::string& caller_api) {
+    XmlRpc::XmlRpcValue v, result;
+    v[0] = caller_id;
+    v[1] = topicName;
+    v[2] = topicType;
+    v[3] = caller_api;
+    if (client_.execute("registerSubscriber", v, result)) {
+      return PublishersInfo(result[0], result[1], forEach<std::string>(result[2], [](auto& v) -> std::string {
+										    return std::string(v); }));
+    }
+    return std::nullopt;
+    
+  }
 
 };
 
 
 
 NANOROS_API std::shared_ptr<ROSMaster> ssr::nanoros::rosmaster(const std::string& addr, const int32_t port) {
-  auto rp = std::make_shared<ROSMasterImpl>(addr, port);
-  return std::static_pointer_cast<ROSMaster>(rp);
+  return std::static_pointer_cast<ROSMaster>(std::make_shared<ROSMasterImpl>(addr, port));
 }

@@ -1,3 +1,6 @@
 [submodule "thirdparty/XmlRpc"]
 	path = thirdparty/XmlRpc
 	url = https://github.com/sugarsweetrobotics/XmlRpc.git
+[submodule "thirdparty/libaqua2"]
+	path = thirdparty/libaqua2
+	url = https://github.com/sugarsweetrobotics/libaqua2.git
