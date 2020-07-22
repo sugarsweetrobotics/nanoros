@@ -19,13 +19,13 @@ namespace ssr::nanoros {
             virtual std::string typeName() const override { return "std_msgs/Int32"; }
             virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) const override { 
                 int32_t popedCount = 0;
-                auto v = msg->popInt32(popedCount);
+                auto v = msg->pop<int32_t>(popedCount);
                 if (!v) {  return nullptr; }
                 return std::make_shared<Int32>(v.value());
             }
 
             
-            virtual std::shared_ptr<TCPROSPacket> toPacket(const std::shared_ptr<ROSMsg>& msg) const {
+            virtual std::shared_ptr<TCPROSPacket> toPacket(const std::shared_ptr<ROSMsg>& msg) const override {
                 const auto val = std::static_pointer_cast<const Int32>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 pkt->push(val->data);

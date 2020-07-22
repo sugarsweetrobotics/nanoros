@@ -10,6 +10,27 @@
 namespace ssr {
     namespace nanoros {
 
+
+        
+        template<typename T>
+        T to_little_endian(T&& t) { 
+#ifdef HOST_BIG_ENDIAN
+
+#else 
+            return t; 
+#endif
+        }
+
+        template<typename T>
+        T from_little_endian(T&& t) { 
+#ifdef HOST_BIG_ENDIAN
+
+#else 
+            return t; 
+#endif
+        }
+
+
         class TCPROSPacket {
         public:
             TCPROSPacket(): fail_(true), popedCount_(0) {}
@@ -23,25 +44,52 @@ namespace ssr {
         private:
             void _rewind() { popedCount_ = 0; }
             void _rewind(uint32_t i) { popedCount_ -= i; }
-        public:   
-            void push(const int32_t val) {
+        public:
+            template<typename T>
+            void push(const T& val) {
                 const uint8_t* b = (const uint8_t*)&val;
-                for(int i = 0;i < 4;i++) {
-                    ///bytes_.push_back((*(b+(3-i))));
+                for(size_t i = 0;i < sizeof(T);i++) {
+#ifdef HOST_BIG_ENDIAN
+                    bytes_.push_back( (uint8_t)((val >> ((sizeof(T)-1-i)*8)) & 0x000000FF) );
+#else
                     bytes_.push_back( (uint8_t)((val >> ((i)*8)) & 0x000000FF) );
-                    //bytes_.push_back( (uint8_t)((val >> ((3-i)*8)) & 0x000000FF) );
-                    //bytes_.push_back((uint8_t)((val >> (3-i)*8) & 0x000000FF));
+#endif
                 }
             }
-            void push(const std::string& str) {
-                push((int32_t)str.length());
+
+            template<>
+            void push<std::string>(const std::string& str) {
+                push<uint32_t>(str.length());
                 for(int i = 0;i < str.length();i++) {
                     bytes_.push_back(str[i]);
                 }
-                //bytes_.push_back('\n');
+            }
+
+            template<>
+            void push<ssr::nanoros::time>(const ssr::nanoros::time& t) {
+                push<uint32_t>(t.sec);
+                push<uint32_t>(t.nsec);
             }
 
         public:
+            template<typename T>
+            std::optional<T> pop() {
+                return pop<T>(this->popedCount_);
+            }
+
+            template<typename T>
+            std::optional<T> pop(int32_t& popedCount) const {
+                if (bytes_.size() < popedCount+sizeof(T)) return std::nullopt;
+                T buf = 0;
+                for(size_t i = 0;i < sizeof(T);i++) {
+#ifdef HOST_BIG_ENDIAN
+                    buf |= ((T)(bytes_[popedCount++])) << (8* (sizeof(T)-i-1)); 
+#else
+                    buf |= ((T)(bytes_[popedCount++])) << (8* (i)); 
+#endif
+                }
+                return buf;
+            }
 
             std::optional<int32_t> popInt32() { return popInt32(this->popedCount_); } 
 
@@ -68,6 +116,22 @@ namespace ssr {
 
             std::optional<std::string> popString() { return popString(this->popedCount_); } 
 
+            template<>
+            std::optional<std::string> pop<std::string>(int32_t& popedCount) const {
+                auto size = pop<int32_t>(popedCount);
+                if (!size) {
+                    popedCount -= sizeof(int32_t);
+                    return std::nullopt;
+                }
+                if (bytes_.size() < popedCount + size.value()) {
+                    popedCount -= sizeof(int32_t);
+                    return std::nullopt;
+                }
+                auto str = std::string((const char*)(&(bytes_[popedCount])), size.value());
+                popedCount += size.value();
+                return str;
+            }
+
             std::optional<std::string> popString(int32_t& popedCount) const {
                 auto size = popInt32(popedCount);
                 if (!size) {
@@ -81,6 +145,16 @@ namespace ssr {
                 auto str = std::string((const char*)(&(bytes_[popedCount])), size.value());
                 popedCount += size.value();
                 return str;
+            }
+
+            template<>
+            std::optional<ssr::nanoros::time> pop<ssr::nanoros::time>(int32_t& popedCount) const {
+                ssr::nanoros::time t;
+                auto arg0 = pop<uint32_t>(popedCount);
+                if (!arg0) return std::nullopt;
+                auto arg1 = pop<uint32_t>(popedCount);
+                if (!arg1) return std::nullopt;
+                return ssr::nanoros::time{arg0.value(), arg1.value()};
             }
 
             std::optional<ssr::nanoros::time> popTime(int32_t& popedCount) const {
@@ -111,10 +185,17 @@ namespace ssr {
 
             virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {return false; }
             virtual bool sendPacket(TCPROSPacket&& pkt) { return false; }
+
+
           virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
               return false;
           }
+          virtual bool sendHeader(const std::map<std::string, std::string>& hdr) {
+              return false;
+          }
           virtual std::map<std::string, std::string> receiveHeader(const double timeout) { return {}; }
+
+
         };
 
         std::shared_ptr<TCPROS> tcpros_connect(const std::string& host, const int32_t port);
