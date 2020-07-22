@@ -103,7 +103,7 @@ int main(const int argc, const char* argv[]) {
         auto pub =node->advertise(topicName, stub);
         while(1) {
           std::this_thread::sleep_for(std::chrono::seconds(3));
-          pub->publish(stub->fromString(topicDataStr));
+          pub->publish(stub->fromJSON(fromJSONString(topicDataStr)));
           node->spinOnce();
         }
       }
