@@ -13,6 +13,7 @@ namespace ssr {
                 std::string frame_id;
 
                 Header(const uint32_t& arg0, const ssr::nanoros::time& arg1, const std::string& arg2) : seq(arg0), stamp(arg1), frame_id(arg2) {}
+                Header(): seq(0), frame_id("") {}
                 virtual ~Header() {}
 
                 virtual std::string prettyString(const std::string& indent="") const {

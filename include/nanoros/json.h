@@ -18,20 +18,19 @@ namespace ssr {
 
         class JSONObject {
         public:
+            virtual bool isBool() const = 0;
             virtual bool isArray() const = 0;
             virtual bool isReal() const = 0;
             virtual bool isInt() const = 0;
             virtual bool isString() const = 0;
             virtual bool isObject() const = 0;
 
-            operator JSONIntType() const { return *value_.intValue; }
-            operator JSONRealType() const { return *value_.realValue; }
-            operator JSONStringType() const { return *value_.stringValue; }
-            operator JSONArrayType() const { return *value_.arrayValue; }
-
-            
+            virtual operator JSONIntType() const = 0;
+            virtual operator JSONRealType() const = 0;
+            virtual operator JSONStringType() const = 0;
 
             virtual bool hasKey(const std::string& key) const = 0;
+
             virtual std::shared_ptr<const JSONObject> get(const std::string& key) const = 0;
 
             virtual std::shared_ptr<const JSONObject> get(const int32_t& key) const = 0;
@@ -40,29 +39,19 @@ namespace ssr {
 
         public:
 
+            template<typename T>
+            bool isType() const {
+                return "nanoros/json.h line 50: Can not apply template method get to data type T.";
+            }
 
+            template<> bool isType<JSONIntType>() const { return isInt();}
+            template<> bool isType<JSONRealType>() const { return isReal();}
+            template<> bool isType<JSONStringType>() const { return isString();}
+            template<> bool isType<JSONArrayType>() const { return isArray();}
 
             template<typename T>
             std::optional<T> get() const {
-                return "nanoros/json.h line 50: Can not apply template method get to data type T.";
-                //return std::nullopt;
-            }
-
-            template<>
-            std::optional<JSONIntType> get<JSONIntType>() const {
-                if (isInt()) return static_cast<const JSONIntType>(*this);
-                return std::nullopt;
-            }
-
-            template<>
-            std::optional<JSONRealType> get<JSONRealType>() const {
-                if (isReal()) return static_cast<const JSONRealType>(*this);
-                return std::nullopt;
-            }
-
-            template<>
-            std::optional<JSONStringType> get<JSONStringType>() const {
-                if (isString()) return static_cast<const JSONStringType>(*this);
+                if (isType<T>()) return static_cast<const T>(*this);
                 return std::nullopt;
             }
 

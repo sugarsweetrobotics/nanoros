@@ -4,3 +4,6 @@
 [submodule "thirdparty/libaqua2"]
 	path = thirdparty/libaqua2
 	url = https://github.com/sugarsweetrobotics/libaqua2.git
+[submodule "thirdparty/nlohmann-json"]
+	path = thirdparty/nlohmann-json
+	url = https://github.com/nlohmann/json

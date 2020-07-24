@@ -39,9 +39,13 @@ namespace ssr::nanoros {
                 return pkt; 
             }
 
-            virtual std::shared_ptr<ROSMsg> fromString(const std::string& str) override { 
-                //int32_t val = atoi(str.c_str());
-                //return std::make_shared<Header>(val); 
+            
+            virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<JSONObject> json) override { 
+                if (!json) return nullptr;
+                auto hdr = std::make_shared<Header>();
+                if (!json->isObject()) return hdr;
+                auto arg0 = json->get<JSONIntType>();
+                return nullptr;
             }
         };
     }
