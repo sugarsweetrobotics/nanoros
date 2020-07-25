@@ -1,1 +1,2 @@
 add_subdirectory(std_msgs)
+add_subdirectory(geometry_msgs)

@@ -1,6 +1,6 @@
 #include "nanoros/rosmsgstub.h"
 #include "nanoros/rostcpros.h"
-#include "Int32.h"
+#include "Float32.h"
 
 #include <cstdint>
 #include <string>
@@ -9,27 +9,29 @@
 
 namespace ssr::nanoros {
     namespace std_msgs {
-
-
-        class Int32Stub : public ROSMsgStub {
-        private:
-            using DataType = Int32;
+        class Float32Stub : public ROSMsgStub {
         public:
-            Int32Stub() {}
-            virtual ~Int32Stub() {}
+            using DataType = Float32;
+        public:
+            Float32Stub() {}
+            virtual ~Float32Stub() {}
 
         public:
-            virtual std::string md5sum() const override { return "da5909fbe378aeaf85e547e830cc1bb7"; }
-            virtual std::string typeName() const override { return "std_msgs/Int32"; }
+            virtual std::string md5sum() const override { return "73fcbf46b49191e672908e50842a83d4"; }
+            virtual std::string typeName() const override { return "std_msgs/Float32"; }
             virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) const override { 
+                //int32_t popedCount = 0;
                 auto val = std::make_shared<DataType>();
-                setValue(val, val->data, msg->pop<int32_t>(popedCount));
+                setValue(val, val->data, msg->pop<float>(popedCount));
+                //auto v = msg->pop<float>(popedCount);
+                //if (!v) {  return nullptr; }
+                //return std::make_shared<DataType>(v.value());
                 return val;
             }
 
             
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) const override {
-                const auto val = dynamic_cast<const Int32&>(msg);
+                const auto val = static_cast<const DataType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 pkt->push(val.data);
                 return pkt; 
@@ -37,14 +39,12 @@ namespace ssr::nanoros {
 
             virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) override { 
                 if (!json) return nullptr;
-                auto val = std::make_shared<Int32>();
+                auto val = std::make_shared<DataType>();
                 setValue(val->data, json);
-                setValue<int32_t>(val->data, json, "data");
+                setValue<float>(val->data, json, "data");
                 return val;
             }
         };
-
-
     }
 }
 

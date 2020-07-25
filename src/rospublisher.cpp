@@ -67,13 +67,19 @@ public:
 
 public:
     virtual bool publish(const std::shared_ptr<ROSMsg>& msg) override {
-        auto pkt = stub_->toPacket(msg);
-        if (pkt) {
-            for(auto& worker : workers_) {
-                worker->sendPacket(pkt);
+        if (!msg) return false;
+        try {
+            auto pkt = stub_->toPacket(*(msg.get()));
+            if (pkt) {
+                for(auto& worker : workers_) {
+                    worker->sendPacket(pkt);
+                }
             }
+            return true;
+        } catch (std::bad_cast& bc) {
+            std::cerr << "ROSPublisherImpl::publish() catched exception: Bad Cast" << std::endl;
+            return false;
         }
-        return true;
     }
 
     virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) override  {

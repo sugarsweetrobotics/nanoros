@@ -25,6 +25,9 @@ namespace ssr {
             virtual bool isString() const = 0;
             virtual bool isObject() const = 0;
 
+            virtual operator int32_t() const = 0;
+            virtual operator uint32_t() const = 0;
+            virtual operator float() const = 0;
             virtual operator JSONIntType() const = 0;
             virtual operator JSONRealType() const = 0;
             virtual operator JSONStringType() const = 0;
@@ -51,7 +54,7 @@ namespace ssr {
 
             template<typename T>
             std::optional<T> get() const {
-                if (isType<T>()) return static_cast<const T>(*this);
+                if (isType<T>()) return static_cast<T>(*this);
                 return std::nullopt;
             }
 

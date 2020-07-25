@@ -6,6 +6,9 @@
 namespace ssr {
   namespace nanoros {
 
+    using float64 = double;
+    
+
     class ROSMsg {
     public:
       ROSMsg() {}

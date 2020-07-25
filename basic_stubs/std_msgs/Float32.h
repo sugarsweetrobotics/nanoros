@@ -7,11 +7,11 @@
 namespace ssr {
     namespace nanoros {
         namespace std_msgs {
-            struct Int32 : public ROSMsg {
-                int32_t data;
-                Int32(const int32_t& arg0) : data(arg0) {}
-                Int32(): Int32(0) {}
-                virtual ~Int32() {}
+            struct Float32 : public ROSMsg {
+                float data;
+
+                Float32(const float& arg0) : data(arg0) {}
+                virtual ~Float32() {}
 
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
@@ -24,5 +24,5 @@ namespace ssr {
 }
 
 extern "C" {
-void init_std_msgs_Int32(void* factory);
+void init_std_msgs_Float32(void* factory);
 }

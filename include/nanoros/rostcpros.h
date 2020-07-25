@@ -30,6 +30,10 @@ namespace ssr {
 #endif
         }
 
+        union double_uint64 {
+            double doubleValue;
+            uint64_t uint64Value;
+        };
 
         class TCPROSPacket {
         public:
@@ -66,9 +70,24 @@ namespace ssr {
             }
 
             template<>
+            void push<double>(const double& data) {
+                double_uint64 val;
+                val.doubleValue = data;
+                push<uint64_t>(val.uint64Value);
+            }
+
+            template<>
             void push<ssr::nanoros::time>(const ssr::nanoros::time& t) {
                 push<uint32_t>(t.sec);
                 push<uint32_t>(t.nsec);
+            }
+
+            template<>
+            void push<ssr::nanoros::TCPROSPacket>(const ssr::nanoros::TCPROSPacket& t) {
+                auto size = t.bytes().size();
+                for(size_t i = 0;i < size;i++) {
+                    push<uint8_t>(t.bytes()[i]);
+                }
             }
 
         public:
@@ -164,6 +183,17 @@ namespace ssr {
                 auto arg1 = popUint32(popedCount);
                 if (!arg1) return std::nullopt;
                 return ssr::nanoros::time{arg0.value(), arg1.value()};
+            }
+
+            template<>
+            std::optional<double> pop<double>(int32_t& popedCount) const {
+                double_uint64 val;
+                auto temp = pop<uint64_t>(popedCount);
+                if (!temp) {
+                    return std::nullopt;
+                }
+                val.uint64Value = temp.value();
+                return val.doubleValue;
             }
 
         public:

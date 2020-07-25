@@ -10,6 +10,9 @@
 namespace ssr::nanoros {
     namespace std_msgs {
         class HeaderStub : public ROSMsgStub {
+
+        public:
+            using DataType = Header;
         public:
             HeaderStub() {}
             virtual ~HeaderStub() {}
@@ -19,33 +22,31 @@ namespace ssr::nanoros {
 
             virtual std::string typeName() const override { return "std_msgs/Header"; }
 
-            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) const override { 
-                int32_t popedCount = 0;
-                auto arg0 = msg->pop<uint32_t>(popedCount);
-                if (!arg0) {  return nullptr; }
-                auto arg1 = msg->pop<ssr::nanoros::time>(popedCount);
-                if (!arg1) {  return nullptr; }
-                auto arg2 = msg->pop<std::string>(popedCount);
-                if (!arg2) {  return nullptr; }
-                return std::make_shared<Header>(arg0.value(), arg1.value(), arg2.value());
+            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) const override { 
+                auto val = std::make_shared<DataType>();
+                setValue(val, val->seq, msg->pop<uint32_t>(popedCount));
+                setValue(val, val->stamp, msg->pop<ssr::nanoros::time>(popedCount));
+                setValue(val, val->frame_id, msg->pop<std::string>(popedCount));
+                return val;
             }
             
-            virtual std::shared_ptr<TCPROSPacket> toPacket(const std::shared_ptr<ROSMsg>& msg) const override {
-                const auto val = std::static_pointer_cast<const Header>(msg);
+            virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) const override {
+                const auto val = static_cast<const Header&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
-                pkt->push(val->seq);
-                pkt->push(val->stamp);
-                pkt->push(val->frame_id);
+                pkt->push(val.seq);
+                pkt->push(val.stamp);
+                pkt->push(val.frame_id);
                 return pkt; 
             }
 
             
-            virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<JSONObject> json) override { 
+            virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) override { 
                 if (!json) return nullptr;
-                auto hdr = std::make_shared<Header>();
-                if (!json->isObject()) return hdr;
-                auto arg0 = json->get<JSONIntType>();
-                return nullptr;
+                auto val = std::make_shared<Header>();
+                setValue<uint32_t>(val->seq, json, "seq");
+                setValue<ssr::nanoros::time>(val->stamp, json, "stamp");
+                setValue<std::string>(val->frame_id, json, "frame_id");
+                return val;
             }
         };
     }

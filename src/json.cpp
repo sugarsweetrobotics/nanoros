@@ -41,9 +41,21 @@ public:
         return json_.is_object();
     }
 
+    virtual operator int32_t() const override {
+        return json_.get<int32_t>();
+    }
+
+    virtual operator uint32_t() const override {
+        return json_.get<uint32_t>();
+    }
+
+
+    virtual operator float() const override {
+        return json_.get<float>();
+    }
 
     virtual operator JSONIntType() const override {
-        return json_.get<int32_t>();
+        return json_.get<int64_t>();
     }
 
     virtual operator JSONRealType() const override {
