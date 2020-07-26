@@ -50,5 +50,5 @@ namespace ssr::nanoros {
 
 
 void init_std_msgs_Int32(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Int32Stub>());
+    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Float32Stub>());
 }

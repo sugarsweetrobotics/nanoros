@@ -4,6 +4,7 @@ nanoros.cpp
 rosmaster.cpp
 rosutil.cpp
 os.cpp
+signal.cpp
 dllproxy.cpp
 json.cpp
 rosmsgstubfactory.cpp

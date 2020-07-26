@@ -35,6 +35,12 @@ namespace ssr {
             uint64_t uint64Value;
         };
 
+        union float_uint32 {
+            float floatValue;
+            uint32_t uint32Value;
+        };
+
+
         class TCPROSPacket {
         public:
             TCPROSPacket(): fail_(true), popedCount_(0) {}
@@ -74,6 +80,13 @@ namespace ssr {
                 double_uint64 val;
                 val.doubleValue = data;
                 push<uint64_t>(val.uint64Value);
+            }
+
+            template<>
+            void push<float>(const float& data) {
+                float_uint32 val;
+                val.floatValue = data;
+                push<uint32_t>(val.uint32Value);
             }
 
             template<>
@@ -194,6 +207,17 @@ namespace ssr {
                 }
                 val.uint64Value = temp.value();
                 return val.doubleValue;
+            }
+
+            template<>
+            std::optional<float> pop<float>(int32_t& popedCount) const {
+                float_uint32 val;
+                auto temp = pop<uint32_t>(popedCount);
+                if (!temp) {
+                    return std::nullopt;
+                }
+                val.uint32Value = temp.value();
+                return val.floatValue;
             }
 
         public:

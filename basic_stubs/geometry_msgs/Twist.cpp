@@ -51,6 +51,6 @@ namespace ssr::nanoros {
 }
 
 
-void init_std_msgs_Int32(void* factory) {
+void init_std_msgs_Twist(void* factory) {
     static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::geometry_msgs::TwistStub>());
 }

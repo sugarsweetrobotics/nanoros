@@ -70,6 +70,13 @@ public:
     }
   }
 
+  virtual void spin(const Rate& rate) override {
+    while(true) {
+      spinOnce();
+      std::this_thread::sleep_for(std::chrono::microseconds(static_cast<uint64_t>(rate.getIntervalUsec())));
+    }
+  }
+
 };
 
 

@@ -7,8 +7,13 @@ namespace ssr {
   namespace nanoros {
 
     using float64 = double;
-    
+    using float32 = float;
 
+
+
+    template<typename T>
+    std::string typeName() { return ""; }
+    
     class ROSMsg {
     public:
       ROSMsg() {}

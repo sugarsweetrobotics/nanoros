@@ -66,10 +66,9 @@ public:
     virtual ~ROSPublisherImpl() {}
 
 public:
-    virtual bool publish(const std::shared_ptr<ROSMsg>& msg) override {
-        if (!msg) return false;
+    virtual bool publish(const ROSMsg& msg) override {
         try {
-            auto pkt = stub_->toPacket(*(msg.get()));
+            auto pkt = stub_->toPacket(msg);
             if (pkt) {
                 for(auto& worker : workers_) {
                     worker->sendPacket(pkt);
@@ -80,6 +79,12 @@ public:
             std::cerr << "ROSPublisherImpl::publish() catched exception: Bad Cast" << std::endl;
             return false;
         }
+    }
+
+
+    virtual bool publish(const std::shared_ptr<ROSMsg>& msg) override {
+        if (!msg) return false;
+        return publish(*(msg.get()));
     }
 
     virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) override  {

@@ -2,6 +2,8 @@
 #include <memory>
 #include <string>
 
+#include "nanoros/rosmsgstub.h"
+
 namespace ssr {
   namespace nanoros {
 
@@ -19,6 +21,12 @@ namespace ssr {
       virtual std::string topicName() const { return topicName_; }
     public:
       virtual bool publish(const std::shared_ptr<ROSMsg>& msg) {return false; }
+
+      template<typename T>
+      inline bool publish(const T& msg) {
+        return publish(static_cast<const ROSMsg&>(msg));
+      }
+      virtual bool publish(const ROSMsg& msg) { return false; }
       virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) { return false; }
 
     };

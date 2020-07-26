@@ -63,6 +63,7 @@ public:
   GetMasterUri getMasterUri_;
   RequestTopic requestTopic_;
 
+  bool exit_flag_;
 
 public:
   ROSSlaveServerImpl(ROSNode* rosnode, const std::shared_ptr<ROSMaster>& master, const std::string& ip, const int32_t port): 
@@ -75,16 +76,19 @@ public:
     requestTopic_(this)
   {
 
-
+    exit_flag_ = false;
     thread_ = std::make_shared<std::thread>([this]() {
       server_->bindAndListen(port_);
       server_->enableIntrospection(true);
-      server_->work(-1.0);
+      while(!exit_flag_) {
+        server_->work(1.0);
+      }
     });
   }
 
   virtual ~ROSSlaveServerImpl() {
-    server_->exit();
+    server_->shutdown();
+    exit_flag_ = true;
     thread_->join();
   }
 
@@ -124,8 +128,14 @@ void RequestTopic::execute(XmlRpcValue& params, XmlRpcValue& result) {
   for(int i = 0;i < params[2].size();i++) {
     const std::string protocolName = params[2][i][0];
     std::vector<std::string> args;
-    for(int j = 1;j < params[2][i].size();j++) {
-      args.push_back(params[2][i][j]);
+    size_t size = params[2][i].size();
+    for(int j = 1;j < size;j++) {
+      if (params[2][i][j].getType() == XmlRpcValue::TypeString) {
+        args.push_back(params[2][i][j]);
+      }
+      else if (params[2][i][j].getType() == XmlRpcValue::TypeInt) {
+        args.push_back(std::to_string((int)(params[2][i][j])));
+      }
     }
 
     if (protocolName == "TCPROS") {

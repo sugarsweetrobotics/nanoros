@@ -11,8 +11,8 @@ using namespace ssr::nanoros;
 
 class ROSMsgStubFactoryImpl : public ROSMsgStubFactory {
 private:
-  std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
   std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;
+  std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
 public:
   ROSMsgStubFactoryImpl() {}
   virtual ~ROSMsgStubFactoryImpl() {}

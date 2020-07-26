@@ -4,7 +4,9 @@
 #include <functional>
 #include "nanoros/rosmaster.h"
 #include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgstubfactory.h"
 #include "nanoros/rospublisher.h"
+#include "nanoros/rosrate.h"
 
 namespace ssr {
   namespace nanoros {
@@ -25,12 +27,34 @@ namespace ssr {
       virtual std::string name() const { return name_; }
       virtual void spinOnce() {}
       virtual void spin() {}
+      virtual void spin(const Rate& rate) {}
 
       virtual std::shared_ptr<ROSPublisher> getPublisher(const std::string& topicName) const { return nullptr; }
     public:
       virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) {return nullptr; }
+
+      template<typename T>
+      std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const double negotiateTimeout=1.0) {
+        auto factory = getROSMsgStubFactory();
+        if (!factory) return nullptr;
+        auto stub = factory->getStub(typeName<T>());
+        if (!stub) return nullptr;
+        return advertise(topicName, stub, negotiateTimeout);
+      }
+
       virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, 
           const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) {return nullptr; }
+
+      template<typename T>
+      std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::function<void(const std::shared_ptr<const T>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) {
+        auto factory = getROSMsgStubFactory();
+        if (!factory) return nullptr;
+        auto stub = factory->getStub(typeName<T>());
+        if (!stub) return nullptr;
+        return subscribe(topicName, stub, [func](const std::shared_ptr<const ROSMsg>& msg) {
+          func(std::dynamic_pointer_cast<const T>(msg));
+        }, latching, negotiateTimeout);
+      }
     };
 
     
