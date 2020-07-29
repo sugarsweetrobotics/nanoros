@@ -7,8 +7,11 @@ Nano-size ROS (Robot Operating System) implimentation.
 ```
 $ git clone https://github.com/sugarsweetrobotics/nanoros.git
 $ cd nanoros
+$ git submodule update --init --recursive
 $ mkdir build
+$ cd build
 $ cmake ../
+$ make
 ```
 
 
