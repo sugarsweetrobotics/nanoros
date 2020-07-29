@@ -37,17 +37,44 @@ public:
 
     virtual bool close() { return socket_.close(); }
 
-    virtual bool listen(const std::string& host, const int32_t port, const int32_t timeoutUsec = 3000*1000) {
+    virtual bool bind(const std::string& host, const int32_t port, const int32_t timeoutUsec = 3000*1000) override {
         try {
             serverSocket_.bind(port);
-            serverSocket_.listen(5);
+        } catch (ssr::aqua2::SocketException& ex) {
+            return false;
+        }
+        return true;
+    }
+
+    virtual bool listen(int backlog) override {
+        try {
+            serverSocket_.listen(backlog);
+        } catch (ssr::aqua2::SocketException& ex) {
+            return false;
+        }
+        return true;
+    }
+
+    virtual bool accept() override {
+        try {
             socket_ = serverSocket_.accept();
         } catch (ssr::aqua2::SocketException& ex) {
             return false;
         }
         return true;
     }
+
+
+    virtual bool disconnect() override { 
+        socket_.close();
+        return true; 
+    }
 public:
+
+    virtual bool sendByte(const int8_t data) override { 
+        if (socket_.write(&data, 1) != 1) return false;
+        return true; 
+    }
 
     virtual std::optional<uint8_t> receiveByte(const int32_t timeout = -1) override {
         uint8_t bytes = 0;
@@ -56,6 +83,13 @@ public:
         }
         socket_.read(&bytes, sizeof(uint8_t));
         return bytes;
+    }
+
+    virtual bool sendString(const std::string& d) override {
+        uint32_t size = d.length();
+        if (socket_.write(&size, 4) != sizeof(uint32_t)) return false;
+        if (socket_.write(d.c_str(), size) != size) return false;
+        return true; 
     }
 
     virtual std::optional<std::string> receiveString(const int32_t timeout = -1) override {
@@ -72,6 +106,10 @@ public:
         socket_.read(buf, size);
         buf[size] = 0;
         return std::string(buf);
+    }
+
+    virtual int32_t rxBufferSize() override {
+        return socket_.getSizeInRxBuffer() ;
     }
 
     virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) override { 
@@ -91,25 +129,15 @@ public:
 
     virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt)  override{ 
         int32_t size = to_little_endian(pkt->bytes().size()); // littel_endian
-        //int32_t byte = size; // htonl(size);
         socket_.write(&size, 4);
         socket_.write(&(pkt->bytes()[0]), size);
-        //for(int i = 0;i < size;i++) {
-        //    uint8_t b = pkt->bytes()[i];
-        //    socket_.write(&b, 1);
-        //}
         return true;
     }
 
     virtual bool sendPacket(TCPROSPacket&& pkt) override { 
         int32_t size = to_little_endian(pkt.bytes().size()); // littel_endian must be
-        //int32_t byte = size; // htonl(size);
         socket_.write(&size, sizeof(int32_t));
         socket_.write(&(pkt.bytes()[0]), size);
-        //for(int i = 0;i < size;i++) {
-        //    uint8_t b = pkt.bytes()[i];
-        //    socket_.write(&b, 1);
-        //}
         return true;
     }
     
@@ -151,9 +179,8 @@ private:
 };
 
 
-std::shared_ptr<TCPROS> ssr::nanoros::tcpros_listen(const std::string& host, const int32_t port) {
+std::shared_ptr<TCPROS> ssr::nanoros::tcpros_server() {
     auto tcpros = std::make_shared<TCPROSImpl>();
-    tcpros->listen(host, port);
     return tcpros;
 }
 

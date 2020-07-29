@@ -27,7 +27,7 @@ namespace ssr {
         public:
             virtual std::optional<std::string> typeName() const { return std::nullopt; }
 
-            virtual std::shared_ptr<const ROSSrvResult> call(const std::shared_ptr<ROSSrvStub>& stub, const std::shared_ptr<const ROSSrvArg>& arg, const double timeout=1.0) { return nullptr; }
+            virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvStub>& stub, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) { return nullptr; }
         };
 
 

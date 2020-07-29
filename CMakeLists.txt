@@ -13,4 +13,4 @@ add_subdirectorY(src)
 
 add_subdirectory(apps)
 add_subdirectory(examples)
-add_subdirectory(basic_stubs)
+add_subdirectory(manually_generated_stubs)

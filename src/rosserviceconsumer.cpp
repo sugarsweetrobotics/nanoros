@@ -41,6 +41,8 @@ public:
     }
 
     bool disconnect() {
+        tcpros_disconnect(tcpros_);
+        tcpros_ = nullptr;
         return true;
     }
     
@@ -50,7 +52,7 @@ public:
     }
 
 
-    virtual std::shared_ptr<const ROSSrvResult> call(const std::shared_ptr<ROSSrvStub>& stub, const std::shared_ptr<const ROSSrvArg>& arg, const double timeout=1.0) override {
+    virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvStub>& stub, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) override {
         if (!arg) return nullptr;
         if (!stub) return nullptr;
         if (!tcpros_) return nullptr;
@@ -60,11 +62,11 @@ public:
         auto ok = tcpros_->receiveByte(timeout);
         if (!ok) return nullptr;
         if (ok.value()) {
-            return stub->toSrvResult(tcpros_->receivePacket(timeout), popedCount);
+            return stub->toSrvResponse(tcpros_->receivePacket(timeout), popedCount);
         }
 
         auto msg = tcpros_->receiveString(timeout);
-        return std::make_shared<ROSSrvResult>(msg.value());
+        return std::make_shared<ROSSrvResponse>(msg.value());
     }
 
 };

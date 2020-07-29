@@ -5,8 +5,11 @@
 #include "nanoros/rosmaster.h"
 #include "nanoros/rosmsgstub.h"
 #include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rossrvstub.h"
+#include "nanoros/rossrvstubfactory.h"
 #include "nanoros/rospublisher.h"
 #include "nanoros/rosrate.h"
+#include "nanoros/rosserviceprovider.h"
 
 namespace ssr {
   namespace nanoros {
@@ -32,6 +35,9 @@ namespace ssr {
       virtual std::shared_ptr<ROSPublisher> getRegisteredPublisher(const std::string& topicName) const { return nullptr; }
 
       virtual std::shared_ptr<ROSSubscriber> getRegisteredSubscriber(const std::string& topicName) const { return nullptr; }
+
+
+      virtual std::shared_ptr<ROSServiceProvider> getRegisteredServiceProvider(const std::string& srvName) const { return nullptr; }
     public:
       virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) {return nullptr; }
 
@@ -39,7 +45,7 @@ namespace ssr {
       std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const double negotiateTimeout=1.0) {
         auto factory = getROSMsgStubFactory();
         if (!factory) return nullptr;
-        auto stub = factory->getStub(typeName<T>());
+        auto stub = factory->getStub(msgTypeName<T>());
         if (!stub) return nullptr;
         return advertise(topicName, stub, negotiateTimeout);
       }
@@ -64,7 +70,7 @@ namespace ssr {
       std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::function<void(const std::shared_ptr<const T>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) {
         auto factory = getROSMsgStubFactory();
         if (!factory) return nullptr;
-        auto stub = factory->getStub(typeName<T>());
+        auto stub = factory->getStub(msgTypeName<T>());
         if (!stub) return nullptr;
         return subscribe(topicName, stub, [func](const std::shared_ptr<const ROSMsg>& msg) {
           func(std::dynamic_pointer_cast<const T>(msg));
@@ -75,6 +81,31 @@ namespace ssr {
 
 
       virtual void unsubscribeAll() { return; }
+
+
+      virtual void unadvertiseServiceAll() { return; }
+
+      template<typename ReqType, typename ResType>
+      bool advertiseService(const std::string& srvName, const std::function<const std::shared_ptr<ResType>(const std::shared_ptr<const ReqType>&)>& func) {
+        auto factory = getROSSrvStubFactory();
+        if (!factory) return false;
+        auto stub = factory->getStub(srvTypeName<ReqType>());
+        if (!stub) return false;
+        return advertiseService(srvName, stub, [func, stub](const std::shared_ptr<const ROSSrvRequest>& request) -> const std::shared_ptr<ROSSrvResponse> {
+          const std::shared_ptr<const ReqType> req = std::dynamic_pointer_cast<const ReqType>(request);
+          //const std::shared_ptr<ResType> res = std::dynamic_pointer_cast<ResType>(response);
+          if(!req) return nullptr;
+          return func(req);
+        });
+      }
+
+      virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvStub>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) {
+        return false; 
+      }
+
+      virtual bool unadvertiseService(const std::shared_ptr<ROSServiceProvider> & provider) {
+        return false;
+      }
 
     };
 

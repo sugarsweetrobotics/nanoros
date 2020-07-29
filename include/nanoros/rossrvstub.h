@@ -31,14 +31,21 @@ namespace ssr {
       virtual std::string md5sum() const { return ""; }
       virtual std::string typeName() const { return ""; }
 
-      virtual std::shared_ptr<const ROSSrvResult> toSrvResult(const std::optional<TCPROSPacket>& msg) { 
+      virtual std::shared_ptr<const ROSSrvRequest> toSrvRequest(const std::optional<TCPROSPacket>& msg) { 
         int32_t popedCount = 0;
-        return toSrvResult(msg, popedCount);
+        return toSrvRequest(msg, popedCount);
       }
 
-      virtual std::shared_ptr<const ROSSrvResult> toSrvResult(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) { return nullptr; }
-      virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSSrvArg& msg) {return nullptr; }
-      virtual std::shared_ptr<ROSSrvArg> fromJSON(const std::shared_ptr<const JSONObject> json) { return nullptr; }
+      virtual std::shared_ptr<const ROSSrvResponse> toSrvResponse(const std::optional<TCPROSPacket>& msg) { 
+        int32_t popedCount = 0;
+        return toSrvResponse(msg, popedCount);
+      }
+
+      virtual std::shared_ptr<const ROSSrvResponse> toSrvResponse(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) { return nullptr; }
+      virtual std::shared_ptr<const ROSSrvRequest> toSrvRequest(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) { return nullptr; }
+      virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSSrvRequest& msg) {return nullptr; }
+      virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSSrvResponse& msg) {return nullptr; }
+      virtual std::shared_ptr<ROSSrvRequest> fromJSON(const std::shared_ptr<const JSONObject> json) { return nullptr; }
     };
 
 

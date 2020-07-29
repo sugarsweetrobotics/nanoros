@@ -51,7 +51,10 @@ public:
         md5sum_ = md5sum;
         thread_ = std::make_shared<std::thread>([this, latching, timeout]() {
             try {
-                tcpros_ = tcpros_listen("0.0.0.0", port_);
+                tcpros_ = tcpros_server();
+                tcpros_->bind("0.0.0.0", port_);
+                tcpros_->listen(5);
+                tcpros_->accept();
                 negotiateHeader(caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout);
                 connected_ = true;
             } catch (ssr::aqua2::SocketException& ex) {
@@ -143,5 +146,6 @@ public:
 };
 
 std::shared_ptr<ROSPublisher> ssr::nanoros::createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub) {
+    if (!stub) return nullptr;
     return std::make_shared<ROSPublisherImpl>(node, topicName, stub);
 }

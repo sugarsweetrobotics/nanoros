@@ -8,35 +8,40 @@
 namespace ssr {
   namespace nanoros {
 
-
-
-    //template<typename T>
-    //std::string typeName() { return ""; }
     
-    class ROSSrvResult {
+    class ROSSrvResponse {
     public:
       bool ok;
       std::string message;
     public:
-      ROSSrvResult(): ok(true), message("") {}
-      ROSSrvResult(const std::string& msg): ok(false), message(msg) {}
-      virtual ~ROSSrvResult() {}
+      ROSSrvResponse(): ok(true), message("") {}
+      ROSSrvResponse(const std::string& msg): ok(false), message(msg) {}
+      virtual ~ROSSrvResponse() {}
 
     public:
       virtual std::string prettyString(const std::string& indent="") const { return indent + "ok: " + (ok ? "true" : "false") + "¥n" + indent + "message: " + message + "¥n"; };
 
     };
 
-    class ROSSrvArg {
+    class ROSSrvRequest {
     public:
-      ROSSrvArg() {}
-      virtual ~ROSSrvArg() {}
+      ROSSrvRequest() {}
+      virtual ~ROSSrvRequest() {}
 
     public:
       virtual std::string prettyString(const std::string& indent="") const = 0;
 
     };
 
+
+    template<typename T>
+    std::string srvTypeName() { return ""; }
+
+    template<typename T>
+    std::string srvResponseTypeName() { return ""; }
+
+    template<typename T>
+    std::string srvRequestTypeName() { return ""; }
 
   }
 }

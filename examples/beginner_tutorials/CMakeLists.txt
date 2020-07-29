@@ -18,6 +18,5 @@ set_target_properties(${NAME}
 endfunction(add_app)
 
 
-add_app(talker)
-add_app(listener)
+add_app(add_two_ints_server)
 

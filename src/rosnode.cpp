@@ -4,6 +4,7 @@
 #include "nanoros/rosslave.h"
 #include "nanoros/rosslaveserver.h"
 #include "nanoros/rossubscriber.h"
+#include "nanoros/rosserviceprovider.h"
 
 #include <thread>
 
@@ -19,11 +20,13 @@ private:
 
   std::vector<std::shared_ptr<ROSSubscriber>> subscribers_;
   std::vector<std::shared_ptr<ROSPublisher>> publishers_;
+  std::vector<std::shared_ptr<ROSServiceProvider>> serviceProviders_;
 public:
   ROSNodeImpl(const std::shared_ptr<ROSMaster>& master, const std::string& name) : ROSNode(name), master_(master), slaveServer_(rosslaveserver(this, master, getSelfIP(), getEmptyPort(getPortRange()))) {}
   virtual ~ROSNodeImpl() {
     unsubscribeAll();
     unadvertiseAll();
+    unadvertiseServiceAll();
   }
 public:
 
@@ -44,10 +47,18 @@ public:
     }
     return nullptr;
   }
+
+  virtual std::shared_ptr<ROSServiceProvider> getRegisteredServiceProvider(const std::string& srvName) const override {
+    for(auto& sp : serviceProviders_) {
+      if (sp->getServiceName() == srvName) return sp;
+    }
+    return nullptr;
+  }
 public:
   virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) override {
     if (getRegisteredSubscriber(topicName) != nullptr) return nullptr;
     auto subscriber = createROSSubscriber(this, topicName, stub, func);
+    if (!subscriber) return nullptr;
     auto publishersInfo = master_->registerSubscriber(name_, topicName, stub->typeName(), slaveServer_->getSlaveUri());
     if (publishersInfo->code) {
       for(auto& pub: publishersInfo->publishers) {
@@ -83,8 +94,16 @@ public:
     }
   }
 
+  virtual void unadvertiseServiceAll() override {
+    for(auto& sub: serviceProviders_) {
+      if (!unadvertiseService(sub)) {}
+    }
+  }
+
   virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) override {
+    if (getRegisteredPublisher(topicName) != nullptr) return nullptr;
     auto publisher = createROSPublisher(this, topicName, stub);
+    if (!publisher) return nullptr;
     auto subscribersInfo = master_->registerPublisher(name_, topicName, stub->typeName(), slaveServer_->getSlaveUri());
     if (subscribersInfo->code) {
       for(auto& sub: subscribersInfo->subscribers) {
@@ -93,6 +112,15 @@ public:
     }
     publishers_.push_back(publisher);
     return publisher;
+  }
+
+  virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvStub>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) override {
+    if (getRegisteredServiceProvider(srvName) != nullptr) return false;
+    auto provider = createROSServiceProvider(this, srvName, stub, func);
+    if (!provider) return false;
+    auto subscribersInfo = master_->registerService(name_, srvName, provider->getUri(), slaveServer_->getSlaveUri());
+    serviceProviders_.push_back(provider);
+    return true; 
   }
 
 
@@ -115,6 +143,23 @@ public:
     return true;
   }
   
+  virtual bool unadvertiseService(const std::shared_ptr<ROSServiceProvider> & provider) override {
+    if (!provider) return false;
+    auto subscribersInfo = master_->unregisterService(name_, provider->getServiceName(), provider->getUri(), slaveServer_->getSlaveUri());
+
+    if (getRegisteredServiceProvider(provider->getServiceName()) != nullptr) {
+      for(auto it = serviceProviders_.begin(); it != serviceProviders_.end(); ++it) {
+        if ((*it)->getServiceName() == provider->getServiceName()) {
+          it = serviceProviders_.erase(it);
+          return true;
+        } 
+      }
+    }
+
+    return false;
+  }
+
+
   virtual void unadvertiseAll() override {
     for(auto& pub: publishers_) {
       if (!unadvertise(pub)) {}

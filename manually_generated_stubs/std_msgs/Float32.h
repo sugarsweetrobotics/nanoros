@@ -6,14 +6,12 @@
 
 namespace ssr {
     namespace nanoros {
-
-
         namespace std_msgs {
-            struct String : public ROSMsg {
-                std::string data;
-                String(const std::string& d): data(d) {}
-                String(): String("") {}
-                virtual ~String() {}
+            struct Float32 : public ROSMsg {
+                float data;
+
+                Float32() : data(0) {}
+                virtual ~Float32() {}
 
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
@@ -25,10 +23,10 @@ namespace ssr {
 
 
         template<>
-        std::string typeName<std_msgs::String>() { return "std_msgs/String"; }
+        std::string msgTypeName<std_msgs::Float32>() { return "std_msgs/Float32"; }
     }
 }
 
 extern "C" {
-void init_msg_std_msgs_String(void* factory);
+void init_msg_std_msgs_Float32(void* factory);
 }

@@ -18,6 +18,8 @@ rostcpros.cpp
 rosserviceconsumer.cpp
 rossrvstubfactory.cpp
 rossrvstub.cpp
+rosserviceprovider.cpp
+
 )
 
 set(EXT_LIBRARIES XmlRpc)

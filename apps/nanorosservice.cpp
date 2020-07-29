@@ -57,7 +57,7 @@ int main(const int argc, const char* argv[]) {
   if (argc >= 2) { 
     std::string cmd = argv[1];
     if (cmd == "list") {
-      show(serviceNames(getROSMaster()->getSystemState("/nanorostopic")));
+      show(serviceNames(getROSMaster()->getSystemState("/nanorosservice_list")));
     } else if (cmd == "type") {
       if (argc == 2) return -1;
       const std::string serviceName = argv[2];

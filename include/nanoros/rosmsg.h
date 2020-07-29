@@ -11,7 +11,7 @@ namespace ssr {
 
 
     template<typename T>
-    std::string typeName() { return ""; }
+    std::string msgTypeName() { return ""; }
     
     class ROSMsg {
     public:

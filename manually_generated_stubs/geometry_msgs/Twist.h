@@ -26,6 +26,10 @@ namespace ssr {
                 }
             };
         }
+
+
+        template<>
+        std::string msgTypeName<geometry_msgs::Twist>() { return "geometry_msgs/Twist"; }
     }
 }
 

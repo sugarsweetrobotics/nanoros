@@ -20,6 +20,10 @@ namespace ssr {
                 }
             };
         }
+
+
+        template<>
+        std::string msgTypeName<std_msgs::Int32>() { return "std_msgs/Int32"; }
     }
 }
 

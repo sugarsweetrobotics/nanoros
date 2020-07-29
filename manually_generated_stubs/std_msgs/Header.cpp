@@ -31,7 +31,7 @@ namespace ssr::nanoros {
             }
             
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) override {
-                const auto val = static_cast<const Header&>(msg);
+                const auto val = dynamic_cast<const Header&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 pkt->push(val.seq);
                 pkt->push(val.stamp);

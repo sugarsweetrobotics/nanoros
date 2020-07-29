@@ -25,6 +25,11 @@ namespace ssr {
                 }
             };
         }
+
+
+        template<>
+        std::string msgTypeName<std_msgs::Header>() { return "std_msgs/Header"; }
+
     }
 }
 

@@ -24,6 +24,10 @@ namespace ssr {
                 }
             };
         }
+
+
+        template<>
+        std::string msgTypeName<geometry_msgs::Vector3>() { return "geometry_msgs/Vector3"; }
     }
 }
 
