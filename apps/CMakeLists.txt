@@ -16,3 +16,4 @@ endfunction(add_app)
 
 
 add_app(nanorostopic)
+add_app(nanorosservice)

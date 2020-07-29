@@ -130,8 +130,8 @@ public:
     XmlRpc::XmlRpcValue v, result;
     v[0] = caller_id;
     v[1] = topicName;
-    v[2] = topicType;
-    v[3] = caller_api;
+    //v[2] = topicType;
+    v[2] = caller_api;
     if (client_.execute("unregisterSubscriber", v, result)) {
       return UnregisterInfo(result[0], result[1], result[2]);
     }
@@ -157,8 +157,8 @@ public:
     XmlRpc::XmlRpcValue v, result;
     v[0] = caller_id;
     v[1] = topicName;
-    v[2] = topicType;
-    v[3] = caller_api;
+    //v[2] = topicType;
+    v[2] = caller_api;
     if (client_.execute("unregisterPublisher", v, result)) {
       return UnregisterInfo(result[0], result[1], result[2]);
     }

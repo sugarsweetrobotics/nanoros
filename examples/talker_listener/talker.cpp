@@ -19,11 +19,15 @@ int main(const int argc, const char* argv[]) {
     value.data = "Hello";
 
     const ssr::nanoros::Duration duration(1.0);
-    while(!ssr::nanoros::is_shutdown()) {
-        std::cout << "talker: " << value.data << std::endl;
+    int i = 0;
+    while(!ssr::nanoros::is_shutdown() && i < 10) {
+
+        value.data = "Hello (" + std::to_string(i) + ")";
+        std::cout << "talker [" << i << "]: " << value.data << std::endl;
         pub->publish(value);
         node->spinOnce();
         ssr::nanoros::sleep_for(duration);
+        i++;
     }
     std::cout << "shutting down talker" << std::endl;
     return 0;

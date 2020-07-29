@@ -15,13 +15,20 @@ namespace ssr {
 
 
     class ROSSubscriber {
-    private:
+    protected:
+      ROSNode* node_;
+      const std::string topicName_;
+
     public:
-      ROSSubscriber() {}
+      virtual std::string getTopicName() const { return topicName_; }
+      virtual std::string getTopicTypeName() const { return ""; }
+    public:
+      ROSSubscriber(ROSNode* node, const std::string& topicName) : node_(node), topicName_(topicName) {}
       virtual ~ROSSubscriber() {}
     public:
       
       virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) { return false;}
+      virtual bool disconnect() { return false; }
       virtual void spinOnce() {}
     };
 

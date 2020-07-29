@@ -82,14 +82,14 @@ public:
 
 class ROSSubscriberImpl : public ROSSubscriber {
 private:
-  const std::string topicName_;
   std::vector<std::shared_ptr<ROSSubscriberWorker>> workers_;
   const std::shared_ptr<ROSMsgStub> stub_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
-  ROSNode* node_;
 public:
+	virtual std::string getTopicTypeName() const override { return stub_->typeName(); }
   const std::shared_ptr<ROSMsgStub>& stub() { return stub_; }
-  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : node_(node), topicName_(topicName), stub_(stub), callback_(func) {}
+  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
+  	ROSSubscriber(node, topicName), stub_(stub), callback_(func) {}
 
 private:
   virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
@@ -103,7 +103,7 @@ private:
 
 
 public:
-  virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) { 
+  virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) override { 
 	auto slave = rosslave(uri);
 	auto result = slave->requestTopic(node_->name(), topicName_, {ProtocolInfo(std::string("TCPROS"), node_->slaveServer()->getSlaveIP(), getEmptyPort(node_->getPortRange()))});
 	if (!result) return false;
@@ -120,7 +120,7 @@ public:
 
   virtual ~ROSSubscriberImpl() {}
 
-  virtual void spinOnce() {
+  virtual void spinOnce() override {
 	  for(auto& worker: workers_) {
 		  worker->spinOnce();
 	  }

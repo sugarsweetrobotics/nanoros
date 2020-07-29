@@ -21,18 +21,32 @@ private:
   std::vector<std::shared_ptr<ROSPublisher>> publishers_;
 public:
   ROSNodeImpl(const std::shared_ptr<ROSMaster>& master, const std::string& name) : ROSNode(name), master_(master), slaveServer_(rosslaveserver(this, master, getSelfIP(), getEmptyPort(getPortRange()))) {}
-  virtual ~ROSNodeImpl() {}
+  virtual ~ROSNodeImpl() {
+    unsubscribeAll();
+    unadvertiseAll();
+  }
 public:
+
+
+
   virtual std::shared_ptr<ROSSlaveServer> slaveServer() override { return slaveServer_; }
 
-  virtual std::shared_ptr<ROSPublisher> getPublisher(const std::string& topicName) const override { 
+  virtual std::shared_ptr<ROSPublisher> getRegisteredPublisher(const std::string& topicName) const override { 
     for(auto pub: publishers_) {
-      if (pub->topicName() == topicName) return pub;
+      if (pub->getTopicName() == topicName) return pub;
     }  
     return nullptr;
   }
 public:
+  virtual std::shared_ptr<ROSSubscriber> getRegisteredSubscriber(const std::string& topicName) const override {
+    for(auto& sub : subscribers_) {
+      if (sub->getTopicName() == topicName) return sub;
+    }
+    return nullptr;
+  }
+public:
   virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) override {
+    if (getRegisteredSubscriber(topicName) != nullptr) return nullptr;
     auto subscriber = createROSSubscriber(this, topicName, stub, func);
     auto publishersInfo = master_->registerSubscriber(name_, topicName, stub->typeName(), slaveServer_->getSlaveUri());
     if (publishersInfo->code) {
@@ -42,6 +56,31 @@ public:
     }
     subscribers_.push_back(subscriber);
     return subscriber;
+  }
+
+  virtual bool unsubscribe(const std::string& topicName) override {
+    return unsubscribe(getRegisteredSubscriber(topicName));
+  }
+
+  virtual bool unsubscribe(const std::shared_ptr<ROSSubscriber>& sub) {
+    if (!sub) return false;
+    if (!sub->disconnect()) return false;
+    auto result = master_->unregisterSubscriber(name_, sub->getTopicName(), sub->getTopicTypeName(), slaveServer_->getSlaveUri());
+    if (getRegisteredSubscriber(sub->getTopicName()) != nullptr) {
+      for(auto it = subscribers_.begin(); it != subscribers_.end(); ++it) {
+        if ((*it)->getTopicName() == sub->getTopicName()) {
+          it = subscribers_.erase(it);
+          return true;
+        } 
+      }
+    }
+    return true;
+  }
+
+  virtual void unsubscribeAll() override {
+    for(auto& sub: subscribers_) {
+      if (!unsubscribe(sub)) {}
+    }
   }
 
   virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) override {
@@ -56,6 +95,31 @@ public:
     return publisher;
   }
 
+
+  virtual bool unadvertise(const std::string& topicName) override {
+    return unadvertise(getRegisteredPublisher(topicName));
+  }
+
+  virtual bool unadvertise(const std::shared_ptr<ROSPublisher>& pub) override {
+    if (!pub) return false;
+    auto result = master_->unregisterPublisher(name_, pub->getTopicName(), pub->getTopicTypeName(), slaveServer_->getSlaveUri());
+
+    if (getRegisteredPublisher(pub->getTopicName()) != nullptr) {
+      for(auto it = publishers_.begin(); it != publishers_.end(); ++it) {
+        if ((*it)->getTopicName() == pub->getTopicName()) {
+          it = publishers_.erase(it);
+          return true;
+        } 
+      }
+    }
+    return true;
+  }
+  
+  virtual void unadvertiseAll() override {
+    for(auto& pub: publishers_) {
+      if (!unadvertise(pub)) {}
+    }
+  }
 
   virtual void spinOnce() override {
     for(auto& sub: subscribers_) {

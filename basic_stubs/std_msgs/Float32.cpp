@@ -19,7 +19,7 @@ namespace ssr::nanoros {
         public:
             virtual std::string md5sum() const override { return "73fcbf46b49191e672908e50842a83d4"; }
             virtual std::string typeName() const override { return "std_msgs/Float32"; }
-            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) const override { 
+            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
                 //int32_t popedCount = 0;
                 auto val = std::make_shared<DataType>();
                 setValue(val, val->data, msg->pop<float>(popedCount));
@@ -30,7 +30,7 @@ namespace ssr::nanoros {
             }
 
             
-            virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) const override {
+            virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) override {
                 const auto val = static_cast<const DataType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 pkt->push(val.data);
@@ -49,6 +49,6 @@ namespace ssr::nanoros {
 }
 
 
-void init_std_msgs_Int32(void* factory) {
+void init_msg_std_msgs_Int32(void* factory) {
     static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Float32Stub>());
 }

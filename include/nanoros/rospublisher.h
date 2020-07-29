@@ -12,13 +12,18 @@ namespace ssr {
     class ROSNode;
 
     class ROSPublisher {
-    private:
+    protected:
       const std::string topicName_;
+      ROSNode* node_;
     public:
-      ROSPublisher(const std::string& topicName) : topicName_(topicName) {}
+      ROSPublisher(ROSNode* node, const std::string& topicName) : node_(node), topicName_(topicName) {}
       virtual ~ROSPublisher() {}
 
-      virtual std::string topicName() const { return topicName_; }
+      virtual std::string getTopicName() const { return topicName_; }
+
+      virtual std::string getTopicTypeName() const { return ""; }
+
+      virtual bool isConnected() const { return false; }
     public:
       virtual bool publish(const std::shared_ptr<ROSMsg>& msg) {return false; }
 

@@ -10,10 +10,11 @@
 
 std::optional<std::pair<std::string, int32_t>> ssr::nanoros::splitUri(const std::string& uri_) {
   std::string uri = uri_;
-  if (uri.find("http://") != 0) {
-    return std::nullopt;
+  if (uri.find("://") == std::string::npos) {
+    //return std::nullopt;
   } else {
-    uri = uri.substr(strlen("http://"));
+    auto substrs = stringSplit(uri, '/');
+    uri = substrs[2];
   }
   auto vs = ssr::nanoros::stringSplit(uri, ':');
   if (vs.size() == 2) {

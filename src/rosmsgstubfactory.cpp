@@ -43,11 +43,11 @@ public:
       return false;
     }
 
-    auto dllproxy = createDLLProxy(tokens[0], tokens[1]);
+    auto dllproxy = createDLLProxy(tokens[0] +"/msg", tokens[1]);
     if (!dllproxy) return false;
-    auto func = dllproxy->functionSymbol("init_" + tokens[0] + "_" + tokens[1]);
+    auto func = dllproxy->functionSymbol("init_msg_" + tokens[0] + "_" + tokens[1]);
     if (!func)  {
-      std::cout << "WARN: Can not find symbol (" << "init_" + tokens[0] + "_" + tokens[1] << ")" << std::endl;
+      std::cout << "WARN: Can not find symbol (" << "init_msg_" + tokens[0] + "_" + tokens[1] << ")" << std::endl;
       return false;
     }
     dllproxies_[topicTypeName] = dllproxy;

@@ -7,7 +7,8 @@
 
 namespace ssr {
   namespace nanoros {
-
+    class ROSMsgStub;
+    
     class ROSMsgStubFactory {
     public:
       ROSMsgStubFactory() {}

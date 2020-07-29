@@ -29,7 +29,9 @@ namespace ssr {
       virtual void spin() {}
       virtual void spin(const Rate& rate) {}
 
-      virtual std::shared_ptr<ROSPublisher> getPublisher(const std::string& topicName) const { return nullptr; }
+      virtual std::shared_ptr<ROSPublisher> getRegisteredPublisher(const std::string& topicName) const { return nullptr; }
+
+      virtual std::shared_ptr<ROSSubscriber> getRegisteredSubscriber(const std::string& topicName) const { return nullptr; }
     public:
       virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) {return nullptr; }
 
@@ -40,6 +42,19 @@ namespace ssr {
         auto stub = factory->getStub(typeName<T>());
         if (!stub) return nullptr;
         return advertise(topicName, stub, negotiateTimeout);
+      }
+
+      virtual bool unadvertise(const std::string& topicName) {
+        return false;
+      }
+
+      virtual bool unadvertise(const std::shared_ptr<ROSPublisher> & pub) {
+        return false;
+      }
+
+  
+      virtual void unadvertiseAll() {
+        
       }
 
       virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, 
@@ -55,10 +70,17 @@ namespace ssr {
           func(std::dynamic_pointer_cast<const T>(msg));
         }, latching, negotiateTimeout);
       }
+
+      virtual bool unsubscribe(const std::string& topicName) { return false; }
+
+
+      virtual void unsubscribeAll() { return; }
+
     };
 
     
     std::shared_ptr<ROSNode> registerROSNode(const std::shared_ptr<ROSMaster>& master, const std::string& nodeName);
+    
     inline std::shared_ptr<ROSNode> registerROSNode(const std::string& nodeName) {
       return registerROSNode(rosmaster(), nodeName);
     }

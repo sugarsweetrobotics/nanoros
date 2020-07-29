@@ -7,6 +7,7 @@ os.cpp
 signal.cpp
 dllproxy.cpp
 json.cpp
+rosmsgstub.cpp
 rosmsgstubfactory.cpp
 rosnode.cpp
 rosslave.cpp
@@ -14,7 +15,9 @@ rosslaveserver.cpp
 rossubscriber.cpp
 rospublisher.cpp
 rostcpros.cpp
-
+rosserviceconsumer.cpp
+rossrvstubfactory.cpp
+rossrvstub.cpp
 )
 
 set(EXT_LIBRARIES XmlRpc)

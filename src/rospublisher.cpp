@@ -12,20 +12,54 @@
 using namespace ssr::nanoros;
 
 class ROSPublisherWorker {
-    ssr::aqua2::ServerSocket serverSocket_;
-    std::thread thread_;
+    //ssr::aqua2::ServerSocket serverSocket_;
+    std::shared_ptr<std::thread> thread_;
 
 	std::shared_ptr<TCPROS> tcpros_;
+    bool connected_;
+    std::string caller_id_;
+    std::string selfIP_;
+    int32_t port_;
+    std::string topicName_;
+    std::string topicTypeName_;
+    std::string md5sum_;
 public:
+    ROSPublisherWorker(): connected_(false) {}
+
+    virtual ~ROSPublisherWorker() {
+        if (thread_) {
+            if (!connected_) {
+                ssr::aqua2::Socket socket;
+                socket.connect("localhost", port_);
+                socket.close();
+            }
+            thread_->join();
+        }
+    }
+public:
+
+    bool isConnected() const { 
+        return tcpros_->isConnected();
+    }
+
     ROSPublisherWorker& wait(const std::string& caller_id, const std::string& selfIP, const int32_t port, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
-        thread_ = std::thread([this, caller_id, selfIP, port, topicName, topicTypeName, md5sum, latching, timeout]() {
+        caller_id_ = caller_id;
+        selfIP_ = selfIP;
+        port_ = port;
+        topicName_ = topicName;
+        topicTypeName_ = topicTypeName;
+        md5sum_ = md5sum;
+        thread_ = std::make_shared<std::thread>([this, latching, timeout]() {
             try {
-                tcpros_ = tcpros_listen("0.0.0.0", port);
-                negotiateHeader(caller_id, topicName, topicTypeName, md5sum, latching, timeout);
+                tcpros_ = tcpros_listen("0.0.0.0", port_);
+                negotiateHeader(caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout);
+                connected_ = true;
             } catch (ssr::aqua2::SocketException& ex) {
-                serverSocket_.close();
+                //tcpros_->close();
+                //serverSocket_.close();
             } catch (std::exception& ex) {
-                serverSocket_.close();
+                //tcpros_->close();
+                //serverSocket_.close();
             }
         });
         return *this;
@@ -56,16 +90,28 @@ public:
 };
 
 class ROSPublisherImpl: public ROSPublisher {
-    ROSNode* node_;
     const std::shared_ptr<ROSMsgStub> stub_;
     std::vector<std::shared_ptr<ROSPublisherWorker>> workers_;
 public:
-    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub) :  ROSPublisher(topicName), node_(node), stub_(stub) {
-
+    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub) :  
+        ROSPublisher(node, topicName), stub_(stub) {
     }
     virtual ~ROSPublisherImpl() {}
 
 public:
+
+    virtual std::string getTopicTypeName() const override { return stub_->typeName(); }
+
+public:
+
+    virtual bool isConnected() const override { 
+        bool flag = false;
+        for(auto& worker : workers_) {
+            flag |= worker->isConnected();
+        }
+        return flag;
+    }
+
     virtual bool publish(const ROSMsg& msg) override {
         try {
             auto pkt = stub_->toPacket(msg);
@@ -89,7 +135,7 @@ public:
 
     virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) override  {
         auto worker = std::make_shared<ROSPublisherWorker>();
-        worker->wait(caller_id, selfIP, port, topicName(), stub_->typeName(), stub_->md5sum(), false);
+        worker->wait(caller_id, selfIP, port, getTopicName(), stub_->typeName(), stub_->md5sum(), false);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         workers_.emplace_back(std::move(worker));
         return true;

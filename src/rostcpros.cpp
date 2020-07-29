@@ -33,6 +33,8 @@ public:
 public:
     virtual bool okay() override { return socket_.okay(); }
 
+    virtual bool isConnected() override { return socket_.isConnected(); }
+
     virtual bool close() { return socket_.close(); }
 
     virtual bool listen(const std::string& host, const int32_t port, const int32_t timeoutUsec = 3000*1000) {
@@ -46,6 +48,31 @@ public:
         return true;
     }
 public:
+
+    virtual std::optional<uint8_t> receiveByte(const int32_t timeout = -1) override {
+        uint8_t bytes = 0;
+        while (socket_.getSizeInRxBuffer() < sizeof(int8_t)) {
+            std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        }
+        socket_.read(&bytes, sizeof(uint8_t));
+        return bytes;
+    }
+
+    virtual std::optional<std::string> receiveString(const int32_t timeout = -1) override {
+        uint32_t bytes = 0;
+        while (socket_.getSizeInRxBuffer() < sizeof(int32_t)) {
+            std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        }
+        socket_.read(&bytes, sizeof(int32_t));
+        uint32_t size = from_little_endian(bytes);//ntohl(bytes);
+        char *buf = new char[size+1];
+        while (socket_.getSizeInRxBuffer() < size) {
+            std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        }
+        socket_.read(buf, size);
+        buf[size] = 0;
+        return std::string(buf);
+    }
 
     virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) override { 
         uint32_t bytes = 0;

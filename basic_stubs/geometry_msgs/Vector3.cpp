@@ -19,7 +19,7 @@ namespace ssr::nanoros {
         public:
             virtual std::string md5sum() const override { return "4a842b65f413084dc2b10fb484ea7f17"; }
             virtual std::string typeName() const override { return "geometry_msgs/Vector3"; }
-            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) const override { 
+            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
 //                int32_t popedCount = 0;
                 auto val = std::make_shared<DataType>();
                 setValue(val, val->x, msg->pop<float64>(popedCount));
@@ -29,7 +29,7 @@ namespace ssr::nanoros {
             }
 
             
-            virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) const override {
+            virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) override {
                 const auto val = dynamic_cast<const DataType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 pkt->push(val.x);
@@ -51,6 +51,6 @@ namespace ssr::nanoros {
 }
 
 
-void init_std_msgs_Vector3(void* factory) {
+void init_msg_std_msgs_Vector3(void* factory) {
     static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::geometry_msgs::Vector3Stub>());
 }

@@ -24,5 +24,5 @@ namespace ssr {
 }
 
 extern "C" {
-void init_std_msgs_Float32(void* factory);
+void init_msg_std_msgs_Float32(void* factory);
 }
