@@ -3,6 +3,7 @@
 
 #include "nanoros/rosslaveserver.h"
 #include "nanoros/rosnode.h"
+#include "nanoros/os.h"
 
 
 #include "XmlRpc/XmlRpc.h"
@@ -19,6 +20,12 @@ class ROSSlaveServerImpl;
 
 std::optional<std::pair<std::string, int32_t>> standbyTCPROSNode(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id);
 
+bool standbyProtocol(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id, const std::string& protocolName, XmlRpcValue& result);
+
+std::optional<std::vector<TopicTypeInfo>> getPublications(ROSSlaveServerImpl* slaveServerImpl);
+std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* slaveServerImpl);
+
+bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris);
 
 class ROSSlaveMethod : public XmlRpcServerMethod {
 protected:
@@ -56,7 +63,10 @@ public:
   GetMasterUri(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getMasterUri", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+    result[0] = 1;
+    result[1] = "MasterURI";
+    auto val = getROSMasterInfo();
+    result[3] = "http://" + val->first + ":" + std::to_string(val->second);
   }
 };
 
@@ -76,7 +86,9 @@ public:
   GetPid(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPid", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+    result[0] = 1;
+    result[1] = "GetPid";
+    result[2] = getProcessId();
   }
 };
 
@@ -85,7 +97,20 @@ public:
   GetSubscriptions(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getSubscriptions", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+    auto subs = getSubscriptions(this->slaveServerImpl_);
+    if (!subs) {
+      result[0] = 0;
+      result[1] = "Failed to get subscriptionss";
+      return;
+    }
+    result[0] = 1;
+    result[1] = "getSubscriptions";
+    result[2] = XmlRpcValue();
+    for(int i = 0; i < subs->size();i++) {
+      result[2][i] = XmlRpcValue();
+      result[2][i][0] = subs.value()[i].topicName;
+      result[2][i][1] = subs.value()[i].topicType;
+    }
   }
 };
 
@@ -94,7 +119,20 @@ public:
   GetPublications(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPublications", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+    auto pubs = getPublications(this->slaveServerImpl_);
+    if (!pubs) {
+      result[0] = 0;
+      result[1] = "Failed to get publications";
+      return;
+    }
+    result[0] = 1;
+    result[1] = "getPublications";
+    result[2] = XmlRpcValue();
+    for(int i = 0; i < pubs->size();i++) {
+      result[2][i] = XmlRpcValue();
+      result[2][i][0] = pubs.value()[i].topicName;
+      result[2][i][1] = pubs.value()[i].topicType;
+    }
   }
 };
 
@@ -112,7 +150,19 @@ public:
   PublisherUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("publisherUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+    const std::string caller_id = params[0];
+    const std::string topicName = params[1];
+    if (params[2].getType() != XmlRpcValue::TypeArray) {
+      result[0] = -1;
+      result[1] = "None of suggested protocol is available in publisher.";
+      return;
+    }
+    std::vector<std::string> newUris;
+    for(int i = 0;i < params[2].size();i++) {
+      newUris.push_back(params[2][i]);
+    }
+ 
+    updatePublishers(slaveServerImpl_, topicName, newUris);
   }
 };
 
@@ -124,6 +174,8 @@ public:
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
+      result[0] = -1;
+      result[1] = "None of suggested protocol is available in publisher.";
       return;
     }
     for(int i = 0;i < params[2].size();i++) {
@@ -138,7 +190,7 @@ public:
           args.push_back(std::to_string((int)(params[2][i][j])));
         }
       }
-
+      /*
       if (protocolName == "TCPROS") {
         auto retval = standbyTCPROSNode(slaveServerImpl_, topicName, caller_id);
         if (!retval) continue;
@@ -150,6 +202,10 @@ public:
         result[2][2] = port;
         return;
       }
+      */
+     if (standbyProtocol(slaveServerImpl_, topicName, caller_id, protocolName, result)) {
+       return;
+     }
     }
     result[0] = -1;
     result[1] = "None of suggested protocol is available in publisher.";
@@ -220,12 +276,14 @@ public:
     return ip_;
   }
 
-  virtual bool standByNode(const std::string& topicName, const std::string& caller_id, const std::string& selfIP, const int32_t port) override {
-    auto pub = rosnode_->getRegisteredPublisher(topicName);
-    if (!pub) return false;
+  ROSNode* getNode() { return rosnode_; }
 
-    return pub->standBy(caller_id, selfIP, port);
-  }
+  //virtual bool standByNode(const std::string& topicName, const std::string& caller_id, const std::string& selfIP, const int32_t port) override {
+  //  auto pub = rosnode_->getRegisteredPublisher(topicName);
+  //  if (!pub) return false;
+  //
+  //    return pub->standBy(caller_id, selfIP, port);
+  //}
 };
 
 std::shared_ptr<ROSSlaveServer> ssr::nanoros::rosslaveserver(ROSNode* rosnode, const std::shared_ptr<ROSMaster>& master, const std::string& ip, const int32_t port) {
@@ -239,10 +297,61 @@ ROSSlaveMethod::ROSSlaveMethod(const std::string& name, class ROSSlaveServerImpl
 
 // ----------------------------------------- APIs ----------------------------------------------
 
+bool standbyProtocol(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id, const std::string& protocolName, XmlRpcValue& result) {
+  if (protocolName != "TCPROS") { return false; }
+  auto ret = standbyTCPROSNode(slaveServerImpl, topicName, caller_id);
+  if (!ret) return false;
+  auto [selfIP, port] = ret.value();
+  result[0] = 1;
+  result[1] = "Publisher is waiting on uri:" + selfIP + ":" + std::to_string(port);
+  result[2][0] = "TCPROS";
+  result[2][1] = selfIP;
+  result[2][2] = std::to_string(port);
+  return true;
+}
+
 
 std::optional<std::pair<std::string, int32_t>> standbyTCPROSNode(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id) {
   const std::string selfIP = getSelfIP();
   auto port = getEmptyPort(port_base);
-  if (!slaveServerImpl->standByNode(topicName, caller_id, selfIP, port)) return std::nullopt;
+
+  auto pub = slaveServerImpl->getNode()->getRegisteredPublisher(topicName);
+  if (!pub) return std::nullopt;
+  if (!pub->standBy(caller_id, selfIP, port)) return std::nullopt;
+  //if (!slaveServerImpl->standByNode(topicName, caller_id, selfIP, port)) return std::nullopt;
+
   return std::make_pair(selfIP, port);
+}
+
+
+std::optional<std::vector<TopicTypeInfo>> getPublications(ROSSlaveServerImpl* slaveServerImpl) {
+  return slaveServerImpl->getNode()->getPublications();
+}
+
+std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* slaveServerImpl) {
+  return slaveServerImpl->getNode()->getSubscriptions();
+}
+
+bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
+
+  auto pubs = slaveServerImpl->getNode()->getCurrentSubscribingPublisherUris();
+  if (!pubs) return false;
+  for(auto pubUri : pubs.value()) {
+    if (std::find(newUris.begin(), newUris.end(), pubUri) != newUris.end()) { // Current Subscribing Uri is included in New Uris
+      // Do nothing
+    } else { // Current Subscribing Uri is NOT included in New Uris
+      // Unsubscribe Uri
+      slaveServerImpl->getNode()->unsubscribeUri(topicName, pubUri);
+    }
+  }
+
+  for(auto newUri : newUris) {
+    if (std::find(pubs->begin(), pubs->end(), newUri) != pubs->end()) { // New Uri includes Current Publisher Uri
+      // Do nothing
+    } else {
+      // Subscribe Uri
+      slaveServerImpl->getNode()->subscribeUri(topicName, newUri);
+    }
+  }
+  return false;
 }

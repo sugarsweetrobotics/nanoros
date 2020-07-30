@@ -80,6 +80,11 @@ namespace ssr {
       virtual bool unsubscribe(const std::string& topicName) { return false; }
 
 
+      virtual bool subscribeUri(const std::string& topicName, const std::string& uri, const bool latching=false, const double negotiateTimeout=1.0) { return false; }
+
+      virtual bool unsubscribeUri(const std::string& topicName, const std::string& uri) { return false; }
+
+
       virtual void unsubscribeAll() { return; }
 
 
@@ -106,6 +111,12 @@ namespace ssr {
       virtual bool unadvertiseService(const std::shared_ptr<ROSServiceProvider> & provider) {
         return false;
       }
+
+      virtual std::optional<std::vector<TopicTypeInfo>> getPublications() const { return std::nullopt; }
+
+      virtual std::optional<std::vector<TopicTypeInfo>> getSubscriptions() const { return std::nullopt; }
+
+      virtual std::optional<std::vector<std::string>> getCurrentSubscribingPublisherUris() const { return std::nullopt; }
 
     };
 

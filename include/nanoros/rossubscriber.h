@@ -29,7 +29,10 @@ namespace ssr {
       
       virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) { return false;}
       virtual bool disconnect() { return false; }
+      virtual bool disconnectUri(const std::string& uri) { return false; }
       virtual void spinOnce() {}
+
+      virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() const { return std::nullopt; }
     };
 
 

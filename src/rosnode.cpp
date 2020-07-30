@@ -69,6 +69,20 @@ public:
     return subscriber;
   }
 
+  virtual bool subscribeUri(const std::string& topicName, const std::string& uri, const bool latching=false, const double negotiateTimeout=1.0) override { 
+    auto subscriber = this->getRegisteredSubscriber(topicName);
+    if (!subscriber) return false;
+    subscriber->connect(uri, latching, negotiateTimeout);
+    return false; 
+  }
+
+  virtual bool unsubscribeUri(const std::string& topicName, const std::string& uri) override { 
+    auto subscriber = this->getRegisteredSubscriber(topicName);
+    if (!subscriber) return false;
+    return subscriber->disconnectUri(uri);
+  }
+
+
   virtual bool unsubscribe(const std::string& topicName) override {
     return unsubscribe(getRegisteredSubscriber(topicName));
   }
@@ -185,6 +199,35 @@ public:
       std::this_thread::sleep_for(std::chrono::microseconds(static_cast<uint64_t>(rate.getIntervalUsec())));
     }
   }
+
+  virtual std::optional<std::vector<TopicTypeInfo>> getPublications() const override { 
+    std::vector<TopicTypeInfo> val;
+    for(auto pub: publishers_) {
+      val.emplace_back(TopicTypeInfo(pub->getTopicName(), pub->getTopicTypeName()));
+    }
+    return val;
+  }
+
+  virtual std::optional<std::vector<TopicTypeInfo>> getSubscriptions() const override { 
+    std::vector<TopicTypeInfo> val;
+    for(auto sub: subscribers_) {
+      val.emplace_back(TopicTypeInfo(sub->getTopicName(), sub->getTopicTypeName()));
+    }
+    return val;
+  }
+
+  virtual std::optional<std::vector<std::string>> getCurrentSubscribingPublisherUris() const override { 
+    std::vector<std::string> val;
+    for(auto sub: subscribers_) {
+      auto opt= sub->getSubscribingPublisherUris();
+      if (!opt) return std::nullopt;
+      for(auto pubUri : opt.value()) {
+        val.push_back(pubUri);
+      }
+    }
+    return val;
+  }
+
 
 };
 

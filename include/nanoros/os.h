@@ -31,6 +31,7 @@ namespace ssr {
         #endif
     }
 
+    inline int getProcessId() { return getpid(); }
 
     std::string getEnv(const std::string& key);
 

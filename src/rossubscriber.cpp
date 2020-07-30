@@ -13,32 +13,26 @@ using namespace ssr::nanoros;
 
 
 class ROSSubscriberWorker {
-public:
-	ROSSubscriberWorker() {}
-	virtual ~ROSSubscriberWorker() {}
-
-public:
-	virtual bool negotiateHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
-		return false;
-	}
-	virtual void spinOnce() {}
-};
-
-
-class ROSSubscriberWorkerImpl: public ROSSubscriberWorker {
 private:
 	double receiveTimeout_;
 	std::shared_ptr<TCPROS> tcpros_;
+	std::string host_;
+	int32_t port_;
   const std::shared_ptr<ROSMsgStub> stub_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
-	ROSSubscriberWorkerImpl(const std::shared_ptr<ROSMsgStub>& stub, 
+	ROSSubscriberWorker(const std::shared_ptr<ROSMsgStub>& stub, 
        const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) : receiveTimeout_(1.0), stub_(stub), callback_(callback) {}
-	virtual ~ROSSubscriberWorkerImpl() {}
+	virtual ~ROSSubscriberWorker() {}
 
 public:
-	
+  std::string getPublisherUri() const { 
+	  return "tcpros://" + host_ + ":" + std::to_string(port_);
+  }
+
   virtual bool connect(const std::string& host, const int32_t port) {
+	  host_ = host;
+	  port_ = port;
 	  tcpros_ = tcpros_connect(host, port);
 	  return tcpros_ ? true : false;
   } 
@@ -93,7 +87,7 @@ public:
 
 private:
   virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
-	  auto worker = std::make_shared<ROSSubscriberWorkerImpl>(stub_, callback_);
+	  auto worker = std::make_shared<ROSSubscriberWorker>(stub_, callback_);
 	  if(worker->connect(host, port)) {
 		  workers_.push_back(worker);
 		  return std::static_pointer_cast<ROSSubscriberWorker>(worker);
@@ -104,6 +98,7 @@ private:
 
 public:
   virtual bool connect(const std::string& uri, const bool latching=true, const double negotiateTimeout=1.0) override { 
+	  disconnectUri(uri);
 	auto slave = rosslave(uri);
 	auto result = slave->requestTopic(node_->name(), topicName_, {ProtocolInfo(std::string("TCPROS"), node_->slaveServer()->getSlaveIP(), getEmptyPort(node_->getPortRange()))});
 	if (!result) return false;
@@ -118,6 +113,16 @@ public:
 	return true;
   }
 
+  virtual bool disconnectUri(const std::string& uri) override {
+	  for(auto it = workers_.begin(); it != workers_.end(); ++it) {
+		  if ((*it)->getPublisherUri() == uri) {
+			  disconnect();
+			  workers_.erase(it);
+			  return true;
+		  }
+	  }
+	  return false;
+  }
   virtual ~ROSSubscriberImpl() {}
 
   virtual void spinOnce() override {
@@ -126,6 +131,13 @@ public:
 	  }
   }
 
+  virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() const override { 
+	  std::vector<std::string> val;
+	  for(auto worker: workers_) {
+		  val.push_back(worker->getPublisherUri());
+	  }
+	  return val;
+  }
   
 };
 
