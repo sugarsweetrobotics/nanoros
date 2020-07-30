@@ -2,6 +2,7 @@
 
 #include <string>
 #ifdef WIN32
+
 #include <Windows.h>
 
 #else
@@ -31,7 +32,14 @@ namespace ssr {
         #endif
     }
 
-    inline int getProcessId() { return getpid(); }
+    inline int getProcessId() { 
+#ifdef WIN32
+
+        return GetCurrentProcessId();
+#else
+        return getpid();
+#endif
+    }
 
     std::string getEnv(const std::string& key);
 

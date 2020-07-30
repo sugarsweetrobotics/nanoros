@@ -15,7 +15,7 @@
 std::string ssr::nanoros::getEnv(const std::string& key) {
 
 #ifdef WIN32
-
+    return std::getenv(key.c_str());
 #else
    return getenv(key.c_str());
 #endif

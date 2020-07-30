@@ -4,6 +4,7 @@
 
 #include "XmlRpc/XmlRpc.h"
 
+#include <functional>
 
 using namespace ssr::nanoros;
 

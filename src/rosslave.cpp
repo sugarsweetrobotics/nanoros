@@ -63,7 +63,7 @@ class ROSSlaveImpl : public ROSSlave {
 private:
   const std::string ip_;
   const int32_t port_;
-  MyXmlRpcClient client_;
+  XmlRpc::XmlRpcClient client_;
 public:
   ROSSlaveImpl(const std::string& ip, const int32_t port) : ip_(ip), port_(port), client_(ip.c_str(), port)  {}
   virtual ~ROSSlaveImpl() {}
@@ -85,7 +85,7 @@ public:
       pi[2] = p.arg1;
       v[2][i] = pi;
     }
-    if (client_.execute("requestTopic", v, result, 5.0)) {
+    if (client_.execute("requestTopic", v, result)) {
       return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], result[2][2]));
     }
     return std::nullopt;

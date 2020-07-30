@@ -54,7 +54,7 @@ DLLProxy::~DLLProxy() {
 std::function<void(void*)> DLLProxy::functionSymbol(const std::string& name) {
     if (!handle_) return nullptr;
 #if WIN32
-    return reinterpret_cast<void* (*)()>(::GetProcAddress(handle_, name.c_str()) );
+    return reinterpret_cast<void(*)(void*)>(::GetProcAddress(handle_, name.c_str()) );
 
 #else
     auto sym = ::dlsym(handle_, name.c_str());
