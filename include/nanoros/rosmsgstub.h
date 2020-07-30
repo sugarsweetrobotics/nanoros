@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nanoros/nanoros_define.h"
+
 #include "nanoros/rosmsg.h"
 #include "nanoros/json.h"
 #include "nanoros/rostcpros.h"
@@ -15,12 +17,17 @@ namespace ssr {
 
     class ROSMsgStubFactory;
 
-    std::shared_ptr<ROSMsgStubFactory> getROSMsgStubFactory();
+    NANOROS_API std::shared_ptr<ROSMsgStubFactory> getROSMsgStubFactory();
 
     class TCPROSPacket;
 
-    class ROSMsgStub {
+    NANOROS_API class ROSMsgStub;
+
+    ///NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
+
+    class NANOROS_API ROSMsgStub {
     protected:
+        friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
       std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
 
     public:

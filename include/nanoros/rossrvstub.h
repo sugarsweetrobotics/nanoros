@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nanoros/nanoros_define.h"
 #include "nanoros/rossrv.h"
 #include "nanoros/json.h"
 #include "nanoros/rostcpros.h"
@@ -16,7 +17,7 @@ namespace ssr {
 
     class TCPROSPacket;
 
-    class ROSSrvStub {
+    class NANOROS_API  ROSSrvStub {
     protected:
       std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
 

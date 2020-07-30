@@ -1,11 +1,13 @@
 #pragma once
 
 
+#include "nanoros_define.h"
+
 namespace ssr {
   namespace nanoros {
-    void init_nanoros();
-    void spin();
-    bool is_shutdown();
+    NANOROS_API void init_nanoros();
+    NANOROS_API void spin();
+    NANOROS_API bool is_shutdown();
 
 
     class Duration {
@@ -17,7 +19,7 @@ namespace ssr {
     };
 
 
-    bool sleep_for(const Duration& duration);
+    NANOROS_API bool sleep_for(const Duration& duration);
 
   }
 }

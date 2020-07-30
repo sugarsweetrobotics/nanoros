@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-
+#include "nanoros/nanoros_define.h"
 #include "nanoros/rosmsgstub.h"
 
 namespace ssr {
@@ -19,6 +19,6 @@ namespace ssr {
       virtual std::shared_ptr<ROSMsgStub> getStub(const std::string& topicTypeName) = 0;
     };
 
-    std::shared_ptr<ROSMsgStubFactory> getROSMsgStubFactory();
+    NANOROS_API std::shared_ptr<ROSMsgStubFactory> getROSMsgStubFactory();
   }
 }

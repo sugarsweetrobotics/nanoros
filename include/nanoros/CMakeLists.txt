@@ -1,8 +1,29 @@
 set(_headers
 
+dllproxy.h
+json.h
+nanoros.h
+nanoros_define.h
+os.h
 rosmaster.h
+rosmsg.h
+rosmsgstub.h
+rosmsgstubfactory.h
+rosnode.h
+rosprimitive.h
 rospublisher.h
-
+rosrate.h
+rosserviceconsumer.h
+rosserviceprovider.h
+rossrv.h
+rossrvstub.h
+rossrvstubfactory.h
+rossubscriber.h
+rostcpros.h
+rostcprospacket.h
+rosutil.h
+signal.h
+stringutil.h
 )
 
 set(nanoros_hdrs)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nanoros/nanoros_define.h"
+
 #include "nanoros/rosmaster.h"
 #include "nanoros/rossrv.h"
 #include "nanoros/rossrvstub.h"
@@ -31,7 +33,7 @@ namespace ssr {
         };
 
 
-        std::shared_ptr<ROSServiceConsumer> serviceConsumer(const std::shared_ptr<ROSMaster>& master, const std::string& caller_id, const std::string& service_name);
+        NANOROS_API std::shared_ptr<ROSServiceConsumer> serviceConsumer(const std::shared_ptr<ROSMaster>& master, const std::string& caller_id, const std::string& service_name);
 
         inline std::shared_ptr<ROSServiceConsumer> serviceConsumer(const std::string& caller_id, const std::string& service_name) {
             return serviceConsumer(rosmaster(), caller_id, service_name);

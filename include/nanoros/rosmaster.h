@@ -6,8 +6,7 @@
 #include <memory>
 
 #include "nanoros/rosutil.h"
-
-#define NANOROS_API
+#include "nanoros/nanoros_define.h"
 
 
 

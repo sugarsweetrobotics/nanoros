@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nanoros/nanoros_define.h"
+
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -69,7 +71,7 @@ namespace ssr {
             virtual ~JSONObject() {}
         };
 
-        std::shared_ptr<JSONObject> fromJSONString(const std::string& str);
+        NANOROS_API std::shared_ptr<JSONObject> fromJSONString(const std::string& str);
 
 
 

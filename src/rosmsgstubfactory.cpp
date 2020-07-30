@@ -6,9 +6,6 @@
 
 using namespace ssr::nanoros;
 
-
-
-
 class ROSMsgStubFactoryImpl : public ROSMsgStubFactory {
 private:
   std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nanoros/nanoros_define.h"
 #include <memory>
 #include <string>
 
@@ -18,6 +19,6 @@ namespace ssr {
       virtual std::shared_ptr<ROSSrvStub> getStub(const std::string& topicTypeName) = 0;
     };
 
-    std::shared_ptr<ROSSrvStubFactory> getROSSrvStubFactory();
+    NANOROS_API std::shared_ptr<ROSSrvStubFactory> getROSSrvStubFactory();
   }
 }

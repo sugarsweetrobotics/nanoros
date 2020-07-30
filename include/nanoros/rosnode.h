@@ -2,6 +2,8 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include "nanoros/nanoros_define.h"
+
 #include "nanoros/rosmaster.h"
 #include "nanoros/rosmsgstub.h"
 #include "nanoros/rosmsgstubfactory.h"
@@ -121,7 +123,7 @@ namespace ssr {
     };
 
     
-    std::shared_ptr<ROSNode> registerROSNode(const std::shared_ptr<ROSMaster>& master, const std::string& nodeName);
+    NANOROS_API std::shared_ptr<ROSNode> registerROSNode(const std::shared_ptr<ROSMaster>& master, const std::string& nodeName);
     
     inline std::shared_ptr<ROSNode> registerROSNode(const std::string& nodeName) {
       return registerROSNode(rosmaster(), nodeName);
