@@ -27,11 +27,12 @@ namespace ssr {
 
     class NANOROS_API ROSMsgStub {
     protected:
-        friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
+      friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
       std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
 
     public:
       std::shared_ptr<ROSMsgStub> getMsgStub(const std::string& key);
+
     public:
       ROSMsgStub() {}
       virtual ~ROSMsgStub() {}
@@ -46,7 +47,9 @@ namespace ssr {
       }
 
       virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) { return nullptr; }
+
       virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) {return nullptr; }
+
       virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) { return nullptr; }
     };
 

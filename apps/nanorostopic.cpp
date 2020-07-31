@@ -65,7 +65,7 @@ void show(const std::optional<T>& vals) {
 
 
 int main(const int argc, const char* argv[]) {
-  ssr::nanoros::init_nanoros();
+  ssr::nanoros::init_nanoros(argc, argv);
   if (argc >= 2) { 
     std::string cmd = argv[1];
     if (cmd == "list") {

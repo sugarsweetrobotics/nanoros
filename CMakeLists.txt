@@ -10,6 +10,8 @@ project(nanoros LANGUAGES CXX VERSION ${NANOROS_VERSION})
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)
 
+option(nanoros_JSON_Install Off)
+
 
 add_subdirectory(thirdparty)
 
@@ -20,11 +22,12 @@ add_subdirectory(apps)
 add_subdirectory(examples)
 add_subdirectory(manually_generated_stubs)
 
-
 set(INCLUDE_INSTALL_DIR include/ )
 set(RUNTIME_INSTALL_DIR bin/ )
 set(LIB_INSTALL_DIR lib/ )
 set(SYSCONFIG_INSTALL_DIR etc/${PROJECT_NAME}/ )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nanoros_public_headers}")
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/${PROJECT_NAME}Config.cmake.in
@@ -35,6 +38,7 @@ write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
         VERSION ${NERIKIRI_VERSION}
         COMPATIBILITY SameMajorVersion )
+        
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${LIB_INSTALL_DIR}/${PROJECT_NAME}/cmake )
@@ -45,7 +49,6 @@ INSTALL(TARGETS ${PROJECT_NAME}
         PUBLIC_HEADER DESTINATION include/${PROJECT_NAME})
 
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nanoros_public_headers}")
 
 
 set(CPACK_GENERATOR WIX)

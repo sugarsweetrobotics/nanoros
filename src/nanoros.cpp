@@ -1,6 +1,10 @@
 #include "nanoros/nanoros.h"
 #include "aqua2/socket.h"
 #include "nanoros/signal.h"
+#include "nanoros/os.h"
+
+#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rossrvstubfactory.h"
 
 #include <thread>
 
@@ -14,10 +18,21 @@ namespace {
   }
 }
 
-void ssr::nanoros::init_nanoros() {
+void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   ssr::aqua2::initializeSocket();
 
   ssr::nanoros::signal(ssr::nanoros::SIGNAL_INT, signal_handler);
+
+  auto absPath = getExecutablePath(argv[0]);
+
+
+  getROSMsgStubFactory()->addStubDirHint(absPath);
+  getROSMsgStubFactory()->addStubDirHint(absPath + "../share/nanoros/stubs");
+#ifdef WIN32
+  getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs");
+#else
+
+#endif
 }
 
 

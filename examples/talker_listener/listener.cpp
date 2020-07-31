@@ -9,7 +9,7 @@
 
 
 int main(const int argc, const char* argv[]) {
-    ssr::nanoros::init_nanoros();
+    ssr::nanoros::init_nanoros(argc, argv);
 
     const ssr::nanoros::Duration duration(1.0);
 
