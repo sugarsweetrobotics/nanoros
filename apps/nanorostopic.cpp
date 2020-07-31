@@ -11,16 +11,6 @@
 
 using namespace ssr::nanoros;
 
-std::shared_ptr<ROSMaster> getROSMaster() {
-  auto info = ssr::nanoros::getROSMasterInfo();
-  if (!info) {
-    std::cout << "Can not get ROS_MASTER_URI info." << std::endl;
-    return nullptr;
-  }
-  auto& [addr, port] = info.value();
-  return ssr::nanoros::rosmaster(addr, port);
-}
-
 
 std::optional<std::set<std::string>> topicNames(const std::optional<SystemState>& state) {
   if (!state) {return std::nullopt;}
@@ -69,14 +59,14 @@ int main(const int argc, const char* argv[]) {
   if (argc >= 2) { 
     std::string cmd = argv[1];
     if (cmd == "list") {
-      show(topicNames(getROSMaster()->getSystemState("/nanorostopic")));
+      show(topicNames(rosmaster()->getSystemState("/nanorostopic")));
     } else if (cmd == "type") {
       const std::string topicName = argv[2];      
-      if (argc >= 3) show(topicType(getROSMaster()->getTopicTypes("/nanorostopic"), topicName));
+      if (argc >= 3) show(topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName));
     } else if (cmd == "echo") {
       if (argc >= 3) {
         const std::string topicName = argv[2];
-        const std::string topicTypeName = topicType(getROSMaster()->getTopicTypes("/nanorostopic"), topicName);
+        const std::string topicTypeName = topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName);
         auto stub = getROSMsgStubFactory()->getStub(topicTypeName);
         if (!stub) {
           std::cout << "ERROR: Topic Type Stub not found(" << topicTypeName << ")" << std::endl;

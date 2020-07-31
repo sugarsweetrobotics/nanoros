@@ -29,7 +29,9 @@ std::optional<std::pair<std::string, int32_t>> ssr::nanoros::splitUri(const std:
 }
 
 std::optional<std::pair<std::string, int32_t>> ssr::nanoros::getROSMasterInfo() {
-  return ssr::nanoros::splitUri(ssr::nanoros::getEnv("ROS_MASTER_URI"));
+    auto uri = ssr::nanoros::getEnv("ROS_MASTER_URI");
+    if (uri.length() == 0) return std::nullopt;
+    return ssr::nanoros::splitUri(uri);
 }
 
 std::string ssr::nanoros::getSelfIP() {

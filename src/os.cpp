@@ -15,9 +15,13 @@
 std::string ssr::nanoros::getEnv(const std::string& key) {
 
 #ifdef WIN32
-    return std::getenv(key.c_str());
+    auto buf = std::getenv(key.c_str());
+    if (buf == nullptr) return "";
+    return buf;
 #else
-   return getenv(key.c_str());
+    auto buf = getenv(key.c_str());
+    if (buf == nullptr) return "";
+    return buf;
 #endif
 }
 
