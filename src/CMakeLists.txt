@@ -36,7 +36,7 @@ foreach(a IN ITEMS ${nanoros_headers})
   list(APPEND nanoros_hdrs ${CMAKE_SOURCE_DIR}/${a})
 endforeach()
 
-add_library(${PROJECT_NAME} SHARED ${_srcs} ${nanoros_hdrs})
+add_library(${PROJECT_NAME} SHARED ${_srcs} ${nanoros_hdrs} ${nanoros_public_hdrs})
 target_link_libraries(${PROJECT_NAME} ${EXT_LIBRARIES})			    
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
