@@ -1,3 +1,5 @@
+#include "nanoros/nanoros_define.h"
+
 #include "nanoros/rosmsgstub.h"
 #include "nanoros/rostcpros.h"
 #include "Int32.h"
@@ -49,6 +51,16 @@ namespace ssr::nanoros {
 }
 
 
-void init_msg_std_msgs_Int32(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Int32Stub>());
+#ifdef WIN32
+#define STUBFACTORY_EXPORT __declspec(dllexport)
+#else
+#define STUBFACTORY_EXPORT
+#endif
+
+extern "C" {
+
+    STUBFACTORY_EXPORT void init_msg_std_msgs_Int32(void* factory) {
+        static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Int32Stub>());
+    }
+
 }

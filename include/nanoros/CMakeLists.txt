@@ -24,6 +24,7 @@ rostcprospacket.h
 rosutil.h
 signal.h
 stringutil.h
+stubfactory.h
 )
 
 set(nanoros_hdrs)

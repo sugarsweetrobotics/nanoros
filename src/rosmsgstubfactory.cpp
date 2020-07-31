@@ -7,9 +7,9 @@
 using namespace ssr::nanoros;
 
 class ROSMsgStubFactoryImpl : public ROSMsgStubFactory {
-private:
-  std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;
-  std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
+
+
+
 public:
   ROSMsgStubFactoryImpl() {}
   virtual ~ROSMsgStubFactoryImpl() {}
@@ -17,38 +17,21 @@ public:
 
 public:
 
-  virtual void registerStub(const std::shared_ptr<ROSMsgStub>& stub) {
-    if (!stub) return;
-    stubs_[stub->typeName()] = stub;
-  }
-
-  virtual std::shared_ptr<ROSMsgStub> getStub(const std::string& topicTypeName) {
-    if (stubs_.count(topicTypeName) == 0) {
-      if (tryLoadStubDLL(topicTypeName)) {
-        if (stubs_.count(topicTypeName) == 0) return nullptr;
-        return stubs_[topicTypeName];
-      }
-      std::cout << "WARN: Can not load DLL (" << topicTypeName << ")" << std::endl;
-      return nullptr;
-    }
-    return stubs_[topicTypeName];
-  }
-
   bool tryLoadStubDLL(const std::string& topicTypeName) {
     auto tokens = stringSplit(topicTypeName, '/');
     if (tokens.size() != 2) {
       return false;
     }
 
-    auto dllproxy = createDLLProxy(tokens[0] +"/msg", tokens[1]);
+    auto dirName = tokens[0] + "/msg";
+    auto fileName = tokens[1];
+    auto funcName = "init_msg_" + tokens[0] + "_" + tokens[1];
+
+    auto dllproxy = loadStubFactoryDLL(dirName, fileName, funcName);
+
     if (!dllproxy) return false;
-    auto func = dllproxy->functionSymbol("init_msg_" + tokens[0] + "_" + tokens[1]);
-    if (!func)  {
-      std::cout << "WARN: Can not find symbol (" << "init_msg_" + tokens[0] + "_" + tokens[1] << ")" << std::endl;
-      return false;
-    }
+
     dllproxies_[topicTypeName] = dllproxy;
-    func(this);
     return true;
      
   }

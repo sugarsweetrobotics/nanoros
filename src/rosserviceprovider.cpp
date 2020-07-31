@@ -1,9 +1,13 @@
+
+#include "aqua2/socket.h"
+
+
 #include "nanoros/rosserviceprovider.h"
 
 #include "nanoros/rosnode.h"
 #include "nanoros/rostcpros.h"
 
-#include "aqua2/socket.h"
+#include <iostream>
 #include <thread>
 
 using namespace ssr::nanoros;

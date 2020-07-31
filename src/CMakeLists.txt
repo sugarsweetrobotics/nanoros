@@ -7,6 +7,7 @@ os.cpp
 signal.cpp
 dllproxy.cpp
 json.cpp
+stubfactory.cpp
 rosmsgstub.cpp
 rosmsgstubfactory.cpp
 rosnode.cpp

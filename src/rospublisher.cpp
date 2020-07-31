@@ -1,4 +1,5 @@
 
+#include "aqua2/serversocket.h"
 
 
 #include "nanoros/rospublisher.h"
@@ -7,7 +8,6 @@
 #include <vector>
 #include <thread>
 
-#include "aqua2/serversocket.h"
 
 using namespace ssr::nanoros;
 

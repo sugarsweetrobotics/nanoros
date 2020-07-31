@@ -26,7 +26,3 @@ namespace ssr {
         std::string msgTypeName<std_msgs::Int32>() { return "std_msgs/Int32"; }
     }
 }
-
-extern "C" {
-void init_msg_std_msgs_Int32(void* factory);
-}
