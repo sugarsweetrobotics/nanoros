@@ -28,7 +28,3 @@ namespace ssr {
         std::string msgTypeName<std_msgs::String>() { return "std_msgs/String"; }
     }
 }
-
-extern "C" {
-void init_msg_std_msgs_String(void* factory);
-}

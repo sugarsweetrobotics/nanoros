@@ -49,6 +49,15 @@ namespace ssr::nanoros {
 }
 
 
-void init_msg_std_msgs_String(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::StringStub>());
+
+#ifdef WIN32
+#define STUBFACTORY_EXPORT __declspec(dllexport)
+#else
+#define STUBFACTORY_EXPORT
+#endif
+
+extern "C" {
+    STUBFACTORY_EXPORT void init_msg_std_msgs_String(void* factory) {
+        static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::StringStub>());
+    }
 }

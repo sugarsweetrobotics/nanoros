@@ -4,6 +4,34 @@ set(_public_headers
 nanoros.h
 nanoros_define.h
 
+rosmaster.h
+rosnode.h
+
+rosprimitive.h
+
+rosmsg.h
+rosmsgstub.h
+rosmsgstubfactory.h
+
+rossrv.h
+rossrvstub.h
+rossrvstubfactory.h
+
+rospublisher.h
+rossubscriber.h
+
+rostcpros.h 
+rostcprospacket.h 
+rosrate.h
+rosutil.h
+json.h
+stubfactory.h
+dllproxy.h
+
+rosslave.h
+rosserviceprovider.h 
+rosserviceconsumer.h 
+
 
 )
 

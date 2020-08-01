@@ -10,8 +10,9 @@
 #include "nanoros/rossrvstub.h"
 #include "nanoros/rossrvstubfactory.h"
 #include "nanoros/rospublisher.h"
-#include "nanoros/rosrate.h"
+#include "nanoros/rossubscriber.h"
 #include "nanoros/rosserviceprovider.h"
+#include "nanoros/rosrate.h"
 
 namespace ssr {
   namespace nanoros {
