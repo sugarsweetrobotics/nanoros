@@ -19,6 +19,7 @@ endfunction(add_app)
 
 add_app(nanorostopic)
 add_app(nanorosservice)
+add_app(nanoroscore)
 
 message("APPS IS " ${APPS})
 

@@ -21,6 +21,7 @@ rossrvstubfactory.cpp
 rossrvstub.cpp
 rosserviceprovider.cpp
 
+rosmasterserver.cpp
 )
 
 set(EXT_LIBRARIES XmlRpc)

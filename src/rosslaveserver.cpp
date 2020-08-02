@@ -250,15 +250,6 @@ public:
     publisherUpdate_(this),
     requestTopic_(this)
   {
-
-    exit_flag_ = false;
-    thread_ = std::make_shared<std::thread>([this]() {
-      server_->bindAndListen(port_);
-      server_->enableIntrospection(true);
-      while(!exit_flag_) {
-        server_->work(1.0);
-      }
-    });
   }
 
   virtual ~ROSSlaveServerImpl() {

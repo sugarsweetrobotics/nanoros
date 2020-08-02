@@ -61,6 +61,8 @@ rosutil.h
 signal.h
 stringutil.h
 stubfactory.h
+
+rosmasterserver.h
 )
 
 set(nanoros_hdrs)

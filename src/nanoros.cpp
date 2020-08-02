@@ -37,12 +37,10 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
 
 void ssr::nanoros::spin() {
-
-  while(true) {
-    
-
-  }
-
+    /// TODO: This must be changed to wait_for method ...
+    while(!is_shutdown()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));      
+    }
 }
 
 bool ssr::nanoros::is_shutdown() {
