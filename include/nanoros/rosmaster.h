@@ -27,16 +27,16 @@ namespace ssr {
     };
 
     struct TopicPublishersInfo {
-      const std::string topicName;
-      const std::vector<std::string> publishers;
+      std::string topicName;
+      std::vector<std::string> publishers;
     };
     struct TopicSubscribersInfo {
-      const std::string topicName;
-      const std::vector<std::string> subscribers;
+      std::string topicName;
+      std::vector<std::string> subscribers;
     };
     struct ServicesInfo {
-      const std::string serviceName;
-      const std::vector<std::string> services;
+      std::string serviceName;
+      std::vector<std::string> services;
     };
 
     struct SystemState : public MasterMsg{

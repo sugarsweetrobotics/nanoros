@@ -1,81 +1,159 @@
 #include "nanoros/rosmasterserver.h"
+#include "nanoros/rosmaster.h"
 
-
-
-#include "XmlRpc/XmlRpc.h"
+#include "XmlRpc/XmlRpc.h" 
 #include "XmlRpc/XmlRpcServer.h"
 
-
+#include <tuple>
 #include <thread>
+#include <vector>
 
 using namespace ssr::nanoros;
 
 using namespace XmlRpc;
-
+ 
 
 class ROSMasterServerImpl;
 
+std::optional<MasterMsg> registerService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& service_name, const std::string& service_uri, const std::string& caller_uri);
+
+std::optional<UnregisterInfo> unregisterService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& service_name, const std::string& caller_uri);
+
+std::optional<PublishersInfo> registerSubscriber(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri);
+
+std::optional<UnregisterInfo> unregisterSubscriber(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& caller_uri);
+
+std::optional<SubscribersInfo> registerPublisher(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri);
+
+std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& caller_uri);
+
+
+std::optional<NodeUriInfo> lookupNode(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& node_name);
+
+std::optional<TopicTypes> getPublishedTopics(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& subgraph);
+
+std::optional<TopicTypes>  getTopicTypes(ROSMasterServerImpl* impl, const std::string& caller_id);
+
+std::optional<SystemState> getSystemState(ROSMasterServerImpl* impl, const std::string& caller_id);
+
+std::optional<MasterUriInfo> getUri(ROSMasterServerImpl* impl, const std::string& caller_id);
+
+std::optional<ServiceUriInfo> lookupService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& srv_name);
+
+
+
+
 class ROSMasterMethod : public XmlRpcServerMethod {
 protected:
-  ROSMasterServerImpl* impl_;
+	ROSMasterServerImpl* impl_;
 public:
-  ROSMasterMethod(const std::string& name, class ROSMasterServerImpl * si);
-  virtual ~ROSMasterMethod() {}
+	ROSMasterMethod(const std::string& name, class ROSMasterServerImpl* si);
+	virtual ~ROSMasterMethod() {}
 
 };
 
 class RegisterService : public ROSMasterMethod {
 public:
-  RegisterService(class ROSMasterServerImpl * si) : ROSMasterMethod("registerServer", si) {}
+	RegisterService(class ROSMasterServerImpl* si) : ROSMasterMethod("registerServer", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string service_name = params[1];
+		std::string service_uri = params[2];
+		std::string caller_uri = params[3];
+		auto msg = registerService(impl_, caller_id, service_name, service_uri, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+	}
 };
 
 class UnregisterService : public ROSMasterMethod {
 public:
-  UnregisterService(class ROSMasterServerImpl * si) : ROSMasterMethod("unregisterServer", si) {}
+	UnregisterService(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterServer", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string service_name = params[1];
+		std::string caller_uri = params[2];
+		auto msg = unregisterService(impl_, caller_id, service_name, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->numUnregistered;
+	}
 };
 
 class RegisterPublisher : public ROSMasterMethod {
 public:
-  RegisterPublisher(class ROSMasterServerImpl * si) : ROSMasterMethod("registerPublisher", si) {}
+	RegisterPublisher(class ROSMasterServerImpl* si) : ROSMasterMethod("registerPublisher", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string topic_name = params[1];
+		std::string topic_type = params[2];
+		std::string caller_uri = params[3];
+		auto msg = registerPublisher(impl_, caller_id, topic_name, topic_type, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = XmlRpcValue();
+		for (int i = 0; i < msg->subscribers.size(); i++) {
+			result[2][i] = XmlRpcValue();
+			for (int j = 0; j < msg->subscribers[i].size(); j++) {
+				result[2][i][j] = msg->subscribers[i][j];
+			}
+		}
+	}
 };
 
 class UnregisterPublisher : public ROSMasterMethod {
 public:
-  UnregisterPublisher(class ROSMasterServerImpl * si) : ROSMasterMethod("unregisterPublisher", si) {}
+	UnregisterPublisher(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterPublisher", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string topic_name = params[1];
+		std::string caller_uri = params[2];
+		auto msg = unregisterPublisher(impl_, caller_id, topic_name, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->numUnregistered;
+	}
 };
 
 class RegisterSubscriber : public ROSMasterMethod {
 public:
-  RegisterSubscriber(class ROSMasterServerImpl * si) : ROSMasterMethod("registerSubscriber", si) {}
+	RegisterSubscriber(class ROSMasterServerImpl* si) : ROSMasterMethod("registerSubscriber", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string topic_name = params[1];
+		std::string topic_type = params[2];
+		std::string caller_uri = params[3];
+		auto msg = registerSubscriber(impl_, caller_id, topic_name, topic_type, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = XmlRpcValue();
+		for (int i = 0; i < msg->publishers.size(); i++) {
+			result[2][i] = XmlRpcValue();
+			for (int j = 0; j < msg->publishers[i].size(); j++) {
+				result[2][i][j] = msg->publishers[i][j];
+			}
+		}
+	}
 };
 
 class UnregisterSubscriber : public ROSMasterMethod {
 public:
-  UnregisterSubscriber(class ROSMasterServerImpl * si) : ROSMasterMethod("unregisterSubscriber", si) {}
+	UnregisterSubscriber(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterSubscriber", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string topic_name = params[1];
+		std::string caller_uri = params[2];
+		auto msg = unregisterSubscriber(impl_, caller_id, topic_name, caller_uri);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->numUnregistered;
+	}
 };
 
 
@@ -83,128 +161,442 @@ public:
 
 class LookupNode : public ROSMasterMethod {
 public:
-  LookupNode(class ROSMasterServerImpl * si) : ROSMasterMethod("lookupNode", si) {}
+	LookupNode(class ROSMasterServerImpl* si) : ROSMasterMethod("lookupNode", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string node_name = params[1];
+		auto msg = lookupNode(impl_, caller_id, node_name);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->uri;
+	}
 };
 
 
 class GetPublishedTopics : public ROSMasterMethod {
 public:
-  GetPublishedTopics(class ROSMasterServerImpl * si) : ROSMasterMethod("getPublishedTopics", si) {}
+	GetPublishedTopics(class ROSMasterServerImpl* si) : ROSMasterMethod("getPublishedTopics", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string subgraph = params[1];
+		auto msg = getPublishedTopics(impl_, caller_id, subgraph);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = XmlRpcValue();
+		for (int i = 0; i < msg->topicTypes.size(); i++) {
+			result[2][i] = XmlRpcValue();
+			result[2][i][0] = msg->topicTypes[i].topicName;
+			result[2][i][1] = msg->topicTypes[i].topicType;
+		}
+	}
 };
 
 
 class GetTopicTypes : public ROSMasterMethod {
 public:
-  GetTopicTypes(class ROSMasterServerImpl * si) : ROSMasterMethod("getTopicTypes", si) {}
+	GetTopicTypes(class ROSMasterServerImpl* si) : ROSMasterMethod("getTopicTypes", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		auto msg = getTopicTypes(impl_, caller_id);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = XmlRpcValue();
+		for (int i = 0; i < msg->topicTypes.size(); i++) {
+			result[2][i] = XmlRpcValue();
+			result[2][i][0] = msg->topicTypes[i].topicName;
+			result[2][i][1] = msg->topicTypes[i].topicType;
+		}
+	}
 };
 
 
 class GetSystemState : public ROSMasterMethod {
 public:
-  GetSystemState(class ROSMasterServerImpl * si) : ROSMasterMethod("getSystemState", si) {}
+	GetSystemState(class ROSMasterServerImpl* si) : ROSMasterMethod("getSystemState", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		auto msg = getSystemState(impl_, caller_id);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = XmlRpcValue();
+		for (int i = 0; i < msg->systemState.publishers.size(); i++) {
+			result[2][0][i] = XmlRpcValue();
+			result[2][0][i][0] = msg->systemState.publishers[i].topicName;
+			result[2][0][i][1] = XmlRpcValue();
+			for (int j = 0; j < msg->systemState.publishers[i].publishers.size(); j++) {
+				result[2][0][i][1][j] = msg->systemState.publishers[i].publishers[j];
+			}
+			for (int i = 0; i < msg->systemState.subscribers.size(); i++) {
+				result[2][1][i] = XmlRpcValue();
+				result[2][1][i][0] = msg->systemState.subscribers[i].topicName;
+				result[2][1][i][1] = XmlRpcValue();
+				for (int j = 0; j < msg->systemState.subscribers[i].subscribers.size(); j++) {
+					result[2][1][i][1][j] = msg->systemState.subscribers[i].subscribers[j];
+				}
+				for (int i = 0; i < msg->systemState.services.size(); i++) {
+					result[2][2][i] = XmlRpcValue();
+					result[2][2][i][0] = msg->systemState.services[i].serviceName;
+					result[2][2][i][1] = XmlRpcValue();
+					for (int j = 0; j < msg->systemState.services[i].services.size(); j++) {
+						result[2][2][i][1][j] = msg->systemState.services[i].services[j];
+					}
+				}
+			}
+		}
+	}
 };
 
 
 class GetUri : public ROSMasterMethod {
 public:
-  GetUri(class ROSMasterServerImpl * si) : ROSMasterMethod("getUri", si) {}
+	GetUri(class ROSMasterServerImpl* si) : ROSMasterMethod("getUri", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		auto msg = getUri(impl_, caller_id);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->uri;
+	}
 };
 
 
 class LookupService : public ROSMasterMethod {
 public:
-  LookupService(class ROSMasterServerImpl * si) : ROSMasterMethod("lookupService", si) {}
+	LookupService(class ROSMasterServerImpl* si) : ROSMasterMethod("lookupService", si) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      
-  }
+	void execute(XmlRpcValue& params, XmlRpcValue& result) {
+		std::string caller_id = params[0];
+		std::string service_name = params[1];
+		auto msg = lookupService(impl_, caller_id, service_name);
+		result[0] = msg->code;
+		result[1] = msg->statusMessage;
+		result[2] = msg->uri;
+	}
 };
 
 
+struct SystemNodeInfo {
+	std::string nodeName;
+	std::string nodeUri;
+	SystemNodeInfo(const std::string& name, const std::string& uri) : nodeName(name), nodeUri(uri) {}
+	virtual ~SystemNodeInfo() {}
+};
+
+struct SystemServiceProviderNodeInfo : public SystemNodeInfo{
+	std::string serviceUri;
+	SystemServiceProviderNodeInfo(const std::string& name, const std::string& uri, const std::string& srv) : SystemNodeInfo(name, uri), serviceUri(srv) {}
+};
+
+struct SystemTopicsInfo {
+	std::string topicName;
+	std::string topicTypeName;
+	std::vector<SystemNodeInfo> publishers;
+	std::vector<SystemNodeInfo> subscribers;
+};
+
+
+struct SystemServicesInfo {
+	std::string serviceName;
+	std::vector<SystemServiceProviderNodeInfo> services;
+};
 
 class ROSMasterServerImpl : public ROSMasterServer {
 public:
 
-  const std::shared_ptr<XmlRpcServer> server_;
-    bool exit_flag_;
-    std::shared_ptr<std::thread> thread_;
+	const std::shared_ptr<XmlRpcServer> server_;
+	bool exit_flag_;
+	std::shared_ptr<std::thread> thread_;
+	int32_t port_;
 
-    RegisterService registerService_;
-    UnregisterService unregisterService_;
-    RegisterPublisher registerPublisher_;
-    UnregisterPublisher unregisterPublisher_;
-    RegisterSubscriber registerSubscriber_;
-    UnregisterSubscriber unregisterSubscriber_;
-    LookupNode lookupNode_;
-    GetPublishedTopics getPublishedTopics_;
-    GetTopicTypes getTopicTypes_;
-    GetSystemState getSystemState_;
-    GetUri getUri_;
-    LookupService lookupService_;
-public: 
-    ROSMasterServerImpl(const std::string& addr, const int32_t port) :
-    server_(std::make_shared<XmlRpcServer>()),
-    registerService_(this),
-    unregisterService_(this),
-    registerPublisher_(this),
-    unregisterPublisher_(this),
-    registerSubscriber_(this),
-    unregisterSubscriber_(this),
-    lookupNode_(this),
-    getPublishedTopics_(this),
-    getTopicTypes_(this),
-    getSystemState_(this),
-    getUri_(this),
-    lookupService_(this)
-    {}
+	RegisterService registerService_;
+	UnregisterService unregisterService_;
+	RegisterPublisher registerPublisher_;
+	UnregisterPublisher unregisterPublisher_;
+	RegisterSubscriber registerSubscriber_;
+	UnregisterSubscriber unregisterSubscriber_;
+	LookupNode lookupNode_;
+	GetPublishedTopics getPublishedTopics_;
+	GetTopicTypes getTopicTypes_;
+	GetSystemState getSystemState_;
+	GetUri getUri_;
+	LookupService lookupService_;
 
-    virtual ~ROSMasterServerImpl() {}
+
+	std::vector<SystemTopicsInfo> topics_;
+	std::vector<SystemServicesInfo> services_;
+public:
+	ROSMasterServerImpl(const std::string& addr, const int32_t port) :
+		server_(std::make_shared<XmlRpcServer>()), exit_flag_(false), port_(port),
+		registerService_(this),
+		unregisterService_(this),
+		registerPublisher_(this),
+		unregisterPublisher_(this),
+		registerSubscriber_(this),
+		unregisterSubscriber_(this),
+		lookupNode_(this),
+		getPublishedTopics_(this),
+		getTopicTypes_(this),
+		getSystemState_(this),
+		getUri_(this),
+		lookupService_(this)
+	{}
+
+	virtual ~ROSMasterServerImpl() {
+		exit_flag_ = true;
+		thread_->join();
+	}
 
 
 
 public:
-    virtual void start(const bool blocking = true) {
+	virtual void start(const bool blocking = true) {
 
-
-        /*
-        exit_flag_ = false;
-        thread_ = std::make_shared<std::thread>([this]() {
-        server_->bindAndListen(port_);
-        server_->enableIntrospection(true);
-        while(!exit_flag_) {
-            server_->work(1.0);
-        }
-        });
-        */
-    }
+		exit_flag_ = false;
+		thread_ = std::make_shared<std::thread>([this]() {
+		server_->bindAndListen(port_);
+		server_->enableIntrospection(true);
+		while(!exit_flag_) {
+			server_->work(1.0);
+		}
+		});
+		 
+	}
 };
 
 
 std::shared_ptr<ROSMasterServer> ssr::nanoros::masterServer(std::optional<std::pair<std::string, int32_t>>& info) {
-    if (!info) return std::make_shared<ROSMasterServer>();
-    return std::make_shared<ROSMasterServerImpl>(info->first, info->second);
+	if (!info) return std::make_shared<ROSMasterServer>();
+	return std::make_shared<ROSMasterServerImpl>(info->first, info->second);
 }
 
 
-ROSMasterMethod::ROSMasterMethod(const std::string& name, class ROSMasterServerImpl * si)  : XmlRpcServerMethod(name, si->server_.get()), impl_(si) {
-}  
+ROSMasterMethod::ROSMasterMethod(const std::string& name, class ROSMasterServerImpl* si) : XmlRpcServerMethod(name, si->server_.get()), impl_(si) {
+}
+
+
+// --------------------------------------------------------------------------------------------- //
+
+std::optional<MasterMsg> registerService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& service_name, const std::string& service_uri, const std::string& caller_uri) {
+	for (auto& srv : impl->services_) {
+		if (srv.serviceName == service_name) {
+			for (auto& nodeInfo : srv.services) {
+				if (nodeInfo.nodeName == caller_id) {
+					nodeInfo.nodeUri = caller_uri;
+					nodeInfo.serviceUri = service_uri;
+					return MasterMsg(1, "OK");
+				}
+			}
+			srv.services.push_back(SystemServiceProviderNodeInfo(caller_id, caller_uri, service_uri));
+			return MasterMsg(1, "OK");
+		}
+	}
+	SystemServicesInfo info;
+	SystemServiceProviderNodeInfo srvInfo(caller_id, caller_uri, service_uri);
+	info.serviceName = service_name;
+	info.services.push_back(srvInfo);
+	impl->services_.push_back(info);
+	return MasterMsg(1, "OK");
+}
+
+std::optional<UnregisterInfo> unregisterService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& service_name, const std::string& caller_uri) {
+	for (auto it = impl->services_.begin(); it != impl->services_.end(); ++it) {
+		auto& srv = *it;
+		if (srv.serviceName == service_name) {
+			for (auto it2 = srv.services.begin(); it2 != srv.services.end(); ) {
+				auto& info = *it2;
+				if (info.nodeName == caller_uri) {
+					it2 = srv.services.erase(it2);
+				}
+				else {
+					++it2;
+				}
+			}
+			if (srv.services.size() == 0) {
+				impl->services_.erase(it);
+			}
+			return UnregisterInfo(1, "OK", 1);
+		}
+	}
+
+	return UnregisterInfo(1, "Not found", 0);
+}
+
+std::optional<PublishersInfo> registerSubscriber(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri) {
+
+	for (auto& topic : impl->topics_) {
+		if (topic.topicName == topic_name) {
+			if (topic.topicTypeName != topic_type) {
+				return PublishersInfo(0, "Failed. Invalid Topic Type", {});
+			}
+			for (auto& nodeInfo : topic.subscribers) {
+				if (nodeInfo.nodeName == caller_id) {
+					nodeInfo.nodeUri = caller_uri; // Update Node URI
+
+					std::vector<std::string> pubInfos;
+					for (auto& p : topic.publishers) {
+						pubInfos.push_back(p.nodeUri);
+					}
+					return PublishersInfo(1, "OK", pubInfos);
+				}
+			}
+			topic.subscribers.push_back(SystemNodeInfo(caller_id, caller_uri));
+			
+			std::vector<std::string> pubInfos;
+			for (auto& p : topic.publishers) {
+				pubInfos.push_back(p.nodeUri);
+			}
+			return PublishersInfo(1, "OK", pubInfos);
+		}
+	}
+
+	SystemTopicsInfo info;
+	SystemNodeInfo nodeInfo(caller_id, caller_uri);
+	info.topicName = topic_name;
+	info.topicTypeName = topic_type;
+	info.subscribers.push_back(nodeInfo);
+	impl->topics_.push_back(info);
+
+	std::vector<std::string> pubInfos;
+	return PublishersInfo(1, "OK", pubInfos);
+}
+
+std::optional<UnregisterInfo> unregisterSubscriber(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& caller_uri) {
+
+	for (auto it = impl->topics_.begin(); it != impl->topics_.end(); ++it) {
+		auto& topic = *it;
+		if (topic.topicName == topic_name) {
+			for (auto it2 = topic.subscribers.begin(); it2 != topic.subscribers.end(); ) {
+				auto& info = *it2;
+				if (info.nodeName == caller_uri) {
+					it2 = topic.subscribers.erase(it2);
+				}
+				else {
+					++it2;
+				}
+			}
+			if (topic.subscribers.size() == 0 && topic.publishers.size() == 0) {
+				impl->topics_.erase(it);
+			}
+			return UnregisterInfo(1, "OK", 1);
+		}
+	}
+
+	return UnregisterInfo(1, "Not found", 0);
+}
+
+std::optional<SubscribersInfo> registerPublisher(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri) {
+
+	for (auto& topic : impl->topics_) {
+		if (topic.topicName == topic_name) {
+			if (topic.topicTypeName != topic_type) {
+				return SubscribersInfo(0, "Failed. Invalid Topic Type", {});
+			}
+			for (auto& nodeInfo : topic.publishers) {
+				if (nodeInfo.nodeName == caller_id) {
+					nodeInfo.nodeUri = caller_uri; // Update Node URI
+
+					std::vector<std::string> subInfos;
+					for (auto& p : topic.subscribers) {
+						subInfos.push_back(p.nodeUri);
+					}
+					return SubscribersInfo(1, "OK", subInfos);
+				}
+			}
+			topic.publishers.push_back(SystemNodeInfo(caller_id, caller_uri));
+
+			std::vector<std::string> subInfos;
+			for (auto& p : topic.subscribers) {
+				subInfos.push_back(p.nodeUri);
+			}
+			return SubscribersInfo(1, "OK", subInfos);
+		}
+	}
+
+	SystemTopicsInfo info;
+	SystemNodeInfo nodeInfo(caller_id, caller_uri);
+	info.topicName = topic_name;
+	info.topicTypeName = topic_type;
+	info.publishers.push_back(nodeInfo);
+	impl->topics_.push_back(info);
+
+	std::vector<std::string> subInfos;
+	return SubscribersInfo(1, "OK", subInfos);
+}
+
+std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& caller_uri) {
+
+	for (auto it = impl->topics_.begin(); it != impl->topics_.end(); ++it) {
+		auto& topic = *it;
+		if (topic.topicName == topic_name) {
+			for (auto it2 = topic.publishers.begin(); it2 != topic.publishers.end(); ) {
+				auto& info = *it2;
+				if (info.nodeName == caller_uri) {
+					it2 = topic.publishers.erase(it2);
+				}
+				else {
+					++it2;
+				}
+			}
+			if (topic.subscribers.size() == 0 && topic.publishers.size() == 0) {
+				impl->topics_.erase(it);
+			}
+			return UnregisterInfo(1, "OK", 1);
+		}
+	}
+
+	return UnregisterInfo(1, "Not found", 0);
+
+}
+
+
+std::optional<NodeUriInfo> lookupNode(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& node_name) { return std::nullopt; }
+
+std::optional<MasterUriInfo> getUri(ROSMasterServerImpl* impl, const std::string& caller_id) {
+	return std::nullopt;
+
+}
+
+std::optional<SystemState> getSystemState(ROSMasterServerImpl* impl, const std::string& caller_id) {
+	std::vector<TopicPublishersInfo> pubs;
+	std::vector<TopicSubscribersInfo> subs;
+	std::vector<ServicesInfo> srvs;
+
+	for (auto& topic : impl->topics_) {
+		if (topic.publishers.size() > 0) {
+			std::vector<std::string> pubnames;
+			for (auto& p : topic.publishers) {
+				pubnames.push_back(p.nodeUri);
+			}
+			pubs.emplace_back(TopicPublishersInfo{ topic.topicName, pubnames });
+		}
+		if (topic.subscribers.size() > 0) {
+			std::vector<std::string> subnames;
+			for (auto& s : topic.subscribers) {
+				subnames.push_back(s.nodeUri);
+			}
+			subs.emplace_back(TopicSubscribersInfo{ topic.topicName, subnames });
+		}
+	}
+	for (auto& service : impl->services_) {
+		std::vector<std::string> srvnames;
+		for (auto& s : service.services) {
+			srvnames.push_back(s.serviceUri);
+		}
+		srvs.emplace_back(ServicesInfo{ service.serviceName, srvnames });
+	}
+	return SystemState{ 1, "OK", { pubs, subs, srvs } };
+}
+
+std::optional<TopicTypes>  getTopicTypes(ROSMasterServerImpl* impl, const std::string& caller_id) { return std::nullopt; }
+
+std::optional<TopicTypes> getPublishedTopics(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& subgraph) { return std::nullopt; }
+
+std::optional<ServiceUriInfo> lookupService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& srv_name) { return std::nullopt; }
+
+
+
