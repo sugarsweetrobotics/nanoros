@@ -554,10 +554,34 @@ std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, con
 }
 
 
-std::optional<NodeUriInfo> lookupNode(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& node_name) { return std::nullopt; }
+std::optional<NodeUriInfo> lookupNode(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& node_name) {
+	for (auto& topic : impl->topics_) {
+		for (auto& p : topic.publishers) {
+			if (p.nodeName == node_name) {
+				return NodeUriInfo(1, "OK", p.nodeUri);
+			}
+		}
+		for (auto& s : topic.subscribers) {
+			if (s.nodeName == node_name) {
+				return NodeUriInfo(1, "OK", s.nodeUri);
+			}
+		}
+	}
+	for (auto& service : impl->services_) {
+		for (auto& s : service.services) {
+			if (s.nodeName == node_name) {
+				return NodeUriInfo(1, "OK", s.nodeUri);
+			}
+		}
+	}
+
+	return NodeUriInfo{ 0, "Failed", "" };
+}
 
 std::optional<MasterUriInfo> getUri(ROSMasterServerImpl* impl, const std::string& caller_id) {
-	return std::nullopt;
+	auto info = getROSMasterInfo();
+	auto [host, port] = info.value();
+	return MasterUriInfo{ 1, "OK", "http://" + host + ":" + std::to_string(port) };
 
 }
 
@@ -592,11 +616,36 @@ std::optional<SystemState> getSystemState(ROSMasterServerImpl* impl, const std::
 	return SystemState{ 1, "OK", { pubs, subs, srvs } };
 }
 
-std::optional<TopicTypes>  getTopicTypes(ROSMasterServerImpl* impl, const std::string& caller_id) { return std::nullopt; }
+std::optional<TopicTypes>  getTopicTypes(ROSMasterServerImpl* impl, const std::string& caller_id) {
+	std::vector<TopicTypeInfo> topicTypes;
+	for (auto& topic : impl->topics_) {
+		topicTypes.emplace_back(TopicTypeInfo{ topic.topicName, topic.topicTypeName });
+	}
+	return TopicTypes{ 1, "OK", topicTypes };
+}
 
-std::optional<TopicTypes> getPublishedTopics(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& subgraph) { return std::nullopt; }
+std::optional<TopicTypes> getPublishedTopics(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& subgraph) {
+	std::vector<TopicTypeInfo> infos;
+	for (auto& topic : impl->topics_) {
+		if (subgraph.length() != 0 && topic.topicName.find(subgraph) != 0) continue;
+		if (topic.publishers.size() > 0) {
+			infos.emplace_back(TopicTypeInfo{topic.topicName, topic.topicTypeName});
+		}
+	}
+	return TopicTypes{ 1, "OK", infos };
+}
 
-std::optional<ServiceUriInfo> lookupService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& srv_name) { return std::nullopt; }
+std::optional<ServiceUriInfo> lookupService(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& srv_name) {
+
+	for (auto& service : impl->services_) {
+		if (service.serviceName == srv_name) {
+			if (service.services.size() > 0) {
+				return ServiceUriInfo{ 1, "OK", service.services[0].serviceUri };
+			}
+		}
+	}
+	return ServiceUriInfo{0, "Failed", ""};
+}
 
 
 
