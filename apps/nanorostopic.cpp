@@ -77,7 +77,10 @@ int main(const int argc, const char* argv[]) {
 					   std::cout << topic->prettyString() << std::endl 
                        << "---" << std::endl;
         });
-        node->spin();
+        while (!ssr::nanoros::is_shutdown()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            node->spinOnce();
+        }
       }
     } else if (cmd == "pub") {
       if (argc >= 5) {
@@ -91,8 +94,8 @@ int main(const int argc, const char* argv[]) {
         }
         auto node = registerROSNode("/nanorostopic_pub");
         auto pub =node->advertise(topicName, stub);
-        while(1) {
-          std::this_thread::sleep_for(std::chrono::seconds(3));
+        while(!ssr::nanoros::is_shutdown()) {
+          std::this_thread::sleep_for(std::chrono::seconds(1));
           pub->publish(stub->fromJSON(fromJSONString(topicDataStr)));
           node->spinOnce();
         }
