@@ -1,0 +1,24 @@
+# Title of this SOFTWARE: nanoros
+#
+# This software depends on....
+#
+#
+XmlRpc++ : 
+  original: http://xmlrpcpp.sourceforge.net/
+  I used fork here: https://github.com/sugarsweetrobotics/XmlRpc/
+  License: GNU LGPL v2.1
+  COPYRIGHT: https://github.com/sugarsweetrobotics/XmlRpc/blob/master/COPYING
+nlohmann-json :
+  original: https://github.com/nlohmann/json
+  License: MIT License
+  COPYRIGHT: https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
+plog :
+  original: https://github.com/SergiusTheBest/plog
+  License: Mozilla Public License Version 2.0
+  COPYRIGHT: https://github.com/SergiusTheBest/plog/blob/master/LICENSE
+libaqua2:
+  original: https://github.com/sugarsweetrobotics/libaqua2
+  License: GNU GPL v3
+  COPYRIGHT: 
+
+
