@@ -4,6 +4,8 @@
 #include "XmlRpc/XmlRpc.h"
 #include "XmlRpc/XmlRpcUtil.h"
 
+#include <iostream>
+
 using namespace ssr::nanoros;
 
 // Clear the referenced flag even if exceptions or errors occur.
@@ -86,7 +88,18 @@ public:
       v[2][i] = pi;
     }
     if (client_.execute("requestTopic", v, result)) {
-      return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], result[2][2]));
+        int32_t port = -1;
+        if (result[2][2].getType() == XmlRpc::XmlRpcValue::TypeString) {
+            port = std::atoi(static_cast<std::string>(result[2][2]).c_str());
+        }
+        else if (result[2][2].getType() == XmlRpc::XmlRpcValue::TypeInt) {
+            port = result[2][2];
+        }
+        else {
+            std::cout << "ROSSlave::requestTopic(" << caller_id << ", " << topicName << ") failed. Invalid return value type." << std::endl;
+            return std::nullopt;
+        }
+      return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], port));
     }
     return std::nullopt;
   }

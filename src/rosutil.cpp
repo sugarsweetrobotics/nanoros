@@ -30,12 +30,19 @@ std::optional<std::pair<std::string, int32_t>> ssr::nanoros::splitUri(const std:
 
 std::optional<std::pair<std::string, int32_t>> ssr::nanoros::getROSMasterInfo() {
     auto uri = ssr::nanoros::getEnv("ROS_MASTER_URI");
-    if (uri.length() == 0) return std::nullopt;
+    if (uri.length() == 0) {
+        return std::make_pair<std::string, int32_t>("127.0.0.1", 11311);
+//        return std::nullopt;
+    }
     return ssr::nanoros::splitUri(uri);
 }
 
 std::string ssr::nanoros::getSelfIP() {
-  return getEnv("ROS_IP");
+  auto ip = ssr::nanoros::getEnv("ROS_IP");
+  if (ip.length() == 0) {
+      return "127.0.0.1";
+  }
+  return ip;
 }
 
 int32_t ssr::nanoros::getEmptyPort(const std::pair<int32_t, int32_t>& range) {

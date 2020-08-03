@@ -9,6 +9,8 @@
 #include "XmlRpc/XmlRpc.h"
 #include "XmlRpc/XmlRpcServer.h"
 
+#include <iostream>
+
 using namespace ssr::nanoros;
 using namespace XmlRpc;
 
@@ -250,6 +252,16 @@ public:
     publisherUpdate_(this),
     requestTopic_(this)
   {
+      std::cout << "Starting ROS node slave server in (" << ip << ":" << port << ")" << std::endl;
+
+      exit_flag_ = false;
+      thread_ = std::make_shared<std::thread>([this]() {
+    server_->bindAndListen(port_);
+    server_->enableIntrospection(true);
+    while (!exit_flag_) {
+        server_->work(1.0);
+    }
+    });
   }
 
   virtual ~ROSSlaveServerImpl() {

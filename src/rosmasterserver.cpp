@@ -8,6 +8,8 @@
 #include <thread>
 #include <vector>
 
+#include <iostream>
+
 using namespace ssr::nanoros;
 
 using namespace XmlRpc;
@@ -94,9 +96,12 @@ public:
 		auto msg = registerPublisher(impl_, caller_id, topic_name, topic_type, caller_uri);
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
-		result[2] = XmlRpcValue();
+		result[2].setSize(msg->subscribers.size());
+		std::cout << "MasterServer: RegisterPublisher: " << msg->subscribers.size() << std::endl;
 		for (int i = 0; i < msg->subscribers.size(); i++) {
 			result[2][i] = XmlRpcValue();
+
+			result[2][i].setSize(msg->subscribers[i].size());
 			for (int j = 0; j < msg->subscribers[i].size(); j++) {
 				result[2][i][j] = msg->subscribers[i][j];
 			}
@@ -132,11 +137,16 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = XmlRpcValue();
+		result[2].setSize(msg->publishers.size());
+		std::cout << "MasterServer: RegisterSubscriber: " << msg->publishers.size() << std::endl;
 		for (int i = 0; i < msg->publishers.size(); i++) {
 			result[2][i] = XmlRpcValue();
-			for (int j = 0; j < msg->publishers[i].size(); j++) {
-				result[2][i][j] = msg->publishers[i][j];
-			}
+			std::cout << " - publisher[" << i <<"] " << msg->publishers[i] << std::endl;
+			//result[2][1].setSize(msg->publishers[i].size());
+			//for (int j = 0; j < msg->publishers[i].size(); j++) {
+			//	result[2][i][j] = msg->publishers[i][j];
+			//}
+			result[2][i] = msg->publishers[i];
 		}
 	}
 };
@@ -185,6 +195,7 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = XmlRpcValue();
+		result[2].setSize(msg->topicTypes.size());
 		for (int i = 0; i < msg->topicTypes.size(); i++) {
 			result[2][i] = XmlRpcValue();
 			result[2][i][0] = msg->topicTypes[i].topicName;
@@ -204,6 +215,7 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = XmlRpcValue();
+		result[2].setSize(msg->topicTypes.size());
 		for (int i = 0; i < msg->topicTypes.size(); i++) {
 			result[2][i] = XmlRpcValue();
 			result[2][i][0] = msg->topicTypes[i].topicName;
@@ -223,28 +235,36 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = XmlRpcValue();
+		result[2].setSize(3);
+		result[2][0].setSize(msg->systemState.publishers.size());
+		//msg->systemState.publishers.size() + msg->systemState.subscribers.size() + msg->systemState.services.size());
 		for (int i = 0; i < msg->systemState.publishers.size(); i++) {
 			result[2][0][i] = XmlRpcValue();
 			result[2][0][i][0] = msg->systemState.publishers[i].topicName;
 			result[2][0][i][1] = XmlRpcValue();
+			result[2][0][i][1].setSize(msg->systemState.publishers[i].publishers.size());
 			for (int j = 0; j < msg->systemState.publishers[i].publishers.size(); j++) {
 				result[2][0][i][1][j] = msg->systemState.publishers[i].publishers[j];
 			}
-			for (int i = 0; i < msg->systemState.subscribers.size(); i++) {
-				result[2][1][i] = XmlRpcValue();
-				result[2][1][i][0] = msg->systemState.subscribers[i].topicName;
-				result[2][1][i][1] = XmlRpcValue();
-				for (int j = 0; j < msg->systemState.subscribers[i].subscribers.size(); j++) {
-					result[2][1][i][1][j] = msg->systemState.subscribers[i].subscribers[j];
-				}
-				for (int i = 0; i < msg->systemState.services.size(); i++) {
-					result[2][2][i] = XmlRpcValue();
-					result[2][2][i][0] = msg->systemState.services[i].serviceName;
-					result[2][2][i][1] = XmlRpcValue();
-					for (int j = 0; j < msg->systemState.services[i].services.size(); j++) {
-						result[2][2][i][1][j] = msg->systemState.services[i].services[j];
-					}
-				}
+		}
+		result[2][1].setSize(msg->systemState.subscribers.size());
+		for (int i = 0; i < msg->systemState.subscribers.size(); i++) {
+			result[2][1][i] = XmlRpcValue();
+			result[2][1][i][0] = msg->systemState.subscribers[i].topicName;
+			result[2][1][i][1] = XmlRpcValue();
+			result[2][1][i][1].setSize(msg->systemState.subscribers[i].subscribers.size());
+			for (int j = 0; j < msg->systemState.subscribers[i].subscribers.size(); j++) {
+				result[2][1][i][1][j] = msg->systemState.subscribers[i].subscribers[j];
+			}
+		}
+		result[2][2].setSize(msg->systemState.services.size());
+		for (int i = 0; i < msg->systemState.services.size(); i++) {
+			result[2][2][i] = XmlRpcValue();
+			result[2][2][i][0] = msg->systemState.services[i].serviceName;
+			result[2][2][i][1] = XmlRpcValue();
+			result[2][2][i][1].setSize(msg->systemState.services[i].services.size());
+			for (int j = 0; j < msg->systemState.services[i].services.size(); j++) {
+				result[2][2][i][1][j] = msg->systemState.services[i].services[j];
 			}
 		}
 	}
@@ -409,7 +429,7 @@ std::optional<UnregisterInfo> unregisterService(ROSMasterServerImpl* impl, const
 		if (srv.serviceName == service_name) {
 			for (auto it2 = srv.services.begin(); it2 != srv.services.end(); ) {
 				auto& info = *it2;
-				if (info.nodeName == caller_uri) {
+				if (info.nodeName == caller_id) {
 					it2 = srv.services.erase(it2);
 				}
 				else {
@@ -472,7 +492,7 @@ std::optional<UnregisterInfo> unregisterSubscriber(ROSMasterServerImpl* impl, co
 		if (topic.topicName == topic_name) {
 			for (auto it2 = topic.subscribers.begin(); it2 != topic.subscribers.end(); ) {
 				auto& info = *it2;
-				if (info.nodeName == caller_uri) {
+				if (info.nodeName == caller_id) {
 					it2 = topic.subscribers.erase(it2);
 				}
 				else {
@@ -535,7 +555,8 @@ std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, con
 		if (topic.topicName == topic_name) {
 			for (auto it2 = topic.publishers.begin(); it2 != topic.publishers.end(); ) {
 				auto& info = *it2;
-				if (info.nodeName == caller_uri) {
+				if (info.nodeName == caller_id) {
+					std::cout << "Found caller_id:" << caller_id << std::endl;
 					it2 = topic.publishers.erase(it2);
 				}
 				else {
