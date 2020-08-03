@@ -33,7 +33,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
 
   getROSMsgStubFactory()->addStubDirHint(absPath);
-  auto stubDir = ssr::nanoros::getEnv("ROS_STUB_DIR");
+  auto stubDir = ssr::nanoros::getEnv("NANOROS_STUB_DIR");
   if (stubDir.length() > 0) {
       if (stubDir.rfind('/') != stubDir.length() - 1) {
           stubDir += '/';
@@ -42,7 +42,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
   }
 
-  auto stubDirs = ssr::nanoros::getEnv("ROS_STUB_DIRS");
+  auto stubDirs = ssr::nanoros::getEnv("NANOROS_STUB_DIRS");
   if (stubDirs.length() > 0) {
 #ifdef WIN32
       const char sep = ';';
@@ -56,7 +56,6 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
           }
           getROSMsgStubFactory()->addStubDirHint(dir);
       }
-  
   }
 
 
