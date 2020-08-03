@@ -6,6 +6,9 @@
 #include "nanoros/rosmsgstubfactory.h"
 #include "nanoros/rossrvstubfactory.h"
 
+#include "nanoros/argparse.h"
+#include "nanoros/stringutil.h"
+
 #include <thread>
 
 namespace {
@@ -21,6 +24,9 @@ namespace {
 void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   ssr::aqua2::initializeSocket();
 
+  ssr::nanoros::ArgParser parser;
+  // parser.option()
+
   ssr::nanoros::signal(ssr::nanoros::SIGNAL_INT, signal_handler);
 
   auto absPath = getExecutablePath(argv[0]);
@@ -35,9 +41,28 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
       getROSMsgStubFactory()->addStubDirHint(stubDir);
 
   }
+
+  auto stubDirs = ssr::nanoros::getEnv("ROS_STUB_DIRS");
+  if (stubDirs.length() > 0) {
+#ifdef WIN32
+      const char sep = ';';
+#else
+      const char sep = ':';
+#endif
+      auto dirs = ssr::nanoros::stringSplit(stubDirs, sep);
+      for (auto dir : dirs) {
+          if (dir.rfind('/') != dir.length() - 1) {
+              dir += '/';
+          }
+          getROSMsgStubFactory()->addStubDirHint(dir);
+      }
+  
+  }
+
+
   getROSMsgStubFactory()->addStubDirHint(absPath + "../share/nanoros/stubs/");
 #ifdef WIN32
- // getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs/");
+  getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs/");
 #else
 
 #endif

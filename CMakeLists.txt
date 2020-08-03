@@ -25,6 +25,7 @@ add_subdirectory(manually_generated_stubs)
 set(INCLUDE_INSTALL_DIR include/ )
 set(RUNTIME_INSTALL_DIR bin/ )
 set(LIB_INSTALL_DIR lib/ )
+set(SHARE_INSTALL_DIR share/nanoros )
 set(SYSCONFIG_INSTALL_DIR etc/${PROJECT_NAME}/ )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nanoros_public_headers}")
@@ -34,7 +35,7 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/${PROJECT_NAME}Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/${PROJECT_NAME}/cmake
-  PATH_VARS INCLUDE_INSTALL_DIR STUB_INSTALL_DIR LIB_INSTALL_DIR RUNTIME_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+  PATH_VARS INCLUDE_INSTALL_DIR SHARE_INSTALL_DIR STUB_INSTALL_DIR LIB_INSTALL_DIR RUNTIME_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
@@ -43,6 +44,10 @@ write_basic_package_version_file(
         
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${LIB_INSTALL_DIR}/${PROJECT_NAME}/cmake 
+)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CREDIT.txt 
+  DESTINATION ${SHARE_INSTALL_DIR}
 )
 
 INSTALL(TARGETS ${PROJECT_NAME}

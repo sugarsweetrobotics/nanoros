@@ -9,10 +9,7 @@ using namespace ssr::nanoros;
 
 
 int main(const int argc, const char* argv[]) {
-
-    
     ssr::nanoros::init_nanoros(argc, argv);
-
 
     auto master_server = masterServer(getROSMasterInfo());
     master_server->start(false);

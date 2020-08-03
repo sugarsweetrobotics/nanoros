@@ -1,5 +1,6 @@
 
 set(_public_headers
+argparse.h
 
 nanoros.h
 nanoros_define.h
@@ -36,6 +37,7 @@ rosserviceconsumer.h
 )
 
 set(_headers
+argparse.h
 dllproxy.h
 json.h
 nanoros.h
