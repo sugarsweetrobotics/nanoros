@@ -27,9 +27,9 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
 
   getROSMsgStubFactory()->addStubDirHint(absPath);
-  getROSMsgStubFactory()->addStubDirHint(absPath + "../share/nanoros/stubs");
+  getROSMsgStubFactory()->addStubDirHint(absPath + "../share/nanoros/stubs/");
 #ifdef WIN32
-  getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs");
+  getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs/");
 #else
 
 #endif

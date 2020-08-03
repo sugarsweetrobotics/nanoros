@@ -18,10 +18,11 @@ std::shared_ptr<DLLProxy> StubFactoryBase::loadStubFactoryDLL(const std::string&
             dllproxy = createDLLProxy(dirHint + "/" + dirName + "/Release", fileName);
 #endif
             if (!dllproxy) {
-               return nullptr;
+                continue;
             }
 #else
-            return nullptr;
+            continue;/
+            //return nullptr;
 #endif
         }
         auto func = dllproxy->functionSymbol(funcName);
@@ -35,13 +36,15 @@ std::shared_ptr<DLLProxy> StubFactoryBase::loadStubFactoryDLL(const std::string&
 #endif
             if (!dllproxy) {
                 std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
-                return nullptr;
+                //return nullptr;
+                continue;
             }
 
             func = dllproxy->functionSymbol(funcName);
             if (!func) {
                 std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
-                return nullptr;
+                //return nullptr;
+                continue;
             }
 #else
             std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
@@ -51,4 +54,6 @@ std::shared_ptr<DLLProxy> StubFactoryBase::loadStubFactoryDLL(const std::string&
         func(this);
         return dllproxy;
     }
+    std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
+    return nullptr;
 }
