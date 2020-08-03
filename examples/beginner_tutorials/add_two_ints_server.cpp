@@ -5,7 +5,7 @@
 
 #include "nanoros/nanoros.h"
 #include "nanoros/rosnode.h"
-#include "beginner_tutorials/AddTwoInts.h"
+#include "beginner_tutorials/srv/AddTwoInts.h"
 
 
 int main(const int argc, const char* argv[]) {

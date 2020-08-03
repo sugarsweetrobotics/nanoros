@@ -1,4 +1,4 @@
 
 
-add_msg_stub(std_msgs Twist)
-add_msg_stub(std_msgs Vector3)
+add_msg_stub(geometry_msgs Twist)
+add_msg_stub(geometry_msgs Vector3)

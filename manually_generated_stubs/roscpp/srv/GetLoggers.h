@@ -16,7 +16,7 @@
 #include <string>
 #include <sstream>
 
-#include "roscpp/Logger.h"
+#include "roscpp/msg/Logger.h"
 
 namespace ssr::nanoros {
     namespace roscpp {

@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/msg/Vector3.h"
 
 namespace ssr {
     namespace nanoros {

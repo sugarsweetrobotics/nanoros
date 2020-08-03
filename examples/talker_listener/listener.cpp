@@ -5,7 +5,7 @@
 
 #include "nanoros/nanoros.h"
 #include "nanoros/rosnode.h"
-#include "std_msgs/String.h"
+#include "std_msgs/msg/String.h"
 
 
 int main(const int argc, const char* argv[]) {

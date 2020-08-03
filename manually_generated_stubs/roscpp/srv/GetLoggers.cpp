@@ -14,56 +14,54 @@
 #include <string>
 #include <sstream>
 
-#include "SetLoggerLevel.h"
-#include "roscpp/Logger.h"
+#include "roscpp/msg/Logger.h"
+#include "GetLoggers.h"
 
 namespace ssr::nanoros {
     namespace roscpp {
 
-        class SetLoggerLevelStub : public ROSSrvStub {
+
+        class GetLoggersStub : public ROSSrvStub {
+            using RequestType = GetLoggersRequest;
+            using ResponseType = GetLoggersResponse;
         public:
-            using RequestType = SetLoggerLevelRequest;
-            using ResponseType = SetLoggerLevelResponse;
-        public:
-            SetLoggerLevelStub() {}
-            virtual ~SetLoggerLevelStub() {}
+            GetLoggersStub() {}
+            virtual ~GetLoggersStub() {}
 
         public:
-            virtual std::string md5sum() const override { return "51da076440d78ca1684d36c868df61ea"; }
+            virtual std::string md5sum() const override { return "32e97e85527d4678a8f9279894bb64b0"; }
 
-            virtual std::string typeName() const override { return "roscpp/SetLoggerLevel"; }
+            virtual std::string typeName() const override { return "roscpp/GetLoggers"; }
 
             virtual std::shared_ptr<const ROSSrvResponse> toSrvResponse(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
                 auto val = std::make_shared<ResponseType>();
+                pushValue(val->loggers, getMsgStub("roscpp/Logger"), msg, popedCount);
                 return val;
             }
 
             virtual std::shared_ptr<const ROSSrvRequest> toSrvRequest(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
                 auto val = std::make_shared<RequestType>();
-                setValue(val, val->logger, msg->pop<std::string>(popedCount));
-                setValue(val, val->level, msg->pop<std::string>(popedCount));
                 return val;
             }
 
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSSrvRequest& msg) override {
                 const auto val = static_cast<const RequestType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
-                pkt->push(val.logger);
-                pkt->push(val.level);
                 return pkt; 
             }
 
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSSrvResponse& msg) override {
                 const auto val = static_cast<const ResponseType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
+                for(auto logger : val.loggers) {
+                    pushValue(pkt, getMsgStub("roscpp/Logger"), logger);
+                }
                 return pkt; 
             }
-            
+
             virtual std::shared_ptr<ROSSrvRequest> fromJSON(const std::shared_ptr<const JSONObject> json) override { 
                 if (!json) return nullptr;
                 auto val = std::make_shared<RequestType>();
-                setValue<std::string>(val->logger, json, "logger");
-                setValue<std::string>(val->level, json, "level");
                 return val;
             }
         };
@@ -71,7 +69,7 @@ namespace ssr::nanoros {
 }
 
 extern "C" {
-    void init_srv_roscpp_SetLoggerLevel(void* factory) {
-        static_cast<ssr::nanoros::ROSSrvStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::roscpp::SetLoggerLevelStub>());
+    void init_srv_roscpp_GetLoggers(void* factory) {
+        static_cast<ssr::nanoros::ROSSrvStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::roscpp::GetLoggersStub>());
     }
 }
