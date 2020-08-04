@@ -27,9 +27,16 @@ namespace ssr {
             virtual bool isString() const = 0;
             virtual bool isObject() const = 0;
 
+            virtual operator int8_t() const = 0;
+            virtual operator uint8_t() const = 0;
+            virtual operator int16_t() const = 0;
+            virtual operator uint16_t() const = 0;
             virtual operator int32_t() const = 0;
             virtual operator uint32_t() const = 0;
+            //virtual operator int64_t() const = 0;
+            virtual operator uint64_t() const = 0;
             virtual operator float() const = 0;
+            //virtual operator double() const = 0;
             virtual operator JSONIntType() const = 0;
             virtual operator JSONRealType() const = 0;
             virtual operator JSONStringType() const = 0;
@@ -40,6 +47,7 @@ namespace ssr {
 
             virtual std::shared_ptr<const JSONObject> get(const int32_t& key) const = 0;
 
+            virtual int arraySize() const { return -1; }
         protected:
 
         public:

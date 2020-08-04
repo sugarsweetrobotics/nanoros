@@ -25,6 +25,10 @@ public:
         return json_.is_array();
     }
 
+    virtual int arraySize() const override {
+        return json_.array().size();
+    }
+
     virtual bool isReal() const override {
         return json_.is_number();
     }
@@ -41,6 +45,22 @@ public:
         return json_.is_object();
     }
 
+    virtual operator int8_t() const override {
+        return json_.get<int8_t>();
+    }
+
+    virtual operator uint8_t() const override {
+        return json_.get<uint8_t>();
+    }
+
+    virtual operator int16_t() const override {
+        return json_.get<int16_t>();
+    }
+
+    virtual operator uint16_t() const override {
+        return json_.get<uint16_t>();
+    }
+
     virtual operator int32_t() const override {
         return json_.get<int32_t>();
     }
@@ -48,11 +68,22 @@ public:
     virtual operator uint32_t() const override {
         return json_.get<uint32_t>();
     }
+    
+    //virtual operator int64_t() const override {
+    //    return json_.get<int64_t>();
+    //}
 
+    virtual operator uint64_t() const override {
+        return json_.get<uint64_t>();
+    }
 
     virtual operator float() const override {
         return json_.get<float>();
     }
+   
+    //virtual operator double() const override {
+    //    return json_.get<double>();
+    //}
 
     virtual operator JSONIntType() const override {
         return json_.get<int64_t>();

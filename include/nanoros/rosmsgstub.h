@@ -68,8 +68,29 @@ namespace ssr {
     }
 
     template<typename T>
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+        if (!stub) return;
+        if (!data) return;
+        if (!data->isArray()) return;
+        for (int i = 0; i < data->arraySize(); i++) {
+            auto e = data->get(i);
+            std::shared_ptr<ROSMsg> val = stub->fromJSON(e);
+            if (!val) return;
+            auto v = std::dynamic_pointer_cast<T>(val);
+            if (v) {
+                value.push_back(*(v.get()));
+            }
+        }
+    }
+
+    template<typename T>
     void setValue(T& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
         setValue<T>(value, stub, obj->get(key));
+    }
+
+    template<typename T>
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+        setArrayValue<T>(value, stub, obj->get(key));
     }
 
     template<typename T>
@@ -80,6 +101,18 @@ namespace ssr {
         auto val = std::dynamic_pointer_cast<const T>(rosMsg);
         if (!val) return;
         value = *(val.get());
+    }
+
+
+    template<typename T>
+    void pushValue(std::vector<T>& value, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
+        auto size = msg->pop<uint32_t>(popedCount);
+        if (!size) return;
+        for (int i = 0; i < size.value(); i++) {
+            auto val = msg->pop<T>(popedCount);
+            if (!val) return;
+            value.push_back(val.value());
+        }
     }
 
     template<typename T>
@@ -106,6 +139,20 @@ namespace ssr {
       pkt->push(*(subPkt.get()));
     }
 
+    template<typename T>
+    void pushVectorValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgStub>& stub, const std::vector<T>& value) {
+        if (!pkt) return;
+        if (!stub) return;
+        uint32_t size = value.size();
+        pkt->push<uint32_t>(size);
+        for (auto& e : value) {
+            auto subPkt = stub->toPacket(e);
+            if (!subPkt) return;
+            pkt->push(*(subPkt.get()));
+        }
+    }
+
+
 
     template<typename T>
     void setValue(T& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
@@ -114,11 +161,27 @@ namespace ssr {
         }
     }
 
+    template<typename T>
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+        if (data && data->isArray()) {
+            for (int i = 0; i < data->arraySize(); i++) {
+                auto e = data->get(i);
+                value.push_back(e->get<T>().value());
+            }
+        }
+    }
+
+
+    template<typename T>
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+        setArrayValue<T>(value, obj->get(key));
+    }
 
     template<typename T>
     void setValue(T& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
         setValue<T>(value, obj->get(key));
     }
+
 
     template<>
     inline void setValue<ssr::nanoros::time>(ssr::nanoros::time& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
@@ -138,6 +201,7 @@ namespace ssr {
       }
       v = data.value();
     }
+
 
     
   }

@@ -66,6 +66,15 @@ namespace ssr {
                 }
             }
 
+            template<typename T>
+            void pushVector(const std::vector<T>& val) {
+                const uint32_t size = val.size();
+                push<uint32_t>(size);
+                for (auto& e : val) {
+                    push(e);
+                }
+            }
+
             template<>
             void push<std::string>(const std::string& str) {
                 push<uint32_t>(str.length());
@@ -108,6 +117,7 @@ namespace ssr {
                 return pop<T>(this->popedCount_);
             }
 
+
             template<typename T>
             std::optional<T> pop(int32_t& popedCount) const {
                 if (bytes_.size() < popedCount+sizeof(T)) return std::nullopt;
@@ -120,6 +130,28 @@ namespace ssr {
 #endif
                 }
                 return buf;
+            }
+
+            template<typename T>
+            std::optional<std::vector<T>> popVector(int32_t& popedCount) const {
+                std::vector<T> retval;
+                auto size = pop<int32_t>(popedCount);
+                if (!size) {
+                    return std::nullopt;
+                }
+                if (bytes_.size() < popedCount + size.value()) {
+                    popedCount -= sizeof(int32_t);
+                    return std::nullopt;
+                }
+                for (size_t i = 0; i < size; i++) {
+                    auto buf = pop<T>(popedCount);
+                    if (!buf) {
+                        popedCount -= sizeof(T) * i;
+                        return std::nullopt;
+                    }
+                    retval.push_back(buf.value());
+                }
+                return retval;
             }
 
             std::optional<int32_t> popInt32() { return popInt32(this->popedCount_); } 
@@ -151,7 +183,7 @@ namespace ssr {
             std::optional<std::string> pop<std::string>(int32_t& popedCount) const {
                 auto size = pop<int32_t>(popedCount);
                 if (!size) {
-                    popedCount -= sizeof(int32_t);
+                    //popedCount -= sizeof(int32_t);
                     return std::nullopt;
                 }
                 if (bytes_.size() < popedCount + size.value()) {

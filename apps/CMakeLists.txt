@@ -20,7 +20,7 @@ endfunction(add_app)
 add_app(nanorostopic)
 add_app(nanorosservice)
 add_app(nanoroscore)
+add_app(nanorosmsgparser)
 
-message("APPS IS " ${APPS})
 
 install(TARGETS ${APPS})
