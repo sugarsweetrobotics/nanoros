@@ -3,6 +3,12 @@
 ## Description
 Nano-size ROS (Robot Operating System) implimentation.
 
+## Install
+
+### Binary Install (Windows)
+Currently, exe installer can be built with this project.
+Wait for a moment...please
+
 ### How to build
 ```
 $ git clone https://github.com/sugarsweetrobotics/nanoros.git
@@ -18,12 +24,14 @@ $ make
 ### How to use
 
 #### Environemntal Variables
+If you want to communicate with another host in which ROS system is launched, you need to set Environmental variables:
 ```
 $ export ROS_MASTER_URI=http://{your roscore host ip address}:{your roscore host port number}
 $ export ROS_IP={your machine IP address that is installed nanoros}
 ```
 
-Currently nanoros searches Data type stub in CURRENT DIRECTORY. In the standard build process, the pre-installed data-type stubs are placed in {nanoros_dir}/build/bin.
+#### Add Data Types
+Currently nanoros searches Data type stub in CURRENT DIRECTORY and $NANOROS_STUB_DIR. In the standard build process, the pre-installed data-type stubs are placed in {nanoros_dir}/build/bin.
 
 ```
 $ cd ${nanoros_dir}/build/bin
@@ -49,7 +57,10 @@ $ nanorosservice list # This will show rosservice list
   * Parameter (not implemented)
 
 * tools
-  * nanoroscore (not implemented)
+  * nanoroscore
+    * master_server
+    * parameter_server (not implemented)
+    * logging_server (not implemented)
   * nanorosnode (rosnode command) (not implemented)
   * nanorosmsg (not implemented)
   * nanorossrv (not implemented)
@@ -62,6 +73,8 @@ $ nanorosservice list # This will show rosservice list
     * list
     * type
     * call
+  * nanorosmsgparser (Msg file parser) (partly implemented)
+  * nanorossrvparser (not implemented)
   
 
 ## Platform
