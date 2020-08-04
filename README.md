@@ -64,16 +64,16 @@ $ nanorosservice list # This will show rosservice list
   * nanorosnode (rosnode command) (not implemented)
   * nanorosmsg (not implemented)
   * nanorossrv (not implemented)
-  * nanorostopic (rostopic command)
+  * nanorostopic 
     * list
     * type
     * echo
     * pub
-  * nanorosservice (rosservice command)
+  * nanorosservice
     * list
     * type
     * call
-  * nanorosmsgparser (Msg file parser) (partly implemented)
+  * nanorosmsgparser (partly implemented)
   * nanorossrvparser (not implemented)
   
 
