@@ -55,11 +55,11 @@ public:
     return nullptr;
   }
 public:
-  virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) override {
+  virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) override {
     if (getRegisteredSubscriber(topicName) != nullptr) return nullptr;
-    auto subscriber = createROSSubscriber(this, topicName, stub, func);
+    auto subscriber = createROSSubscriber(this, topicName, packer, func);
     if (!subscriber) return nullptr;
-    auto publishersInfo = master_->registerSubscriber(name_, topicName, stub->typeName(), slaveServer_->getSlaveUri());
+    auto publishersInfo = master_->registerSubscriber(name_, topicName, packer->typeName(), slaveServer_->getSlaveUri());
     if (publishersInfo->code) {
       for(auto& pub: publishersInfo->publishers) {
         subscriber->connect(pub, latching, negotiateTimeout);
@@ -114,11 +114,11 @@ public:
     }
   }
 
-  virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const double negotiateTimeout=1.0) override {
+  virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const double negotiateTimeout=1.0) override {
     if (getRegisteredPublisher(topicName) != nullptr) return nullptr;
-    auto publisher = createROSPublisher(this, topicName, stub);
+    auto publisher = createROSPublisher(this, topicName, packer);
     if (!publisher) return nullptr;
-    auto subscribersInfo = master_->registerPublisher(name_, topicName, stub->typeName(), slaveServer_->getSlaveUri());
+    auto subscribersInfo = master_->registerPublisher(name_, topicName, packer->typeName(), slaveServer_->getSlaveUri());
     if (subscribersInfo->code) {
       for(auto& sub: subscribersInfo->subscribers) {
         // do nothing
@@ -128,9 +128,9 @@ public:
     return publisher;
   }
 
-  virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) override {
+  virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) override {
     if (getRegisteredServiceProvider(srvName) != nullptr) return false;
-    auto provider = createROSServiceProvider(this, srvName, stub, func);
+    auto provider = createROSServiceProvider(this, srvName, packer, func);
     if (!provider) return false;
     auto subscribersInfo = master_->registerService(name_, srvName, provider->getUri(), slaveServer_->getSlaveUri());
     serviceProviders_.push_back(provider);

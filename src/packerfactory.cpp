@@ -6,7 +6,7 @@ using namespace ssr::nanoros;
 
 std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName) {
 
-    for (auto dirHint : stubDirHints_) {
+    for (auto dirHint : packerDirHints_) {
 
         auto dllproxy = createDLLProxy(dirHint + "/" + dirName, fileName);
         if (!dllproxy || (dllproxy && dllproxy->failed())) {

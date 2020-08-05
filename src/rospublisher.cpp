@@ -93,17 +93,17 @@ public:
 };
 
 class ROSPublisherImpl: public ROSPublisher {
-    const std::shared_ptr<ROSMsgPacker> stub_;
+    const std::shared_ptr<ROSMsgPacker> packer_;
     std::vector<std::shared_ptr<ROSPublisherWorker>> workers_;
 public:
-    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub) :  
-        ROSPublisher(node, topicName), stub_(stub) {
+    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer) :  
+        ROSPublisher(node, topicName), packer_(packer) {
     }
     virtual ~ROSPublisherImpl() {}
 
 public:
 
-    virtual std::string getTopicTypeName() const override { return stub_->typeName(); }
+    virtual std::string getTopicTypeName() const override { return packer_->typeName(); }
 
 public:
 
@@ -117,7 +117,7 @@ public:
 
     virtual bool publish(const ROSMsg& msg) override {
         try {
-            auto pkt = stub_->toPacket(msg);
+            auto pkt = packer_->toPacket(msg);
             if (pkt) {
                 for(auto& worker : workers_) {
                     worker->sendPacket(pkt);
@@ -138,14 +138,14 @@ public:
 
     virtual bool standBy(const std::string& caller_id, const std::string& selfIP, const int32_t port) override  {
         auto worker = std::make_shared<ROSPublisherWorker>();
-        worker->wait(caller_id, selfIP, port, getTopicName(), stub_->typeName(), stub_->md5sum(), false);
+        worker->wait(caller_id, selfIP, port, getTopicName(), packer_->typeName(), packer_->md5sum(), false);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         workers_.emplace_back(std::move(worker));
         return true;
     }
 };
 
-std::shared_ptr<ROSPublisher> ssr::nanoros::createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub) {
-    if (!stub) return nullptr;
-    return std::make_shared<ROSPublisherImpl>(node, topicName, stub);
+std::shared_ptr<ROSPublisher> ssr::nanoros::createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer) {
+    if (!packer) return nullptr;
+    return std::make_shared<ROSPublisherImpl>(node, topicName, packer);
 }

@@ -13,7 +13,7 @@ namespace ssr {
         class PackerFactoryBase {
         protected:
 
-            std::vector<std::string> stubDirHints_;
+            std::vector<std::string> packerDirHints_;
         public:
             virtual ~PackerFactoryBase() {}
 
@@ -21,41 +21,41 @@ namespace ssr {
 
 
         public:
-            void addPackerDirHint(const std::string& hint) { stubDirHints_.push_back(hint); }
+            void addPackerDirHint(const std::string& hint) { packerDirHints_.push_back(hint); }
         };
 
 
         template<typename T>
         class PackerFactory : public PackerFactoryBase {
         protected:
-            std::map<std::string, std::shared_ptr<T>> stubs_;
+            std::map<std::string, std::shared_ptr<T>> packers_;
             std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;
 
         public:
             PackerFactory() {
-                stubDirHints_.push_back(".");
+                packerDirHints_.push_back(".");
             }
             virtual ~PackerFactory() {}
 
         public:
-            virtual void registerPacker(const std::shared_ptr<T>& stub) {
-                if (!stub) return;
-                stubs_[stub->typeName()] = stub;
+            virtual void registerPacker(const std::shared_ptr<T>& packer) {
+                if (!packer) return;
+                packers_[packer->typeName()] = packer;
             }
 
 
             virtual bool tryLoadPackerDLL(const std::string& typeName) = 0;
 
             virtual std::shared_ptr<T> getPacker(const std::string& typeName) {
-                if (stubs_.count(typeName) == 0) {
+                if (packers_.count(typeName) == 0) {
                     if (tryLoadPackerDLL(typeName)) {
-                        if (stubs_.count(typeName) == 0) return nullptr;
-                        return stubs_[typeName];
+                        if (packers_.count(typeName) == 0) return nullptr;
+                        return packers_[typeName];
                     }
                     // std::cout << "WARN: Can not load DLL (" << serviceTypeName << ")" << std::endl;
                     return nullptr;
                 }
-                return stubs_[typeName];
+                return packers_[typeName];
             }
         public:
 

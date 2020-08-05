@@ -33,23 +33,23 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
 
   getROSMsgPackerFactory()->addPackerDirHint(absPath);
-  auto stubDir = ssr::nanoros::getEnv("NANOROS_STUB_DIR");
-  if (stubDir.length() > 0) {
-      if (stubDir.rfind('/') != stubDir.length() - 1) {
-          stubDir += '/';
+  auto packerDir = ssr::nanoros::getEnv("NANOROS_STUB_DIR");
+  if (packerDir.length() > 0) {
+      if (packerDir.rfind('/') != packerDir.length() - 1) {
+          packerDir += '/';
       }
-      getROSMsgPackerFactory()->addPackerDirHint(stubDir);
+      getROSMsgPackerFactory()->addPackerDirHint(packerDir);
 
   }
 
-  auto stubDirs = ssr::nanoros::getEnv("NANOROS_STUB_DIRS");
-  if (stubDirs.length() > 0) {
+  auto packerDirs = ssr::nanoros::getEnv("NANOROS_STUB_DIRS");
+  if (packerDirs.length() > 0) {
 #ifdef WIN32
       const char sep = ';';
 #else
       const char sep = ':';
 #endif
-      auto dirs = ssr::nanoros::stringSplit(stubDirs, sep);
+      auto dirs = ssr::nanoros::stringSplit(packerDirs, sep);
       for (auto dir : dirs) {
           if (dir.rfind('/') != dir.length() - 1) {
               dir += '/';
@@ -59,9 +59,9 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   }
 
 
-  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../share/nanoros/stubs/");
+  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../share/nanoros/packers/");
 #ifdef WIN32
-  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../../share/nanoros/stubs/");
+  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../../share/nanoros/packers/");
 #else
 
 #endif

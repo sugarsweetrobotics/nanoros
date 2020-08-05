@@ -24,7 +24,7 @@ namespace ssr {
         };
 
 
-        std::shared_ptr<ROSServiceProvider> createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& stub,
+        std::shared_ptr<ROSServiceProvider> createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer,
             const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func);
 
         // std::shared_ptr<ROSServiceProvider> serviceProvider(const std::shared_ptr<ROSMaster>& master, const std::string& caller_id, const std::string& service_name);

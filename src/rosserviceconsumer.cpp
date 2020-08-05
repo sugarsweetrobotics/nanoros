@@ -52,17 +52,17 @@ public:
     }
 
 
-    virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvPacker>& stub, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) override {
+    virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvPacker>& packer, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) override {
         if (!arg) return nullptr;
-        if (!stub) return nullptr;
+        if (!packer) return nullptr;
         if (!tcpros_) return nullptr;
-        if (!tcpros_->sendPacket(stub->toPacket(*arg.get()))) return nullptr;
+        if (!tcpros_->sendPacket(packer->toPacket(*arg.get()))) return nullptr;
         
         int popedCount = 0;
         auto ok = tcpros_->receiveByte(timeout);
         if (!ok) return nullptr;
         if (ok.value()) {
-            return stub->toSrvResponse(tcpros_->receivePacket(timeout), popedCount);
+            return packer->toSrvResponse(tcpros_->receivePacket(timeout), popedCount);
         }
 
         auto msg = tcpros_->receiveString(timeout);

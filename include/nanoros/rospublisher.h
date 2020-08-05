@@ -37,7 +37,7 @@ namespace ssr {
     };
 
 
-    std::shared_ptr<ROSPublisher> createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub);
+    std::shared_ptr<ROSPublisher> createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer);
 
   }
 }

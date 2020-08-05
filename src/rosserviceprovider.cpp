@@ -16,24 +16,24 @@ class ROSServiceProviderImpl : public ROSServiceProvider {
 
 private:
     int32_t port_;
-    const std::shared_ptr<ROSSrvPacker> stub_;
+    const std::shared_ptr<ROSSrvPacker> packer_;
     const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)> callback_;
     std::shared_ptr<std::thread> thread_;
     std::shared_ptr<TCPROS> tcpros_;
 public:
-    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) :
-        ROSServiceProvider(node, serviceName), stub_(stub), callback_(func) {
+    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) :
+        ROSServiceProvider(node, serviceName), packer_(packer), callback_(func) {
         port_ = getEmptyPort(40000);
 
         thread_ = std::make_shared<std::thread>([this]() {
             std::map<std::string, std::string> hdr;
 
             hdr["callerid"] = node_->name();
-            hdr["md5sum"] = stub_->md5sum();
+            hdr["md5sum"] = packer_->md5sum();
             hdr["service"] = getServiceName();
-            hdr["type"] = stub_->typeName();
-            hdr["response_type"] = stub_->typeName() + "Response";
-            hdr["request_type"] = stub_->typeName() + "Request";
+            hdr["type"] = packer_->typeName();
+            hdr["response_type"] = packer_->typeName() + "Response";
+            hdr["request_type"] = packer_->typeName() + "Request";
 
             tcpros_ = tcpros_server();
             tcpros_->bind("0.0.0.0", port_);
@@ -62,7 +62,7 @@ public:
                         if (tcpros_->isConnected() == false) break;
 
                         auto pkt = tcpros_->receivePacket();
-                        auto req = stub_->toSrvRequest(pkt);
+                        auto req = packer_->toSrvRequest(pkt);
                         if (!req) {
                             tcpros_->sendByte(0);
                             tcpros_->sendString("Invalid Request Message");
@@ -74,7 +74,7 @@ public:
                             tcpros_->sendString("Provider's callback can not create Response");
                             continue;
                         }
-                        auto respkt = stub_->toPacket(*res.get());
+                        auto respkt = packer_->toPacket(*res.get());
                         if (!respkt) {
                             tcpros_->sendByte(0);
                             tcpros_->sendString("Provider's callback created invalid Response");
@@ -112,10 +112,10 @@ public:
 
 };
 
-std::shared_ptr<ROSServiceProvider> ssr::nanoros::createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& stub,
+std::shared_ptr<ROSServiceProvider> ssr::nanoros::createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer,
             const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func)
             {
 
-	 if (!stub) return nullptr;
-	return std::make_shared<ROSServiceProviderImpl>(node, serviceName, stub, func);
+	 if (!packer) return nullptr;
+	return std::make_shared<ROSServiceProviderImpl>(node, serviceName, packer, func);
 }

@@ -28,7 +28,7 @@ namespace ssr {
     class NANOROS_API ROSMsgPacker {
     protected:
       friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgPacker>>;
-      std::map<std::string, std::shared_ptr<ROSMsgPacker>> stubs_;
+      std::map<std::string, std::shared_ptr<ROSMsgPacker>> packers_;
 
     public:
       std::shared_ptr<ROSMsgPacker> getMsgPacker(const std::string& key);
@@ -55,11 +55,11 @@ namespace ssr {
 
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
-      if (!stub) return;
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+      if (!packer) return;
       if (!data) return;
 
-      std::shared_ptr<ROSMsg> val = stub->fromJSON(data);
+      std::shared_ptr<ROSMsg> val = packer->fromJSON(data);
       if (!val) return;
       auto v = std::dynamic_pointer_cast<T>(val);
       if (v) {
@@ -68,13 +68,13 @@ namespace ssr {
     }
 
     template<typename T>
-    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
-        if (!stub) return;
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+        if (!packer) return;
         if (!data) return;
         if (!data->isArray()) return;
         for (int i = 0; i < data->arraySize(); i++) {
             auto e = data->get(i);
-            std::shared_ptr<ROSMsg> val = stub->fromJSON(e);
+            std::shared_ptr<ROSMsg> val = packer->fromJSON(e);
             if (!val) return;
             auto v = std::dynamic_pointer_cast<T>(val);
             if (v) {
@@ -84,19 +84,19 @@ namespace ssr {
     }
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
-        setValue<T>(value, stub, obj->get(key));
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+        setValue<T>(value, packer, obj->get(key));
     }
 
     template<typename T>
-    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
-        setArrayValue<T>(value, stub, obj->get(key));
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+        setArrayValue<T>(value, packer, obj->get(key));
     }
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
-        if (!stub) return;
-        auto rosMsg= stub->toMsg(msg, popedCount);
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
+        if (!packer) return;
+        auto rosMsg= packer->toMsg(msg, popedCount);
         if (!rosMsg) return;
         auto val = std::dynamic_pointer_cast<const T>(rosMsg);
         if (!val) return;
@@ -116,12 +116,12 @@ namespace ssr {
     }
 
     template<typename T>
-    void pushValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
-        if (!stub) return;
+    void pushValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& packer, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
+        if (!packer) return;
         auto size = msg->pop<uint32_t>(popedCount);
         if (!size) return;
         for(int i = 0;i < size.value();i++) {
-          auto rosMsg= stub->toMsg(msg, popedCount);
+          auto rosMsg= packer->toMsg(msg, popedCount);
           if (!rosMsg) return;
           auto val = std::dynamic_pointer_cast<const T>(rosMsg);
           if (!val) return;
@@ -130,23 +130,23 @@ namespace ssr {
     }
 
     template<typename T>
-    void pushValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& stub, const T& value) {
+    void pushValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& packer, const T& value) {
       if (!pkt) return;
-      if (!stub) return;
-      //auto subPkt = stub->toPacket(std::make_shared<T>(value));
-      auto subPkt = stub->toPacket(value);
+      if (!packer) return;
+      //auto subPkt = packer->toPacket(std::make_shared<T>(value));
+      auto subPkt = packer->toPacket(value);
       if (!subPkt) return;
       pkt->push(*(subPkt.get()));
     }
 
     template<typename T>
-    void pushVectorValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& stub, const std::vector<T>& value) {
+    void pushVectorValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& packer, const std::vector<T>& value) {
         if (!pkt) return;
-        if (!stub) return;
+        if (!packer) return;
         uint32_t size = value.size();
         pkt->push<uint32_t>(size);
         for (auto& e : value) {
-            auto subPkt = stub->toPacket(e);
+            auto subPkt = packer->toPacket(e);
             if (!subPkt) return;
             pkt->push(*(subPkt.get()));
         }

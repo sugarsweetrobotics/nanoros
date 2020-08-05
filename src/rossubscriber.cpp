@@ -18,11 +18,11 @@ private:
 	std::shared_ptr<TCPROS> tcpros_;
 	std::string host_;
 	int32_t port_;
-  const std::shared_ptr<ROSMsgPacker> stub_;
+  const std::shared_ptr<ROSMsgPacker> packer_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
-	ROSSubscriberWorker(const std::shared_ptr<ROSMsgPacker>& stub, 
-       const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) : receiveTimeout_(1.0), stub_(stub), callback_(callback) {}
+	ROSSubscriberWorker(const std::shared_ptr<ROSMsgPacker>& packer, 
+       const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) : receiveTimeout_(1.0), packer_(packer), callback_(callback) {}
 	virtual ~ROSSubscriberWorker() {}
 
 public:
@@ -64,7 +64,7 @@ public:
   virtual void spinOnce() {
 	if(tcpros_) {
 		auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
-		auto maybeMsg = stub_->toMsg(maybePacket);
+		auto maybeMsg = packer_->toMsg(maybePacket);
 		if (maybeMsg) {
 			callback_(maybeMsg);
 		}
@@ -77,17 +77,17 @@ public:
 class ROSSubscriberImpl : public ROSSubscriber {
 private:
   std::vector<std::shared_ptr<ROSSubscriberWorker>> workers_;
-  const std::shared_ptr<ROSMsgPacker> stub_;
+  const std::shared_ptr<ROSMsgPacker> packer_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
-	virtual std::string getTopicTypeName() const override { return stub_->typeName(); }
-  const std::shared_ptr<ROSMsgPacker>& stub() { return stub_; }
-  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
-  	ROSSubscriber(node, topicName), stub_(stub), callback_(func) {}
+	virtual std::string getTopicTypeName() const override { return packer_->typeName(); }
+  const std::shared_ptr<ROSMsgPacker>& packer() { return packer_; }
+  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
+  	ROSSubscriber(node, topicName), packer_(packer), callback_(func) {}
 
 private:
   virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
-	  auto worker = std::make_shared<ROSSubscriberWorker>(stub_, callback_);
+	  auto worker = std::make_shared<ROSSubscriberWorker>(packer_, callback_);
 	  if(worker->connect(host, port)) {
 		  workers_.push_back(worker);
 		  return std::static_pointer_cast<ROSSubscriberWorker>(worker);
@@ -107,7 +107,7 @@ public:
 	auto worker = connect(result->protocolInfo.arg0, result->protocolInfo.arg1);
 	if (!worker) { return false;
 	}
-	if (!worker->negotiateHeader(node_->name(), topicName_, stub_->typeName(), stub_->md5sum(), latching, negotiateTimeout)) return false;
+	if (!worker->negotiateHeader(node_->name(), topicName_, packer_->typeName(), packer_->md5sum(), latching, negotiateTimeout)) return false;
 
 	workers_.emplace_back(std::move(worker));	
 	return true;
@@ -143,7 +143,7 @@ public:
 
 
 std::shared_ptr<ROSSubscriber> ssr::nanoros::createROSSubscriber(ROSNode* node, const std::string& topicName,
- const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) {
-	 if (!stub) return nullptr;
-	return std::static_pointer_cast<ROSSubscriber>(std::make_shared<ROSSubscriberImpl>(node, topicName, stub, func));
+ const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) {
+	 if (!packer) return nullptr;
+	return std::static_pointer_cast<ROSSubscriber>(std::make_shared<ROSSubscriberImpl>(node, topicName, packer, func));
 }

@@ -19,7 +19,7 @@ namespace ssr {
 
     class NANOROS_API  ROSSrvPacker {
     protected:
-      std::map<std::string, std::shared_ptr<ROSMsgPacker>> stubs_;
+      std::map<std::string, std::shared_ptr<ROSMsgPacker>> packers_;
 
     public:
       std::shared_ptr<ROSMsgPacker> getMsgPacker(const std::string& key);
