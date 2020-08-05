@@ -1,7 +1,7 @@
 
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/manually_generated_stubs)
+include_directories(${CMAKE_SOURCE_DIR}/manually_generated_packers)
 #include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(EXT_LIBRARIES nanoros)

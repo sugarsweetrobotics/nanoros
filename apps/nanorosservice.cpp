@@ -72,13 +72,13 @@ int main(const int argc, const char* argv[]) {
       auto tn = srv->typeName();
       if (!tn) return -1;
       const std::string dataStr = argc >= 4 ? argv[3] : "{}";
-      auto stub = getROSSrvPackerFactory()->getPacker(tn.value());
-      if (!stub) {
+      auto packer = getROSSrvPackerFactory()->getPacker(tn.value());
+      if (!packer) {
         std::cout << "ERROR: Service Type Packer not found(" << tn.value() << ")" << std::endl;
         return -1;
       }
-      auto arg = stub->fromJSON(fromJSONString(dataStr));
-      auto result = srv->call(stub, arg);
+      auto arg = packer->fromJSON(fromJSONString(dataStr));
+      auto result = srv->call(packer, arg);
       if (!result) return -1;
       std::cout << result->prettyString() << std::ends;
     }

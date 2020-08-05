@@ -4,7 +4,7 @@
       Name="NANOROS_ROOT" Value="[INSTALL_ROOT]" />
     <Environment Id="CM_CP_bin.nanoros.path" Action="set" Part="last"
       Name="PATH" Value="[INSTALL_ROOT]@RUNTIME_INSTALL_DIR@" />
-    <Environment Id="CM_CP_bin.nanoros.stub_path" Action="set" Part="last"
-      Name="NANOROS_STUB_DIRS" Value="[INSTALL_ROOT]@STUB_INSTALL_DIR@" />
+    <Environment Id="CM_CP_bin.nanoros.packer_path" Action="set" Part="last"
+      Name="NANOROS_PACKER_DIRS" Value="[INSTALL_ROOT]@PACKER_INSTALL_DIR@" />
   </CPackWiXFragment>
 </CPackWiXPatch>

@@ -52,14 +52,14 @@ namespace ssr::nanoros {
 
 
 #ifdef WIN32
-#define STUBFACTORY_EXPORT __declspec(dllexport)
+#define PACKERFACTORY_EXPORT __declspec(dllexport)
 #else
-#define STUBFACTORY_EXPORT
+#define PACKERFACTORY_EXPORT
 #endif
 
 extern "C" {
 
-    STUBFACTORY_EXPORT void init_msg_std_msgs_Int32(void* factory) {
+    PACKERFACTORY_EXPORT void init_msg_std_msgs_Int32(void* factory) {
         static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::std_msgs::Int32Packer>());
     }
 

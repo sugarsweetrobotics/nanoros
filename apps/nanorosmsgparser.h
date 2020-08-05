@@ -7,7 +7,7 @@ const std::string hdr_part[] = {
 	R"(
 #pragma once
 #include "nanoros/rosmsg.h"
-#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
 #include <sstream>
 #include <string>
 )",
@@ -21,7 +21,7 @@ const std::string src_part[] = {
 	R"(
 #include "nanoros/nanoros_define.h"
 
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 #include "nanoros/rostcpros.h"
 )"
 
@@ -29,7 +29,7 @@ const std::string src_part[] = {
 
 const std::string msgcmk[] = {
     R"(
-function(add_msg_stub PKGNAME NAME)
+function(add_msg_packer PKGNAME NAME)
   add_library(${PKGNAME}_${NAME} SHARED ${NAME}.h ${NAME}.cpp)
   target_link_libraries(${PKGNAME}_${NAME} ${EXT_LIBRARIES})
   set_target_properties(${PKGNAME}_${NAME} 
@@ -42,20 +42,20 @@ function(add_msg_stub PKGNAME NAME)
   )
   set_target_properties(${PKGNAME}_${NAME}
     PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/msg"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/msg"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/msg" 
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/msg"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/msg"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/msg" 
   )
   install(TARGETS ${PKGNAME}_${NAME}
-    RUNTIME DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/msg"
-    LIBRARY DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/msg"
-    ARCHIVE DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/msg"
-    PUBLIC_HEADER DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/msg"
+    RUNTIME DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
+    LIBRARY DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
+    ARCHIVE DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
+    PUBLIC_HEADER DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
   )
   install(FILES ${NAME}.msg
-    DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/msg"
+    DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
   )
-endfunction(add_msg_stub)
+endfunction(add_msg_packer)
 
 )"
 };
@@ -63,7 +63,7 @@ endfunction(add_msg_stub)
 const std::string srvcmk[] = {
     R"(
 
-function(add_srv_stub PKGNAME NAME)
+function(add_srv_packer PKGNAME NAME)
   add_library(${PKGNAME}_${NAME} SHARED srv/${NAME}.h srv/${NAME}.cpp)
   target_link_libraries(${PKGNAME}_${NAME} ${EXT_LIBRARIES})
   set_target_properties(${PKGNAME}_${NAME} 
@@ -76,17 +76,17 @@ function(add_srv_stub PKGNAME NAME)
   )
   set_target_properties(${PKGNAME}_${NAME}
     PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/srv"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/srv"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${STUB_BASE_DIR}/${PKGNAME}/srv" 
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/srv"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/srv"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/srv" 
   )
   install(TARGETS ${PKGNAME}_${NAME}
-    RUNTIME DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/srv"
-    LIBRARY DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/srv"
-    ARCHIVE DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/srv"
-    PUBLIC_HEADER DESTINATION "${STUB_BASE_DIR}/${PKGNAME}/srv"
+    RUNTIME DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/srv"
+    LIBRARY DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/srv"
+    ARCHIVE DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/srv"
+    PUBLIC_HEADER DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/srv"
   )
-endfunction(add_srv_stub)
+endfunction(add_srv_packer)
 
 
 )"
@@ -121,7 +121,7 @@ link_directories(${nanoros_LIB_DIR})
 
 set(EXT_LIBRARIES nanoros)
 
-set(STUB_BASE_DIR share/nanoros/stubs)
+set(PACKER_BASE_DIR share/nanoros/packers)
 set(LIB_INSTALL_DIR lib)
 
 
@@ -136,7 +136,7 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/${PROJECT_NAME}Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/${PROJECT_NAME}/cmake
-  PATH_VARS STUB_BASE_DIR)
+  PATH_VARS PACKER_BASE_DIR)
 
 )",
 

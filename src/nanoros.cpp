@@ -33,7 +33,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
 
   getROSMsgPackerFactory()->addPackerDirHint(absPath);
-  auto packerDir = ssr::nanoros::getEnv("NANOROS_STUB_DIR");
+  auto packerDir = ssr::nanoros::getEnv("NANOROS_PACKER_DIR");
   if (packerDir.length() > 0) {
       if (packerDir.rfind('/') != packerDir.length() - 1) {
           packerDir += '/';
@@ -42,7 +42,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
   }
 
-  auto packerDirs = ssr::nanoros::getEnv("NANOROS_STUB_DIRS");
+  auto packerDirs = ssr::nanoros::getEnv("NANOROS_PACKER_DIRS");
   if (packerDirs.length() > 0) {
 #ifdef WIN32
       const char sep = ';';

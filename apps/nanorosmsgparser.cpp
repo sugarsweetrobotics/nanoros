@@ -16,7 +16,7 @@ using namespace msgparser;
 
 namespace fs = std::filesystem;
 
-// TOOD: ˆË‘¶æƒpƒbƒP[ƒW‚ğ‹L‰¯‚µ‚Ä‚¨‚¢‚ÄAƒRƒ“ƒpƒCƒ‹‚ÌƒCƒ“ƒNƒ‹[ƒh‚Ìî•ñ‚É‰Á‚¦‚é•‚¯‚É‚·‚é
+// TOOD: ï¿½Ë‘ï¿½ï¿½ï¿½pï¿½bï¿½Pï¿½[ï¿½Wï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ÄAï¿½Rï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½Ìï¿½ï¿½É‰ï¿½ï¿½ï¿½ï¿½é•ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
 std::vector<fs::path> dependentPackages;
 
 
@@ -78,20 +78,20 @@ int parseMsgDir(fs::path& inputPath, const fs::path& outputPath, const std::vect
 
 
 	std::ofstream cmakeFile(msg_outputDir / "CMakeLists.txt");
-	// TODO: CMake‚Ì©“®¶¬
+	// TODO: CMakeï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	cmakeFile << "# cmake for " << inputPath.filename() / "msg" << std::endl;
-	cmakeFile << "set(_" << pkgName << "_STUBS)";
+	cmakeFile << "set(_" << pkgName << "_PACKERS)";
 	
     cmakeFile << msgcmk[0];
 	for (auto& msgName : msgNames) {
-		cmakeFile << "add_msg_stub(" << pkgName << " " << msgName << ")" << std::endl;
-		cmakeFile << "set(_" << pkgName << "_STUBS " << "${_" << pkgName << "_STUBS} " << pkgName << "_" << msgName << ")" << std::endl;
+		cmakeFile << "add_msg_packer(" << pkgName << " " << msgName << ")" << std::endl;
+		cmakeFile << "set(_" << pkgName << "_PACKERS " << "${_" << pkgName << "_PACKERS} " << pkgName << "_" << msgName << ")" << std::endl;
 
 	}
-	cmakeFile << "set(" << pkgName << "_STUBS " << "${_" << pkgName << "_STUBS} PARENT_SCOPE)" << std::endl;
+	cmakeFile << "set(" << pkgName << "_PACKERS " << "${_" << pkgName << "_PACKERS} PARENT_SCOPE)" << std::endl;
 
 
-	cmakeFile << "INSTALL(TARGETS ${" << pkgName << "_STUBS}" << std::endl;
+	cmakeFile << "INSTALL(TARGETS ${" << pkgName << "_PACKERS}" << std::endl;
 	cmakeFile << "	RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR}" << std::endl;
 	cmakeFile << "	LIBRARY DESTINATION ${LIB_INSTALL_DIR}" << std::endl;
 	cmakeFile << "	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}" << std::endl;
@@ -106,7 +106,7 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 	if (ret < 0) return ret;
 
 	std::ofstream cmakeFile(outputPath / inputPath.filename() / "CMakeLists.txt");
-	// TODO: CMake‚Ì©“®¶¬
+	// TODO: CMakeï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	std::string pkgName = inputPath.filename().string();
 
 	cmakeFile << "# cmake for " << inputPath.filename() << std::endl;
@@ -125,7 +125,7 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 	std::ofstream cmakeInFile(outputPath / inputPath.filename() / "cmake" / ( pkgName + "Config.cmake.in"));
 	cmakeInFile << "set(" << pkgName << "_VERSION 0.0.1)\n"
 		<< "@PACKAGE_INIT@\n"
-		<< "set_and_check(" << pkgName << "__DIR \"@PACKAGE_STUB_BASE_DIR@\")\n"
+		<< "set_and_check(" << pkgName << "__DIR \"@PACKAGE_PACKER_BASE_DIR@\")\n"
 		<< "check_required_components(nanoros)\n";
 
 	std::ofstream cmakePatchFile(outputPath / inputPath.filename() / "cmake" / (pkgName + ".wix.patch.in"));
@@ -133,7 +133,7 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 		"<CPackWiXPatch>\n"
 		"  <CPackWiXFragment Id=\"CM_CP_bin." << pkgName << ".dll\" >\n"
 		"    <Environment Id=\"CM_CP_bin." << pkgName << ".root\" Action=\"set\" Part=\"last\" Name=\"" << pkgName << "_ROOT\" Value=\"[INSTALL_ROOT]\" />\n"
-		"    <Environment Id=\"CM_CP_bin." << pkgName << ".stub_path\" Action=\"set\" Part=\"last\" Name=\"" << pkgName << "_STUB_DIRS\" Value=\"[INSTALL_ROOT]@STUB_BASE_DIR@\" />\n"
+		"    <Environment Id=\"CM_CP_bin." << pkgName << ".packer_path\" Action=\"set\" Part=\"last\" Name=\"" << pkgName << "_PACKER_DIRS\" Value=\"[INSTALL_ROOT]@PACKER_BASE_DIR@\" />\n"
 		"  </CPackWiXFragment>\n"
 		"</CPackWiXPatch>" << std::endl;
 
@@ -143,8 +143,8 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 	return 0;
 }
 
-// TODO: ˆË‘¶ŠÖŒW‚ª‚ ‚éƒpƒbƒP[ƒW‚ÌƒfƒBƒŒƒNƒgƒŠ‚ğˆø”‚ğ‚Æ‚µ‚Äæ“¾‚·‚éH
-// buildin‚ğ“Á•Êˆµ‚¢‚µ‚½‚­‚È‚¢
+// TODO: ï¿½Ë‘ï¿½ï¿½ÖŒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½bï¿½Pï¿½[ï¿½Wï¿½Ìƒfï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äæ“¾ï¿½ï¿½ï¿½ï¿½H
+// buildinï¿½ï¿½ï¿½ï¿½Êˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 
 int main(const int argc, const char* argv[]) {
 
@@ -170,7 +170,7 @@ int main(const int argc, const char* argv[]) {
 		}
 	}
 
-	auto buf = std::getenv("NANOROS_STUB_DIRS");
+	auto buf = std::getenv("NANOROS_PACKER_DIRS");
 	if (buf) {
 #if WIN32
 		char sep = ';';

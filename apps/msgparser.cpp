@@ -30,18 +30,18 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 	}
 
 	ss << hdr_part[1] << std::endl;
-	// ƒl[ƒ€ƒXƒy[ƒX‘g‚İ—§‚Ä
+	// ï¿½lï¿½[ï¿½ï¿½ï¿½Xï¿½yï¿½[ï¿½Xï¿½gï¿½İ—ï¿½ï¿½ï¿½
 	ss << "    namespace " << msgInfo.packageName << " {" << std::endl;
-	// ƒNƒ‰ƒXéŒ¾
+	// ï¿½Nï¿½ï¿½ï¿½Xï¿½éŒ¾
 	ss << "        struct " << msgInfo.typeName << " : public ROSMsg {" << std::endl;
 
-	// ƒƒ“ƒo•Ï”éŒ¾
+	// ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Ïï¿½ï¿½éŒ¾
 	for (auto& tv : msgInfo.typedValues) {
 		ss << "            " << concat_member(tv, msgInfo.packageName) << ";" << std::endl;
 	}
 
 	ss << "            " << std::endl;
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^iˆø”‚ ‚èj
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½j
 	ss << "            " << msgInfo.typeName << "(";
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
@@ -55,7 +55,7 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 		if (i != msgInfo.typedValues.size() - 1) ss << ", ";
 	}
 	ss << " {}" << std::endl;
-	// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	ss << "            " << msgInfo.typeName << "():";
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
@@ -63,15 +63,15 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 		if (i != msgInfo.typedValues.size() - 1) ss << ", ";
 	}
 	ss << " {}" << std::endl;
-	// ƒfƒXƒgƒ‰ƒNƒ^
+	// ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	ss << "            virtual ~" << msgInfo.typeName << "() {}" << std::endl;
 	ss << "\n";
-	// •¶š—ñ¶¬
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ñ¶ï¿½
 	ss << "            virtual std::string prettyString(const std::string& indent=\"\") const {" << std::endl;
 	ss << "                std::stringstream ss;" << std::endl;
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
-		if (is_array(tv.typeName)) { // ‚à‚µ”z—ñŒ^‚¾‚Á‚½‚çEEE
+		if (is_array(tv.typeName)) { // ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Eï¿½E
 			auto elemTypeName = tv.typeName.substr(0, tv.typeName.length() - 2);
 			if (to_cxx_typeName(elemTypeName)) {
 				ss << "                ss << indent << \"" << tv.valueName << "\" << \": [\";" << std::endl;
@@ -92,7 +92,7 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 				ss << "                }" << std::endl;
 			}
 		}
-		else { // ”z—ñŒ^‚Å‚Í‚È‚¢ê‡
+		else { // ï¿½zï¿½ï¿½^ï¿½Å‚Í‚È‚ï¿½ï¿½ê‡
 			if (to_cxx_typeName(tv.typeName)) {
 				ss << "                ss << indent << \"" << tv.valueName << "\" << ':' << " << tv.valueName << " << std::endl;" << std::endl;
 			}
@@ -106,7 +106,7 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 	ss << "            }" << std::endl;
 	ss << "        };" << std::endl;
 	ss << "    }" << std::endl;
-	// ƒ^ƒCƒv•¶š—ñæ“¾ŠÖ”
+	// ï¿½^ï¿½Cï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½Öï¿½
 	ss << "    template<>" << std::endl;
 	ss << "    std::string msgTypeName<" << msgInfo.packageName << "::" << msgInfo.typeName << ">() { return \""
 		<< msgInfo.packageName << "/" << msgInfo.typeName << "\"; }" << std::endl;
@@ -117,22 +117,22 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 	std::stringstream ss;
 	ss << src_part[0];
-	// ƒwƒbƒ_ƒtƒ@ƒCƒ‹
+	// ï¿½wï¿½bï¿½_ï¿½tï¿½@ï¿½Cï¿½ï¿½
 	ss << "#include \"" << msgInfo.typeName << ".h\"" << std::endl;
-	// ƒl[ƒ€ƒXƒy[ƒX‘g‚İ—§‚Ä
+	// ï¿½lï¿½[ï¿½ï¿½ï¿½Xï¿½yï¿½[ï¿½Xï¿½gï¿½İ—ï¿½ï¿½ï¿½
 	ss << "namespace ssr::nanoros {" << std::endl;
 	ss << "    namespace " << msgInfo.packageName << " {" << std::endl;
-	// ƒNƒ‰ƒXéŒ¾
+	// ï¿½Nï¿½ï¿½ï¿½Xï¿½éŒ¾
 	ss << "        class " << msgInfo.typeName << "Stub : public ROSMsgStub {" << std::endl;
 	ss << "        private:" << std::endl;
 	ss << "            using DataType = " << msgInfo.typeName << ";" << std::endl;
 	ss << "        public:" << std::endl;
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^AƒfƒXƒgƒ‰ƒNƒ^
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½Aï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	ss << "            " << msgInfo.typeName
 		<< "Stub() {}" << std::endl;
 	ss << "            virtual ~" << msgInfo.typeName << "Stub() {}" << std::endl;
 	ss << "        public:" << std::endl;
-	// Stub—pƒƒ\ƒbƒh
+	// Stubï¿½pï¿½ï¿½ï¿½\ï¿½bï¿½h
 	ss << "            virtual std::string md5sum() const override { return \"" << msgInfo.md5sum << "\"; }" << std::endl;
 	ss << "            virtual std::string typeName() const override { return \"" << msgInfo.packageName << "/" << msgInfo.typeName << "\"; }" << std::endl;
 	ss << "            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override {" << std::endl;
@@ -217,13 +217,13 @@ std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 	ss << "}" << std::endl;
 	ss << std::endl;
 	ss << "#ifdef WIN32" << std::endl;
-	ss << "#define STUBFACTORY_EXPORT __declspec(dllexport)" << std::endl;
+	ss << "#define PACKERFACTORY_EXPORT __declspec(dllexport)" << std::endl;
 	ss << "#else" << std::endl;
-	ss << "#define STUBFACTORY_EXPORT" << std::endl;
+	ss << "#define PACKERFACTORY_EXPORT" << std::endl;
 	ss << "#endif" << std::endl;
 	ss << std::endl;
 	ss << "extern \"C\" {" << std::endl;
-	ss << "    STUBFACTORY_EXPORT void init_msg_" << msgInfo.packageName << "_" << msgInfo.typeName << "(void* factory) {" << std::endl;
+	ss << "    PACKERFACTORY_EXPORT void init_msg_" << msgInfo.packageName << "_" << msgInfo.typeName << "(void* factory) {" << std::endl;
 	ss << "        static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::" << msgInfo.packageName << "::" << msgInfo.typeName << "Stub>());" << std::endl;
 	ss << "    }" << std::endl;
 	ss << "}" << std::endl;
@@ -366,7 +366,7 @@ std::optional<std::string> msgparser::parse_md5(const fs::path& path, const std:
 			if (!to_cxx_typeName(tokens[0])) { // Not primitive type
 
 				if (tokens[0].find('/') == std::string::npos) {
-					// msg struct‚È‚ñ‚¾‚¯‚ÇA'/'‚ªŠÜ‚Ü‚ê‚È‚¢‚Æ‚¢‚¤‚±‚Æ‚ÅA“¯ˆêƒfƒBƒŒƒNƒgƒŠ‚Émsg‚ª‚ ‚é‚Æ‚í‚©‚é
+					// msg structï¿½È‚ñ‚¾‚ï¿½ï¿½ÇA'/'ï¿½ï¿½ï¿½Ü‚Ü‚ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ÅAï¿½ï¿½ï¿½ï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½msgï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚í‚©ï¿½ï¿½
 					auto h = parse_md5((path.parent_path() / tokens[0]).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
 					ss << h.value() << " " << tokens[1];
 				}

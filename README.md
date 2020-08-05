@@ -31,7 +31,7 @@ $ export ROS_IP={your machine IP address that is installed nanoros}
 ```
 
 #### Add Data Types
-Currently nanoros searches Data type stub in CURRENT DIRECTORY and $NANOROS_STUB_DIR. In the standard build process, the pre-installed data-type stubs are placed in {nanoros_dir}/build/bin.
+Currently nanoros searches Data type PACKER in CURRENT DIRECTORY and $NANOROS_PACKER_DIR. In the standard build process, the pre-installed data-type packers are placed in {nanoros_dir}/build/bin.
 
 ```
 $ cd ${nanoros_dir}/build/bin

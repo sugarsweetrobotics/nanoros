@@ -67,13 +67,13 @@ int main(const int argc, const char* argv[]) {
       if (argc >= 3) {
         const std::string topicName = argv[2];
         const std::string topicTypeName = topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName);
-        auto stub = getROSMsgPackerFactory()->getPacker(topicTypeName);
-        if (!stub) {
+        auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
+        if (!packer) {
           std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
           return -1;
         }
         auto node = registerROSNode("/nanorostopic_echo");
-        node->subscribe(topicName, stub, [](auto& topic) {
+        node->subscribe(topicName, packer, [](auto& topic) {
 					   std::cout << topic->prettyString() << std::endl 
                        << "---" << std::endl;
         });
@@ -87,16 +87,16 @@ int main(const int argc, const char* argv[]) {
         const std::string topicName = argv[2];
         const std::string topicTypeName = argv[3];
         const std::string topicDataStr = argv[4];
-        auto stub = getROSMsgPackerFactory()->getPacker(topicTypeName);
-        if (!stub) {
+        auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
+        if (!packer) {
           std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
           return -1;
         }
         auto node = registerROSNode("/nanorostopic_pub");
-        auto pub =node->advertise(topicName, stub);
+        auto pub =node->advertise(topicName, packer);
         while(!ssr::nanoros::is_shutdown()) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
-          pub->publish(stub->fromJSON(fromJSONString(topicDataStr)));
+          pub->publish(packer->fromJSON(fromJSONString(topicDataStr)));
           node->spinOnce();
         }
       }
