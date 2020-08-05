@@ -10,3 +10,6 @@
 [submodule "thirdparty/plog"]
 	path = thirdparty/plog
 	url = https://github.com/SergiusTheBest/plog.git
+[submodule "thirdparty/hashlibpp"]
+	path = thirdparty/hashlibpp
+	url = https://github.com/sugarsweetrobotics/hashlibpp
