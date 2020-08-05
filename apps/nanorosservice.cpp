@@ -7,7 +7,7 @@
 #include "nanoros/rosutil.h"
 #include "nanoros/rosmaster.h"
 #include "nanoros/rosnode.h"
-#include "nanoros/rossrvstubfactory.h"
+#include "nanoros/rossrvpackerfactory.h"
 #include "nanoros/rosserviceconsumer.h"
 
 

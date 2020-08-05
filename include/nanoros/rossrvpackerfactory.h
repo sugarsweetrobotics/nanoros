@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
-#include "nanoros/stubfactory.h"
-#include "nanoros/rossrvstub.h"
+#include "nanoros/packerfactory.h"
+#include "nanoros/rossrvpacker.h"
 
 namespace ssr {
   namespace nanoros {

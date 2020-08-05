@@ -3,9 +3,9 @@
 #include <memory>
 #include <string>
 
-#include "nanoros/stubfactory.h"
+#include "nanoros/packerfactory.h"
 #include "nanoros/nanoros_define.h"
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 
 namespace ssr {
   namespace nanoros {

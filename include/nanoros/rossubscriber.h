@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 
 #include "nanoros/rosslave.h"
 

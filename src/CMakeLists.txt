@@ -7,9 +7,9 @@ os.cpp
 signal.cpp
 dllproxy.cpp
 json.cpp
-stubfactory.cpp
-rosmsgstub.cpp
-rosmsgstubfactory.cpp
+packerfactory.cpp
+rosmsgpacker.cpp
+rosmsgpackerfactory.cpp
 rosnode.cpp
 rosslave.cpp
 rosslaveserver.cpp
@@ -17,8 +17,8 @@ rossubscriber.cpp
 rospublisher.cpp
 rostcpros.cpp
 rosserviceconsumer.cpp
-rossrvstubfactory.cpp
-rossrvstub.cpp
+rossrvpacker.cpp
+rossrvpackerfactory.cpp
 rosserviceprovider.cpp
 
 rosmasterserver.cpp

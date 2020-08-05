@@ -3,8 +3,8 @@
 #include "nanoros/signal.h"
 #include "nanoros/os.h"
 
-#include "nanoros/rosmsgstubfactory.h"
-#include "nanoros/rossrvstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
+#include "nanoros/rossrvpackerfactory.h"
 
 #include "nanoros/argparse.h"
 #include "nanoros/stringutil.h"

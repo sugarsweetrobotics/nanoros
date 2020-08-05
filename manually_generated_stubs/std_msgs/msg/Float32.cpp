@@ -1,4 +1,4 @@
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 #include "nanoros/rostcpros.h"
 #include "Float32.h"
 

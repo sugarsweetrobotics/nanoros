@@ -1,7 +1,7 @@
 
 #pragma once
 #include "nanoros/rosmsg.h"
-#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
 #include <sstream>
 #include <string>
 

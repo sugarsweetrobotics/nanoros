@@ -7,7 +7,7 @@
 #include "nanoros/rosutil.h"
 #include "nanoros/rosmaster.h"
 #include "nanoros/rosnode.h"
-#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
 
 using namespace ssr::nanoros;
 

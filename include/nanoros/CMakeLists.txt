@@ -11,12 +11,12 @@ rosnode.h
 rosprimitive.h
 
 rosmsg.h
-rosmsgstub.h
-rosmsgstubfactory.h
+rosmsgpacker.h
+rosmsgpackerfactory.h
 
 rossrv.h
-rossrvstub.h
-rossrvstubfactory.h
+rossrvpacker.h
+rossrvpackerfactory.h
 
 rospublisher.h
 rossubscriber.h
@@ -26,7 +26,7 @@ rostcprospacket.h
 rosrate.h
 rosutil.h
 json.h
-stubfactory.h
+packerfactory.h
 dllproxy.h
 
 rosslave.h
@@ -45,8 +45,8 @@ nanoros_define.h
 os.h
 rosmaster.h
 rosmsg.h
-rosmsgstub.h
-rosmsgstubfactory.h
+rosmsgpacker.h
+rosmsgpackerfactory.h
 rosnode.h
 rosprimitive.h
 rospublisher.h
@@ -54,15 +54,15 @@ rosrate.h
 rosserviceconsumer.h
 rosserviceprovider.h
 rossrv.h
-rossrvstub.h
-rossrvstubfactory.h
+rossrvpacker.h
+rossrvpackerfactory.h
 rossubscriber.h
 rostcpros.h
 rostcprospacket.h
 rosutil.h
 signal.h
 stringutil.h
-stubfactory.h
+packerfactory.h
 
 rosmasterserver.h
 )

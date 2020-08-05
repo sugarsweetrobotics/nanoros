@@ -1,4 +1,4 @@
-#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
 #include "nanoros/dllproxy.h"
 #include "nanoros/stringutil.h"
 #include <map>

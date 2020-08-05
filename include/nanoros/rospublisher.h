@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 
 namespace ssr {
   namespace nanoros {

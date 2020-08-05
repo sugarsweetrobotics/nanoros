@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nanoros/rossrvstub.h"
+#include "nanoros/rossrvpacker.h"
 
 #include <memory>
 #include <string>

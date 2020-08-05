@@ -6,7 +6,7 @@
 #include "nanoros/json.h"
 #include "nanoros/rostcpros.h"
 #include "nanoros/rostcprospacket.h"
-#include "nanoros/rosmsgstubfactory.h"
+#include "nanoros/rosmsgpackerfactory.h"
 
 #include <string>
 #include <map>

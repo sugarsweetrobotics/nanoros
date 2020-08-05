@@ -4,7 +4,7 @@
 
 #include "nanoros/rosmaster.h"
 #include "nanoros/rossrv.h"
-#include "nanoros/rossrvstub.h"
+#include "nanoros/rossrvpacker.h"
 
 #include <string>
 #include <optional>

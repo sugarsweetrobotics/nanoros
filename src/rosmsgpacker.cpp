@@ -1,4 +1,4 @@
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 
 
 using namespace ssr::nanoros;

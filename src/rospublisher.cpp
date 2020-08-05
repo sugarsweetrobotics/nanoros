@@ -4,7 +4,7 @@
 
 #include "nanoros/rospublisher.h"
 #include "nanoros/rostcpros.h"
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 #include <vector>
 #include <thread>
 

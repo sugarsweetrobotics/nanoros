@@ -1,7 +1,7 @@
 
 #include "nanoros/nanoros_define.h"
 
-#include "nanoros/rosmsgstub.h"
+#include "nanoros/rosmsgpacker.h"
 #include "nanoros/rostcpros.h"
 #include "ByteMultiArray.h"
 namespace ssr::nanoros {
