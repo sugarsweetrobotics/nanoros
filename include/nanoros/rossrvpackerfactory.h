@@ -10,15 +10,15 @@
 namespace ssr {
   namespace nanoros {
 
-    class ROSSrvStubFactory : public StubFactory<ROSSrvStub> {
+    class ROSSrvPackerFactory : public PackerFactory<ROSSrvPacker> {
     public:
-      ROSSrvStubFactory() {}
-      virtual ~ROSSrvStubFactory() {}
+      ROSSrvPackerFactory() {}
+      virtual ~ROSSrvPackerFactory() {}
 
     public:
 
     };
 
-    NANOROS_API std::shared_ptr<ROSSrvStubFactory> getROSSrvStubFactory();
+    NANOROS_API std::shared_ptr<ROSSrvPackerFactory> getROSSrvPackerFactory();
   }
 }

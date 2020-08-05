@@ -20,13 +20,13 @@
 namespace ssr::nanoros {
     namespace roscpp {
 
-        class SetLoggerLevelStub : public ROSSrvStub {
+        class SetLoggerLevelPacker : public ROSSrvPacker {
         public:
             using RequestType = SetLoggerLevelRequest;
             using ResponseType = SetLoggerLevelResponse;
         public:
-            SetLoggerLevelStub() {}
-            virtual ~SetLoggerLevelStub() {}
+            SetLoggerLevelPacker() {}
+            virtual ~SetLoggerLevelPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "51da076440d78ca1684d36c868df61ea"; }
@@ -72,6 +72,6 @@ namespace ssr::nanoros {
 
 extern "C" {
     void init_srv_roscpp_SetLoggerLevel(void* factory) {
-        static_cast<ssr::nanoros::ROSSrvStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::roscpp::SetLoggerLevelStub>());
+        static_cast<ssr::nanoros::ROSSrvPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::roscpp::SetLoggerLevelPacker>());
     }
 }

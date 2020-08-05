@@ -9,13 +9,13 @@
 
 namespace ssr::nanoros {
     namespace std_msgs {
-        class HeaderStub : public ROSMsgStub {
+        class HeaderPacker : public ROSMsgPacker {
 
         public:
             using DataType = Header;
         public:
-            HeaderStub() {}
-            virtual ~HeaderStub() {}
+            HeaderPacker() {}
+            virtual ~HeaderPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "2176decaecbce78abc3b96ef049fabed"; }
@@ -54,5 +54,5 @@ namespace ssr::nanoros {
 
 
 void init_msg_std_msgs_Header(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::HeaderStub>());
+    static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::std_msgs::HeaderPacker>());
 }

@@ -9,15 +9,15 @@ using namespace ssr::nanoros;
 
 
 
-class ROSSrvStubFactoryImpl : public ROSSrvStubFactory {
+class ROSSrvPackerFactoryImpl : public ROSSrvPackerFactory {
 public:
-  ROSSrvStubFactoryImpl() {}
-  virtual ~ROSSrvStubFactoryImpl() {}
+  ROSSrvPackerFactoryImpl() {}
+  virtual ~ROSSrvPackerFactoryImpl() {}
 
 
 public:
 
-  virtual bool tryLoadStubDLL(const std::string& serviceTypeName) {
+  virtual bool tryLoadPackerDLL(const std::string& serviceTypeName) {
     auto tokens = stringSplit(serviceTypeName, '/');
     if (tokens.size() != 2) {
       return false;
@@ -27,7 +27,7 @@ public:
     auto fileName = tokens[1];
     auto funcName = "init_srv_" + tokens[0] + "_" + tokens[1];
 
-    auto dllproxy = loadStubFactoryDLL(dirName, fileName, funcName);
+    auto dllproxy = loadPackerFactoryDLL(dirName, fileName, funcName);
     if (dllproxy) {
         dllproxies_[serviceTypeName] = dllproxy;
         return true;
@@ -37,9 +37,9 @@ public:
 };
 
 namespace {
-  auto factory = std::make_shared<ROSSrvStubFactoryImpl>();
+  auto factory = std::make_shared<ROSSrvPackerFactoryImpl>();
 }
 
-std::shared_ptr<ROSSrvStubFactory> ssr::nanoros::getROSSrvStubFactory() {
-  return std::static_pointer_cast<ROSSrvStubFactory>(factory);
+std::shared_ptr<ROSSrvPackerFactory> ssr::nanoros::getROSSrvPackerFactory() {
+  return std::static_pointer_cast<ROSSrvPackerFactory>(factory);
 }

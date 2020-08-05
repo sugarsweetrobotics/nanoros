@@ -10,45 +10,45 @@
 namespace ssr {
     namespace nanoros {
 
-        class StubFactoryBase {
+        class PackerFactoryBase {
         protected:
 
             std::vector<std::string> stubDirHints_;
         public:
-            virtual ~StubFactoryBase() {}
+            virtual ~PackerFactoryBase() {}
 
-            virtual std::shared_ptr<DLLProxy> loadStubFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName);
+            virtual std::shared_ptr<DLLProxy> loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName);
 
 
         public:
-            void addStubDirHint(const std::string& hint) { stubDirHints_.push_back(hint); }
+            void addPackerDirHint(const std::string& hint) { stubDirHints_.push_back(hint); }
         };
 
 
         template<typename T>
-        class StubFactory : public StubFactoryBase {
+        class PackerFactory : public PackerFactoryBase {
         protected:
             std::map<std::string, std::shared_ptr<T>> stubs_;
             std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;
 
         public:
-            StubFactory() {
+            PackerFactory() {
                 stubDirHints_.push_back(".");
             }
-            virtual ~StubFactory() {}
+            virtual ~PackerFactory() {}
 
         public:
-            virtual void registerStub(const std::shared_ptr<T>& stub) {
+            virtual void registerPacker(const std::shared_ptr<T>& stub) {
                 if (!stub) return;
                 stubs_[stub->typeName()] = stub;
             }
 
 
-            virtual bool tryLoadStubDLL(const std::string& typeName) = 0;
+            virtual bool tryLoadPackerDLL(const std::string& typeName) = 0;
 
-            virtual std::shared_ptr<T> getStub(const std::string& typeName) {
+            virtual std::shared_ptr<T> getPacker(const std::string& typeName) {
                 if (stubs_.count(typeName) == 0) {
-                    if (tryLoadStubDLL(typeName)) {
+                    if (tryLoadPackerDLL(typeName)) {
                         if (stubs_.count(typeName) == 0) return nullptr;
                         return stubs_[typeName];
                     }

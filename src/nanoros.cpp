@@ -32,13 +32,13 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   auto absPath = getExecutablePath(argv[0]);
 
 
-  getROSMsgStubFactory()->addStubDirHint(absPath);
+  getROSMsgPackerFactory()->addPackerDirHint(absPath);
   auto stubDir = ssr::nanoros::getEnv("NANOROS_STUB_DIR");
   if (stubDir.length() > 0) {
       if (stubDir.rfind('/') != stubDir.length() - 1) {
           stubDir += '/';
       }
-      getROSMsgStubFactory()->addStubDirHint(stubDir);
+      getROSMsgPackerFactory()->addPackerDirHint(stubDir);
 
   }
 
@@ -54,14 +54,14 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
           if (dir.rfind('/') != dir.length() - 1) {
               dir += '/';
           }
-          getROSMsgStubFactory()->addStubDirHint(dir);
+          getROSMsgPackerFactory()->addPackerDirHint(dir);
       }
   }
 
 
-  getROSMsgStubFactory()->addStubDirHint(absPath + "../share/nanoros/stubs/");
+  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../share/nanoros/stubs/");
 #ifdef WIN32
-  getROSMsgStubFactory()->addStubDirHint(absPath + "../../share/nanoros/stubs/");
+  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../../share/nanoros/stubs/");
 #else
 
 #endif

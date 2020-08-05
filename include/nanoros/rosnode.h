@@ -42,13 +42,13 @@ namespace ssr {
 
       virtual std::shared_ptr<ROSServiceProvider> getRegisteredServiceProvider(const std::string& srvName) const { return nullptr; }
     public:
-      virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const double negotiateTimeout=1.0) {return nullptr; }
+      virtual std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const double negotiateTimeout=1.0) {return nullptr; }
 
       template<typename T>
       std::shared_ptr<ROSPublisher> advertise(const std::string& topicName, const double negotiateTimeout=1.0) {
-        auto factory = getROSMsgStubFactory();
+        auto factory = getROSMsgPackerFactory();
         if (!factory) return nullptr;
-        auto stub = factory->getStub(msgTypeName<T>());
+        auto stub = factory->getPacker(msgTypeName<T>());
         if (!stub) return nullptr;
         return advertise(topicName, stub, negotiateTimeout);
       }
@@ -66,14 +66,14 @@ namespace ssr {
         
       }
 
-      virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, 
+      virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, 
           const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) {return nullptr; }
 
       template<typename T>
       std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::function<void(const std::shared_ptr<const T>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) {
-        auto factory = getROSMsgStubFactory();
+        auto factory = getROSMsgPackerFactory();
         if (!factory) return nullptr;
-        auto stub = factory->getStub(msgTypeName<T>());
+        auto stub = factory->getPacker(msgTypeName<T>());
         if (!stub) return nullptr;
         return subscribe(topicName, stub, [func](const std::shared_ptr<const ROSMsg>& msg) {
           func(std::dynamic_pointer_cast<const T>(msg));
@@ -95,9 +95,9 @@ namespace ssr {
 
       template<typename ReqType, typename ResType>
       bool advertiseService(const std::string& srvName, const std::function<const std::shared_ptr<ResType>(const std::shared_ptr<const ReqType>&)>& func) {
-        auto factory = getROSSrvStubFactory();
+        auto factory = getROSSrvPackerFactory();
         if (!factory) return false;
-        auto stub = factory->getStub(srvTypeName<ReqType>());
+        auto stub = factory->getPacker(srvTypeName<ReqType>());
         if (!stub) return false;
         return advertiseService(srvName, stub, [func, stub](const std::shared_ptr<const ROSSrvRequest>& request) -> const std::shared_ptr<ROSSrvResponse> {
           const std::shared_ptr<const ReqType> req = std::dynamic_pointer_cast<const ReqType>(request);
@@ -107,7 +107,7 @@ namespace ssr {
         });
       }
 
-      virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvStub>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) {
+      virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) {
         return false; 
       }
 

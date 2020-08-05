@@ -93,10 +93,10 @@ public:
 };
 
 class ROSPublisherImpl: public ROSPublisher {
-    const std::shared_ptr<ROSMsgStub> stub_;
+    const std::shared_ptr<ROSMsgPacker> stub_;
     std::vector<std::shared_ptr<ROSPublisherWorker>> workers_;
 public:
-    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub) :  
+    ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub) :  
         ROSPublisher(node, topicName), stub_(stub) {
     }
     virtual ~ROSPublisherImpl() {}
@@ -145,7 +145,7 @@ public:
     }
 };
 
-std::shared_ptr<ROSPublisher> ssr::nanoros::createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub) {
+std::shared_ptr<ROSPublisher> ssr::nanoros::createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub) {
     if (!stub) return nullptr;
     return std::make_shared<ROSPublisherImpl>(node, topicName, stub);
 }

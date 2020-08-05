@@ -8,7 +8,7 @@ namespace ssr {
   namespace nanoros {
 
     class ROSMsg;
-    class ROSMsgStub;
+    class ROSMsgPacker;
     class ROSNode;
 
     class ROSPublisher {
@@ -37,7 +37,7 @@ namespace ssr {
     };
 
 
-    std::shared_ptr<ROSPublisher> createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub);
+    std::shared_ptr<ROSPublisher> createROSPublisher(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub);
 
   }
 }

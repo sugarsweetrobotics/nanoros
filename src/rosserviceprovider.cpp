@@ -16,12 +16,12 @@ class ROSServiceProviderImpl : public ROSServiceProvider {
 
 private:
     int32_t port_;
-    const std::shared_ptr<ROSSrvStub> stub_;
+    const std::shared_ptr<ROSSrvPacker> stub_;
     const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)> callback_;
     std::shared_ptr<std::thread> thread_;
     std::shared_ptr<TCPROS> tcpros_;
 public:
-    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvStub>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) :
+    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& stub, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) :
         ROSServiceProvider(node, serviceName), stub_(stub), callback_(func) {
         port_ = getEmptyPort(40000);
 
@@ -112,7 +112,7 @@ public:
 
 };
 
-std::shared_ptr<ROSServiceProvider> ssr::nanoros::createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvStub>& stub,
+std::shared_ptr<ROSServiceProvider> ssr::nanoros::createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& stub,
             const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func)
             {
 

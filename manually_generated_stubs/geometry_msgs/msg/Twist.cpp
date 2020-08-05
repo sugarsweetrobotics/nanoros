@@ -12,12 +12,12 @@ namespace ssr::nanoros {
 
 
 
-        class TwistStub : public ROSMsgStub {
+        class TwistPacker : public ROSMsgPacker {
         public:
             using DataType = Twist;
         public:
-            TwistStub() {}
-            virtual ~TwistStub() {}
+            TwistPacker() {}
+            virtual ~TwistPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "9f195f881246fdfa2798d1d3eebca84a"; }
@@ -25,8 +25,8 @@ namespace ssr::nanoros {
 
             virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
                 auto val = std::make_shared<DataType>();
-                setValue(val->linear, getMsgStub("geometry_msgs/Vector3"), msg, popedCount);
-                setValue(val->angular, getMsgStub("geometry_msgs/Vector3"), msg, popedCount);
+                setValue(val->linear, getMsgPacker("geometry_msgs/Vector3"), msg, popedCount);
+                setValue(val->angular, getMsgPacker("geometry_msgs/Vector3"), msg, popedCount);
                 return val;
             }
 
@@ -34,16 +34,16 @@ namespace ssr::nanoros {
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) override {
                 const auto val = static_cast<const DataType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
-                pushValue(pkt, getMsgStub("geometry_msgs/Vector3"), val.linear);
-                pushValue(pkt, getMsgStub("geometry_msgs/Vector3"), val.angular);
+                pushValue(pkt, getMsgPacker("geometry_msgs/Vector3"), val.linear);
+                pushValue(pkt, getMsgPacker("geometry_msgs/Vector3"), val.angular);
                 return pkt; 
             }
 
             virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) override { 
                 if (!json) return nullptr;
                 auto val = std::make_shared<DataType>();
-                setValue(val->linear, getMsgStub("geometry_msgs/Vector3"), json, "linear");
-                setValue(val->angular, getMsgStub("geometry_msgs/Vector3"), json, "angular");
+                setValue(val->linear, getMsgPacker("geometry_msgs/Vector3"), json, "linear");
+                setValue(val->angular, getMsgPacker("geometry_msgs/Vector3"), json, "angular");
                 return val;
             }
         };
@@ -52,5 +52,5 @@ namespace ssr::nanoros {
 
 
 void init_msg_std_msgs_Twist(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::geometry_msgs::TwistStub>());
+    static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::geometry_msgs::TwistPacker>());
 }

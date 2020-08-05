@@ -4,7 +4,7 @@
 
 using namespace ssr::nanoros;
 
-std::shared_ptr<DLLProxy> StubFactoryBase::loadStubFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName) {
+std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName) {
 
     for (auto dirHint : stubDirHints_) {
 

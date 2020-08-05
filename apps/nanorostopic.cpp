@@ -67,9 +67,9 @@ int main(const int argc, const char* argv[]) {
       if (argc >= 3) {
         const std::string topicName = argv[2];
         const std::string topicTypeName = topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName);
-        auto stub = getROSMsgStubFactory()->getStub(topicTypeName);
+        auto stub = getROSMsgPackerFactory()->getPacker(topicTypeName);
         if (!stub) {
-          std::cout << "ERROR: Topic Type Stub not found(" << topicTypeName << ")" << std::endl;
+          std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
           return -1;
         }
         auto node = registerROSNode("/nanorostopic_echo");
@@ -87,9 +87,9 @@ int main(const int argc, const char* argv[]) {
         const std::string topicName = argv[2];
         const std::string topicTypeName = argv[3];
         const std::string topicDataStr = argv[4];
-        auto stub = getROSMsgStubFactory()->getStub(topicTypeName);
+        auto stub = getROSMsgPackerFactory()->getPacker(topicTypeName);
         if (!stub) {
-          std::cout << "ERROR: Topic Type Stub not found(" << topicTypeName << ")" << std::endl;
+          std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
           return -1;
         }
         auto node = registerROSNode("/nanorostopic_pub");

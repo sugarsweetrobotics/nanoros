@@ -18,10 +18,10 @@ private:
 	std::shared_ptr<TCPROS> tcpros_;
 	std::string host_;
 	int32_t port_;
-  const std::shared_ptr<ROSMsgStub> stub_;
+  const std::shared_ptr<ROSMsgPacker> stub_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
-	ROSSubscriberWorker(const std::shared_ptr<ROSMsgStub>& stub, 
+	ROSSubscriberWorker(const std::shared_ptr<ROSMsgPacker>& stub, 
        const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) : receiveTimeout_(1.0), stub_(stub), callback_(callback) {}
 	virtual ~ROSSubscriberWorker() {}
 
@@ -77,12 +77,12 @@ public:
 class ROSSubscriberImpl : public ROSSubscriber {
 private:
   std::vector<std::shared_ptr<ROSSubscriberWorker>> workers_;
-  const std::shared_ptr<ROSMsgStub> stub_;
+  const std::shared_ptr<ROSMsgPacker> stub_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
 	virtual std::string getTopicTypeName() const override { return stub_->typeName(); }
-  const std::shared_ptr<ROSMsgStub>& stub() { return stub_; }
-  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
+  const std::shared_ptr<ROSMsgPacker>& stub() { return stub_; }
+  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
   	ROSSubscriber(node, topicName), stub_(stub), callback_(func) {}
 
 private:
@@ -143,7 +143,7 @@ public:
 
 
 std::shared_ptr<ROSSubscriber> ssr::nanoros::createROSSubscriber(ROSNode* node, const std::string& topicName,
- const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) {
+ const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) {
 	 if (!stub) return nullptr;
 	return std::static_pointer_cast<ROSSubscriber>(std::make_shared<ROSSubscriberImpl>(node, topicName, stub, func));
 }

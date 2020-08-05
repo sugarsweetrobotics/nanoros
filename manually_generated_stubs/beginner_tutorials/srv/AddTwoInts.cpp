@@ -22,13 +22,13 @@ namespace ssr::nanoros {
     namespace beginner_tutorials {
 
 
-        class AddTwoIntsStub : public ROSSrvStub {
+        class AddTwoIntsPacker : public ROSSrvPacker {
         public:
             using RequestType = AddTwoIntsRequest;
             using ResponseType = AddTwoIntsResponse;
         public:
-            AddTwoIntsStub() {}
-            virtual ~AddTwoIntsStub() {}
+            AddTwoIntsPacker() {}
+            virtual ~AddTwoIntsPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "6a2e34150c00229791cc89ff309fff21"; }
@@ -77,6 +77,6 @@ namespace ssr::nanoros {
 extern "C" {
     
     void init_srv_beginner_tutorials_AddTwoInts(void* factory) {
-        static_cast<ssr::nanoros::ROSSrvStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::beginner_tutorials::AddTwoIntsStub>());
+        static_cast<ssr::nanoros::ROSSrvPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::beginner_tutorials::AddTwoIntsPacker>());
     }
 }

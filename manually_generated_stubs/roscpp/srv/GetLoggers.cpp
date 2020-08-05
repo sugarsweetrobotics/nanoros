@@ -21,12 +21,12 @@ namespace ssr::nanoros {
     namespace roscpp {
 
 
-        class GetLoggersStub : public ROSSrvStub {
+        class GetLoggersPacker : public ROSSrvPacker {
             using RequestType = GetLoggersRequest;
             using ResponseType = GetLoggersResponse;
         public:
-            GetLoggersStub() {}
-            virtual ~GetLoggersStub() {}
+            GetLoggersPacker() {}
+            virtual ~GetLoggersPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "32e97e85527d4678a8f9279894bb64b0"; }
@@ -35,7 +35,7 @@ namespace ssr::nanoros {
 
             virtual std::shared_ptr<const ROSSrvResponse> toSrvResponse(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
                 auto val = std::make_shared<ResponseType>();
-                pushValue(val->loggers, getMsgStub("roscpp/Logger"), msg, popedCount);
+                pushValue(val->loggers, getMsgPacker("roscpp/Logger"), msg, popedCount);
                 return val;
             }
 
@@ -54,7 +54,7 @@ namespace ssr::nanoros {
                 const auto val = static_cast<const ResponseType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
                 for(auto logger : val.loggers) {
-                    pushValue(pkt, getMsgStub("roscpp/Logger"), logger);
+                    pushValue(pkt, getMsgPacker("roscpp/Logger"), logger);
                 }
                 return pkt; 
             }
@@ -70,6 +70,6 @@ namespace ssr::nanoros {
 
 extern "C" {
     void init_srv_roscpp_GetLoggers(void* factory) {
-        static_cast<ssr::nanoros::ROSSrvStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::roscpp::GetLoggersStub>());
+        static_cast<ssr::nanoros::ROSSrvPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::roscpp::GetLoggersPacker>());
     }
 }

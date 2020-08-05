@@ -9,12 +9,12 @@
 
 namespace ssr::nanoros {
     namespace geometry_msgs {
-        class Vector3Stub : public ROSMsgStub {
+        class Vector3Packer : public ROSMsgPacker {
         public:
             using DataType = Vector3;
         public:
-            Vector3Stub() {}
-            virtual ~Vector3Stub() {}
+            Vector3Packer() {}
+            virtual ~Vector3Packer() {}
 
         public:
             virtual std::string md5sum() const override { return "4a842b65f413084dc2b10fb484ea7f17"; }
@@ -52,5 +52,5 @@ namespace ssr::nanoros {
 
 
 void init_msg_std_msgs_Vector3(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::geometry_msgs::Vector3Stub>());
+    static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::geometry_msgs::Vector3Packer>());
 }

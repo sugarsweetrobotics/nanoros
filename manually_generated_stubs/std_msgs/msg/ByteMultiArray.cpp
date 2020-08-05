@@ -6,32 +6,32 @@
 #include "ByteMultiArray.h"
 namespace ssr::nanoros {
     namespace std_msgs {
-        class ByteMultiArrayStub : public ROSMsgStub {
+        class ByteMultiArrayPacker : public ROSMsgPacker {
         private:
             using DataType = ByteMultiArray;
         public:
-            ByteMultiArrayStub() {}
-            virtual ~ByteMultiArrayStub() {}
+            ByteMultiArrayPacker() {}
+            virtual ~ByteMultiArrayPacker() {}
         public:
             virtual std::string md5sum() const override { return "*"; }
             virtual std::string typeName() const override { return "std_msgs/ByteMultiArray"; }
             virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override {
                 auto val = std::make_shared<DataType>();
-                setValue(val->layout, getMsgStub("std_msgs/MultiArrayLayout"), msg, popedCount);
+                setValue(val->layout, getMsgPacker("std_msgs/MultiArrayLayout"), msg, popedCount);
                 pushValue(val->data, msg, popedCount);
                 return val;
             }
             virtual std::shared_ptr<TCPROSPacket> toPacket(const ROSMsg& msg) override {
                 const auto val = dynamic_cast<const DataType&>(msg);
                 auto pkt = std::make_shared<TCPROSPacket>();
-                pushValue(pkt, getMsgStub("std_msgs/MultiArrayLayout"), val.layout);
+                pushValue(pkt, getMsgPacker("std_msgs/MultiArrayLayout"), val.layout);
                 pkt->pushVector(val.data);
                 return pkt;
             }
             virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) override {
                 if (!json) return nullptr;
                 auto val = std::make_shared<DataType>();
-                setValue(val->layout, getMsgStub("std_msgs/MultiArrayLayout"), json, "layout");
+                setValue(val->layout, getMsgPacker("std_msgs/MultiArrayLayout"), json, "layout");
                 setArrayValue(val->data, json, "data");
                 return val;
             }
@@ -47,6 +47,6 @@ namespace ssr::nanoros {
 
 extern "C" {
     STUBFACTORY_EXPORT void init_msg_std_msgs_ByteMultiArray(void* factory) {
-        static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::ByteMultiArrayStub>());
+        static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::std_msgs::ByteMultiArrayPacker>());
     }
 }

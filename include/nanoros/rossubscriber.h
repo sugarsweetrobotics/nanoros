@@ -36,6 +36,6 @@ namespace ssr {
     };
 
 
-    std::shared_ptr<ROSSubscriber> createROSSubscriber(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgStub>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func);
+    std::shared_ptr<ROSSubscriber> createROSSubscriber(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& stub, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func);
   }
 }

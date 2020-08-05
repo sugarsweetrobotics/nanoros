@@ -17,16 +17,16 @@ namespace ssr {
 
     class TCPROSPacket;
 
-    class NANOROS_API  ROSSrvStub {
+    class NANOROS_API  ROSSrvPacker {
     protected:
-      std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
+      std::map<std::string, std::shared_ptr<ROSMsgPacker>> stubs_;
 
     public:
-      std::shared_ptr<ROSMsgStub> getMsgStub(const std::string& key);
+      std::shared_ptr<ROSMsgPacker> getMsgPacker(const std::string& key);
 
     public:
-      ROSSrvStub() {}
-      virtual ~ROSSrvStub() {}
+      ROSSrvPacker() {}
+      virtual ~ROSSrvPacker() {}
 
     public:
       virtual std::string md5sum() const { return ""; }

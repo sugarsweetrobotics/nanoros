@@ -6,12 +6,12 @@
 #include "MultiArrayDimension.h"
 namespace ssr::nanoros {
     namespace std_msgs {
-        class MultiArrayDimensionStub : public ROSMsgStub {
+        class MultiArrayDimensionPacker : public ROSMsgPacker {
         private:
             using DataType = MultiArrayDimension;
         public:
-            MultiArrayDimensionStub() {}
-            virtual ~MultiArrayDimensionStub() {}
+            MultiArrayDimensionPacker() {}
+            virtual ~MultiArrayDimensionPacker() {}
         public:
             virtual std::string md5sum() const override { return "*"; }
             virtual std::string typeName() const override { return "std_msgs/MultiArrayDimension"; }
@@ -50,6 +50,6 @@ namespace ssr::nanoros {
 
 extern "C" {
     STUBFACTORY_EXPORT void init_msg_std_msgs_MultiArrayDimension(void* factory) {
-        static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::MultiArrayDimensionStub>());
+        static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::std_msgs::MultiArrayDimensionPacker>());
     }
 }

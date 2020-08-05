@@ -52,7 +52,7 @@ public:
     }
 
 
-    virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvStub>& stub, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) override {
+    virtual std::shared_ptr<const ROSSrvResponse> call(const std::shared_ptr<ROSSrvPacker>& stub, const std::shared_ptr<const ROSSrvRequest>& arg, const double timeout=1.0) override {
         if (!arg) return nullptr;
         if (!stub) return nullptr;
         if (!tcpros_) return nullptr;

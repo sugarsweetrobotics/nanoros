@@ -9,13 +9,13 @@
 
 namespace ssr::nanoros {
     namespace roscpp {
-        class LoggerStub : public ROSMsgStub {
+        class LoggerPacker : public ROSMsgPacker {
 
         public:
             using DataType = Logger;
         public:
-            LoggerStub() {}
-            virtual ~LoggerStub() {}
+            LoggerPacker() {}
+            virtual ~LoggerPacker() {}
 
         public:
             virtual std::string md5sum() const override { return "a6069a2ff40db7bd32143dd66e1f408e"; }
@@ -51,5 +51,5 @@ namespace ssr::nanoros {
 
 
 void init_msg_roscpp_Logger(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::roscpp::LoggerStub>());
+    static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::roscpp::LoggerPacker>());
 }

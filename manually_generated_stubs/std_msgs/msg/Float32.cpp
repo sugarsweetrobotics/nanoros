@@ -9,12 +9,12 @@
 
 namespace ssr::nanoros {
     namespace std_msgs {
-        class Float32Stub : public ROSMsgStub {
+        class Float32Packer : public ROSMsgPacker {
         public:
             using DataType = Float32;
         public:
-            Float32Stub() {}
-            virtual ~Float32Stub() {}
+            Float32Packer() {}
+            virtual ~Float32Packer() {}
 
         public:
             virtual std::string md5sum() const override { return "73fcbf46b49191e672908e50842a83d4"; }
@@ -50,5 +50,5 @@ namespace ssr::nanoros {
 
 
 void init_msg_std_msgs_Int32(void* factory) {
-    static_cast<ssr::nanoros::ROSMsgStubFactory*>(factory)->registerStub(std::make_shared<ssr::nanoros::std_msgs::Float32Stub>());
+    static_cast<ssr::nanoros::ROSMsgPackerFactory*>(factory)->registerPacker(std::make_shared<ssr::nanoros::std_msgs::Float32Packer>());
 }

@@ -15,27 +15,27 @@
 namespace ssr {
   namespace nanoros {
 
-    class ROSMsgStubFactory;
+    class ROSMsgPackerFactory;
 
-    NANOROS_API std::shared_ptr<ROSMsgStubFactory> getROSMsgStubFactory();
+    NANOROS_API std::shared_ptr<ROSMsgPackerFactory> getROSMsgPackerFactory();
 
     class TCPROSPacket;
 
-    NANOROS_API class ROSMsgStub;
+    NANOROS_API class ROSMsgPacker;
 
-    ///NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
+    ///NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgPacker>>;
 
-    class NANOROS_API ROSMsgStub {
+    class NANOROS_API ROSMsgPacker {
     protected:
-      friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgStub>>;
-      std::map<std::string, std::shared_ptr<ROSMsgStub>> stubs_;
+      friend class NANOROS_API std::map<std::string, std::shared_ptr<ROSMsgPacker>>;
+      std::map<std::string, std::shared_ptr<ROSMsgPacker>> stubs_;
 
     public:
-      std::shared_ptr<ROSMsgStub> getMsgStub(const std::string& key);
+      std::shared_ptr<ROSMsgPacker> getMsgPacker(const std::string& key);
 
     public:
-      ROSMsgStub() {}
-      virtual ~ROSMsgStub() {}
+      ROSMsgPacker() {}
+      virtual ~ROSMsgPacker() {}
 
     public:
       virtual std::string md5sum() const { return ""; }
@@ -55,7 +55,7 @@ namespace ssr {
 
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
       if (!stub) return;
       if (!data) return;
 
@@ -68,7 +68,7 @@ namespace ssr {
     }
 
     template<typename T>
-    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
         if (!stub) return;
         if (!data) return;
         if (!data->isArray()) return;
@@ -84,17 +84,17 @@ namespace ssr {
     }
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
         setValue<T>(value, stub, obj->get(key));
     }
 
     template<typename T>
-    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgStub>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
+    void setArrayValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::shared_ptr<const ssr::nanoros::JSONObject>& obj, const std::string& key) {
         setArrayValue<T>(value, stub, obj->get(key));
     }
 
     template<typename T>
-    void setValue(T& value, const std::shared_ptr<ROSMsgStub>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
+    void setValue(T& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
         if (!stub) return;
         auto rosMsg= stub->toMsg(msg, popedCount);
         if (!rosMsg) return;
@@ -116,7 +116,7 @@ namespace ssr {
     }
 
     template<typename T>
-    void pushValue(std::vector<T>& value, const std::shared_ptr<ROSMsgStub>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
+    void pushValue(std::vector<T>& value, const std::shared_ptr<ROSMsgPacker>& stub, const std::optional<ssr::nanoros::TCPROSPacket>& msg, int32_t& popedCount) {
         if (!stub) return;
         auto size = msg->pop<uint32_t>(popedCount);
         if (!size) return;
@@ -130,7 +130,7 @@ namespace ssr {
     }
 
     template<typename T>
-    void pushValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgStub>& stub, const T& value) {
+    void pushValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& stub, const T& value) {
       if (!pkt) return;
       if (!stub) return;
       //auto subPkt = stub->toPacket(std::make_shared<T>(value));
@@ -140,7 +140,7 @@ namespace ssr {
     }
 
     template<typename T>
-    void pushVectorValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgStub>& stub, const std::vector<T>& value) {
+    void pushVectorValue(std::shared_ptr<TCPROSPacket>& pkt, const std::shared_ptr<ROSMsgPacker>& stub, const std::vector<T>& value) {
         if (!pkt) return;
         if (!stub) return;
         uint32_t size = value.size();
