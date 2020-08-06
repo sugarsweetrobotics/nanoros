@@ -21,7 +21,7 @@ std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::str
                 continue;
             }
 #else
-            continue;/
+            continue;
             //return nullptr;
 #endif
         }

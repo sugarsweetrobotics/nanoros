@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 #include <map>
-
+#include <vector>
 
 namespace ssr {
     namespace nanoros {

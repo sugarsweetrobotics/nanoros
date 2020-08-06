@@ -361,6 +361,25 @@ std::optional<std::string> msgparser::parse_md5(const fs::path& path, const std:
 		if (i != 0) ss << (char)0x0a;// << (char)0x0a;
 		if (is_array(tokens[0])) {
 			// TODO: 
+			std::cout << "Path:" << path << " has array member...(" << line << ")" << std::endl;
+			auto elemName = tokens[0].substr(0, tokens[0].length()-2);
+			
+			if (!to_cxx_typeName(elemName)) { // Not primitive type
+
+				if (elemName.find('/') == std::string::npos) {
+					// msg struct�Ȃ񂾂��ǁA'/'���܂܂�Ȃ��Ƃ������ƂŁA����f�B���N�g����msg������Ƃ킩��
+					auto h = parse_md5((path.parent_path() / elemName).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
+					ss << h.value()  << " " << tokens[1];
+				}
+				else {
+					auto h = parse_md5(tokens[0], inputPaths, searchPaths);
+					ss << h.value() << "[]" <<  " " << tokens[1];
+				}
+			}
+			else {
+				ss << elemName << "[]" << " " << tokens[1];
+			}
+
 		}
 		else {
 			if (!to_cxx_typeName(tokens[0])) { // Not primitive type

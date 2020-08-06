@@ -24,6 +24,6 @@ namespace ssr {
         };
 
 
-        NANOROS_API std::shared_ptr<ROSMasterServer> masterServer(std::optional<std::pair<std::string, int32_t>>& masterInfo);
+        NANOROS_API std::shared_ptr<ROSMasterServer> masterServer(const std::optional<std::pair<std::string, int32_t>>& masterInfo);
     }
 }

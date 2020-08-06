@@ -389,7 +389,7 @@ public:
 };
 
 
-std::shared_ptr<ROSMasterServer> ssr::nanoros::masterServer(std::optional<std::pair<std::string, int32_t>>& info) {
+std::shared_ptr<ROSMasterServer> ssr::nanoros::masterServer(const std::optional<std::pair<std::string, int32_t>>& info) {
 	if (!info) return std::make_shared<ROSMasterServer>();
 	return std::make_shared<ROSMasterServerImpl>(info->first, info->second);
 }
