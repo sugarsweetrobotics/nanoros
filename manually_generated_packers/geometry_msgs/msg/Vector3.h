@@ -22,6 +22,16 @@ namespace ssr {
                     ss << indent << "z: " << z << std::endl;
                     return ss.str();
                 }
+
+                virtual std::string toJSON() const {
+                    std::stringstream ss;
+                    ss << '{';
+                    ss << "x: " << x << ',';
+                    ss << "y: " << y << ',';
+                    ss << "z: " << z;
+                    ss << '}';
+                    return ss.str();
+                }
             };
         }
 

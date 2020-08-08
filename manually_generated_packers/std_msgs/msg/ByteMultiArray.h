@@ -33,6 +33,23 @@ namespace ssr::nanoros {
                 ss << ']' << std::endl;
                 return ss.str();
             }
+
+            virtual std::string toJSON() const {
+                std::stringstream ss;
+                ss << '{';
+                ss << "layout: " << layout.toJSON() << ',';
+                ss << "data: ";
+                ss << '[';
+                for(int i = 0;i < data.size();i++) {
+                    ss << data[i];
+                    if (i != data.size() -1) {
+                        ss << ',';
+                    }
+                }
+                ss << ']';
+                ss << '}';
+                return ss.str();
+            }
         };
     }
     template<>

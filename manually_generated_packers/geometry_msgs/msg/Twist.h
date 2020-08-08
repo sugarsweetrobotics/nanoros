@@ -24,6 +24,15 @@ namespace ssr {
                     ss << indent << angular.prettyString("  ");
                     return ss.str();
                 }
+
+                virtual std::string toJSON() const {
+                    std::stringstream ss;
+                    ss << '{';
+                    ss << "linear: " << linear.toJSON() << ',';
+                    ss << "angular: " << angular.toJSON();
+                    ss << '}';
+                    return ss.str();
+                }
             };
         }
 

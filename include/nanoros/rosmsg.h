@@ -20,6 +20,7 @@ namespace ssr {
 
     public:
       virtual std::string prettyString(const std::string& indent="") const = 0;
+      virtual std::string toJSON() const = 0;
 
     };
 

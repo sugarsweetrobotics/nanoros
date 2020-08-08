@@ -17,6 +17,14 @@ namespace ssr::nanoros {
                 ss << indent << "data" << ':' << data;
                 return ss.str();
             }
+
+            virtual std::string toJSON() const {
+                std::stringstream ss;
+                ss << '{';
+                ss << "data: " << data;
+                ss << '}';
+                return ss.str();
+            }
         };
     }
 

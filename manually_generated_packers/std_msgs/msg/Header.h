@@ -23,6 +23,16 @@ namespace ssr {
                     ss << indent << "frame_id:" << '\'' << frame_id << '\'';
                     return ss.str();
                 }
+
+                virtual std::string toJSON() const {
+                    std::stringstream ss;
+                    ss << '{';
+                    ss << "seq: " << seq << ',';
+                    ss << "stamp: " << stamp.toJSON() << ',';
+                    ss << "frame_id: " << '\'' << frame_id << '\'';
+                    ss << '}';
+                    return ss.str();
+                }
             };
         }
 

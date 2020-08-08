@@ -28,6 +28,24 @@ namespace ssr::nanoros {
                 ss << indent << "data_offset" << ':' << data_offset << std::endl;
                 return ss.str();
             }
+
+            virtual std::string toJSON() const {
+                std::stringstream ss;
+                ss << '{';
+                ss << "dim: " << std::endl;
+                ss << '[';
+                for(int i = 0;i < dim.size();i++) {
+                    ss << dim[i].toJSON();
+                    if (i != dim.size()-1) {
+                        ss << ',';
+                    }
+                }
+                ss << ']';
+                ss << ',';
+                ss << "data_offset" << ": " << data_offset << std::endl;
+                ss << '}';
+                return ss.str();
+            }
         };
     }
     template<>
