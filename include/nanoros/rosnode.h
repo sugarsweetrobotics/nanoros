@@ -19,17 +19,22 @@ namespace ssr {
     class ROSSubscriber;
     class ROSSlaveServer;
     class ROSPublisher;
+    class ROSMaster;
 
     class ROSNode {
     protected:
       const std::string name_;
+
+      const std::shared_ptr<ROSMaster> master_;
     public:
-      ROSNode(const std::string& name) : name_(name) {}
+      ROSNode(const std::shared_ptr<ROSMaster>& master, const std::string& name) : master_(master), name_(name) {}
       virtual ~ROSNode() {}
     public:
       virtual std::pair<int32_t, int32_t> getPortRange() const { return {30000, 65535}; }
 
       virtual std::shared_ptr<ROSSlaveServer> slaveServer() { return nullptr; }
+
+      virtual std::shared_ptr<ROSMaster> master() const { return master_; }
       virtual std::string name() const { return name_; }
       virtual void spinOnce() {}
       virtual void spin() {}

@@ -335,8 +335,12 @@ std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* s
   return slaveServerImpl->getNode()->getSubscriptions();
 }
 
-bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
 
+/**
+ * 
+ * 
+ */
+bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
   auto pubs = slaveServerImpl->getNode()->getCurrentSubscribingPublisherUris();
   if (!pubs) return false;
   for(auto pubUri : pubs.value()) {

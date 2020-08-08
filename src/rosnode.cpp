@@ -13,7 +13,6 @@ using namespace ssr::nanoros;
 
 class ROSNodeImpl : public ROSNode {
 private:
-  const std::shared_ptr<ROSMaster> master_;
   const std::shared_ptr<ROSSlaveServer> slaveServer_;
 
   const int32_t portBase_ = 30000;
@@ -22,7 +21,7 @@ private:
   std::vector<std::shared_ptr<ROSPublisher>> publishers_;
   std::vector<std::shared_ptr<ROSServiceProvider>> serviceProviders_;
 public:
-  ROSNodeImpl(const std::shared_ptr<ROSMaster>& master, const std::string& name) : ROSNode(name), master_(master), slaveServer_(rosslaveserver(this, master, getSelfIP(), getEmptyPort(getPortRange()))) {}
+  ROSNodeImpl(const std::shared_ptr<ROSMaster>& master, const std::string& name) : ROSNode(master, name), slaveServer_(rosslaveserver(this, master, getSelfIP(), getEmptyPort(getPortRange()))) {}
   virtual ~ROSNodeImpl() {
     unsubscribeAll();
     unadvertiseAll();
@@ -56,10 +55,21 @@ public:
   }
 public:
   virtual std::shared_ptr<ROSSubscriber> subscribe(const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func, const bool latching=false, const double negotiateTimeout=1.0) override {
-    if (getRegisteredSubscriber(topicName) != nullptr) return nullptr;
+
+    if (getRegisteredSubscriber(topicName) != nullptr) {
+      // Duplicate Subscription
+      return nullptr;
+    }
     auto subscriber = createROSSubscriber(this, topicName, packer, func);
-    if (!subscriber) return nullptr;
-    auto publishersInfo = master_->registerSubscriber(name_, topicName, packer->typeName(), slaveServer_->getSlaveUri());
+    if (!subscriber) {
+      // Subscriber Creation Error
+      return nullptr;
+    }
+    std::string typeName = "*";
+    if (packer) {
+      typeName = packer->typeName();
+    }
+    auto publishersInfo = master_->registerSubscriber(name_, topicName, typeName, slaveServer_->getSlaveUri());
     if (publishersInfo->code) {
       for(auto& pub: publishersInfo->publishers) {
         subscriber->connect(pub, latching, negotiateTimeout);
@@ -71,9 +81,11 @@ public:
 
   virtual bool subscribeUri(const std::string& topicName, const std::string& uri, const bool latching=false, const double negotiateTimeout=1.0) override { 
     auto subscriber = this->getRegisteredSubscriber(topicName);
-    if (!subscriber) return false;
-    subscriber->connect(uri, latching, negotiateTimeout);
-    return false; 
+    if (!subscriber) {
+      return false;
+    }
+    auto worker = subscriber->connect(uri, latching, negotiateTimeout);
+    return true;
   }
 
   virtual bool unsubscribeUri(const std::string& topicName, const std::string& uri) override { 

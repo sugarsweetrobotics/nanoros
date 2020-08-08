@@ -47,8 +47,8 @@ std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::str
                 continue;
             }
 #else
-            std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
-            return nullptr;
+           ///std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
+            continue;
 #endif
         }
         func(this);

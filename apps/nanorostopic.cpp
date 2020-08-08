@@ -68,10 +68,10 @@ int main(const int argc, const char* argv[]) {
         const std::string topicName = argv[2];
         const std::string topicTypeName = topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName);
         auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
-        if (!packer) {
+        /*if (!packer) {
           std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
           return -1;
-        }
+        }*/
         auto node = registerROSNode("/nanorostopic_echo");
         node->subscribe(topicName, packer, [](auto& topic) {
 					   std::cout << topic->prettyString() << std::endl 

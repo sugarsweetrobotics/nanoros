@@ -6,11 +6,20 @@
 #include "nanoros/rostcpros.h"
 #include "nanoros/rosnode.h"
 
+#include "nanoros/rosutil.h"
 #include "nanoros/rosslaveserver.h"
 
 using namespace ssr::nanoros;
 
-
+template<typename T>
+std::vector<T> filter(const std::vector<T>& vals, const std::function<bool(const T&)>& func) {
+  std::vector<T> retval;
+  for(auto& val : vals) {
+    if (func(val)) retval.push_back(val);
+  }
+  return retval;
+}
+  
 
 class ROSSubscriberWorker {
 private:
@@ -77,19 +86,38 @@ public:
 class ROSSubscriberImpl : public ROSSubscriber {
 private:
   std::vector<std::shared_ptr<ROSSubscriberWorker>> workers_;
-  const std::shared_ptr<ROSMsgPacker> packer_;
+  std::shared_ptr<ROSMsgPacker> packer_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
 	virtual std::string getTopicTypeName() const override { return packer_->typeName(); }
   const std::shared_ptr<ROSMsgPacker>& packer() { return packer_; }
-  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) : 
-  	ROSSubscriber(node, topicName), packer_(packer), callback_(func) {}
+  ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) 
+  : ROSSubscriber(node, topicName), packer_(packer), callback_(func) {
+	  if (!packer_) {
+		  /// if (packer_ is null), wait publisherUpdate callback to specify topic type.
+	  }
+  }
 
 private:
   virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
+	  if (!packer_) {
+		  // if packer_ is null, connection should not be done.
+		  auto types = this->node_->master()->getTopicTypes(this->node_->name());
+		  auto topicName = this->getTopicName();
+		  if (!types) { return nullptr;}
+		  auto vs = filter<TopicTypeInfo>(types->topicTypes, [topicName](const TopicTypeInfo& v) { return v.topicName == topicName; });
+		  if (vs.size() == 0) { 
+     		  return nullptr;
+		  }
+		  auto topicTypeName = vs[0].topicType;
+		  auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
+          if (!packer) {
+			  return nullptr;
+		  }
+		  packer_ = packer;
+	  }
 	  auto worker = std::make_shared<ROSSubscriberWorker>(packer_, callback_);
 	  if(worker->connect(host, port)) {
-		  workers_.push_back(worker);
 		  return std::static_pointer_cast<ROSSubscriberWorker>(worker);
 	  }
 	  return nullptr;
@@ -108,8 +136,7 @@ public:
 	if (!worker) { return false;
 	}
 	if (!worker->negotiateHeader(node_->name(), topicName_, packer_->typeName(), packer_->md5sum(), latching, negotiateTimeout)) return false;
-
-	workers_.emplace_back(std::move(worker));	
+	workers_.push_back(worker);
 	return true;
   }
 
@@ -144,6 +171,6 @@ public:
 
 std::shared_ptr<ROSSubscriber> ssr::nanoros::createROSSubscriber(ROSNode* node, const std::string& topicName,
  const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) {
-	 if (!packer) return nullptr;
+	// if (!packer) return nullptr;
 	return std::static_pointer_cast<ROSSubscriber>(std::make_shared<ROSSubscriberImpl>(node, topicName, packer, func));
 }

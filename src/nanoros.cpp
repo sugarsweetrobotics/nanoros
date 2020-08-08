@@ -10,6 +10,7 @@
 #include "nanoros/stringutil.h"
 
 #include <thread>
+#include <filesystem>
 
 namespace {
 
@@ -30,9 +31,10 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   ssr::nanoros::signal(ssr::nanoros::SIGNAL_INT, signal_handler);
 
   auto absPath = getExecutablePath(argv[0]);
+  std::filesystem::path p = absPath;
+  //p.parent();
 
-
-  getROSMsgPackerFactory()->addPackerDirHint(absPath);
+  getROSMsgPackerFactory()->addPackerDirHint(p.parent_path().string());
   auto packerDir = ssr::nanoros::getEnv("NANOROS_PACKER_DIR");
   if (packerDir.length() > 0) {
       if (packerDir.rfind('/') != packerDir.length() - 1) {
@@ -59,7 +61,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   }
 
 
-  getROSMsgPackerFactory()->addPackerDirHint(absPath + "../share/nanoros/packers/");
+  getROSMsgPackerFactory()->addPackerDirHint((p.parent_path().parent_path() / "share" / "nanoros" / "packers").string());//absPath + "../share/nanoros/packers/");
 #ifdef WIN32
   getROSMsgPackerFactory()->addPackerDirHint(absPath + "../../share/nanoros/packers/");
 #else
