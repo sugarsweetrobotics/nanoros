@@ -77,6 +77,9 @@ namespace ssr {
         public:
             JSONObject() {}
             virtual ~JSONObject() {}
+
+        public:
+            virtual std::string prettyString(const std::string& indent) const = 0;
         };
 
         NANOROS_API std::shared_ptr<JSONObject> fromJSONString(const std::string& str);

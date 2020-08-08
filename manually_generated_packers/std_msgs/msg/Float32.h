@@ -12,17 +12,17 @@ namespace ssr {
 
                 Float32() : data(0) {}
                 virtual ~Float32() {}
-
+/*
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
                     ss << indent << "data" << ':' << data;
                     return ss.str();
                 }
-
-                virtual std::string toJSON() const {
+*/
+                virtual std::string toJSONString() const {
                     std::stringstream ss;
                     ss << '{';
-                    ss << "data: " << data;
+                    ss << "\"data\": " << data;
                     ss << '}';
                     return ss.str();
                 }

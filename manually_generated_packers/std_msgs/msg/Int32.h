@@ -12,16 +12,17 @@ namespace ssr::nanoros {
             Int32(): Int32(0) {}
             virtual ~Int32() {}
 
+/*
             virtual std::string prettyString(const std::string& indent="") const {
                 std::stringstream ss;
                 ss << indent << "data" << ':' << data;
                 return ss.str();
             }
-
-            virtual std::string toJSON() const {
+*/
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
                 ss << '{';
-                ss << "data: " << data;
+                ss << "\"data\": " << data;
                 ss << '}';
                 return ss.str();
             }

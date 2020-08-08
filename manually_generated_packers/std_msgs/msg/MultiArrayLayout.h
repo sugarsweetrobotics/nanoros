@@ -18,6 +18,7 @@ namespace ssr::nanoros {
             MultiArrayLayout():dim(), data_offset(0){}
             virtual ~MultiArrayLayout(){}
 
+            /*
             virtual std::string prettyString(const std::string& indent="") const {
                 std::stringstream ss;
                 ss << indent << "dim:" << std::endl;
@@ -28,11 +29,11 @@ namespace ssr::nanoros {
                 ss << indent << "data_offset" << ':' << data_offset << std::endl;
                 return ss.str();
             }
-
-            virtual std::string toJSON() const {
+            */
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
                 ss << '{';
-                ss << "dim: " << std::endl;
+                ss << "\"dim\": " << std::endl;
                 ss << '[';
                 for(int i = 0;i < dim.size();i++) {
                     ss << dim[i].toJSON();
@@ -42,7 +43,7 @@ namespace ssr::nanoros {
                 }
                 ss << ']';
                 ss << ',';
-                ss << "data_offset" << ": " << data_offset << std::endl;
+                ss << "\"data_offset\": " << data_offset << std::endl;
                 ss << '}';
                 return ss.str();
             }

@@ -16,20 +16,21 @@ namespace ssr {
                 Twist() {}
                 virtual ~Twist() {}
 
+/*
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
-                    ss << indent << "linear:" << std::endl;
+                    ss << indent << "\"linear:" << std::endl;
                     ss << indent << linear.prettyString("  ");
-                    ss << indent << "angular:" << std::endl;
+                    ss << indent << "\"angular:" << std::endl;
                     ss << indent << angular.prettyString("  ");
                     return ss.str();
                 }
-
-                virtual std::string toJSON() const {
+*/
+                virtual std::string toJSONString() const {
                     std::stringstream ss;
                     ss << '{';
-                    ss << "linear: " << linear.toJSON() << ',';
-                    ss << "angular: " << angular.toJSON();
+                    ss << "\"linear\": " << linear.toJSON() << ',';
+                    ss << "\"angular\": " << angular.toJSON();
                     ss << '}';
                     return ss.str();
                 }

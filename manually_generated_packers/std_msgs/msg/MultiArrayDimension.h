@@ -18,6 +18,7 @@ namespace ssr::nanoros {
             MultiArrayDimension():label(""), size(0), stride(0){}
             virtual ~MultiArrayDimension(){}
 
+/*
             virtual std::string prettyString(const std::string& indent="") const {
                 std::stringstream ss;
                 ss << indent << "label" << ':' << label << std::endl;
@@ -25,13 +26,13 @@ namespace ssr::nanoros {
                 ss << indent << "stride" << ':' << stride << std::endl;
                 return ss.str();
             }
-
-            virtual std::string toJSON() const {
+*/
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
                 ss << '{';
-                ss << "label: " << label << ',';
-                ss << "size: " << size << ',';
-                ss << "stride: " << stride;
+                ss << "\"label\": " << label << ',';
+                ss << "\"size\": " << size << ',';
+                ss << "\"stride\": " << stride;
                 ss << '}'; 
                 return ss.str();
             }

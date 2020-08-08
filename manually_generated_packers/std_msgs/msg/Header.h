@@ -15,21 +15,21 @@ namespace ssr {
                 Header(const uint32_t& arg0, const ssr::nanoros::time& arg1, const std::string& arg2) : seq(arg0), stamp(arg1), frame_id(arg2) {}
                 Header(): seq(0), frame_id("") {}
                 virtual ~Header() {}
-
+/*
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
-                    ss << indent << "seq:" << seq << std::endl;
-                    ss << indent << "stamp:\n" << stamp.prettyString(indent + "  ") << std::endl;
-                    ss << indent << "frame_id:" << '\'' << frame_id << '\'';
+                    ss << indent << "\"seq\":" << seq << std::endl;
+                    ss << indent << "\"stamp\":\n" << stamp.prettyString(indent + "  ") << std::endl;
+                    ss << indent << "\"frame_id\":" << '\'' << frame_id << '\'';
                     return ss.str();
                 }
-
-                virtual std::string toJSON() const {
+*/
+                virtual std::string toJSONString() const {
                     std::stringstream ss;
                     ss << '{';
-                    ss << "seq: " << seq << ',';
-                    ss << "stamp: " << stamp.toJSON() << ',';
-                    ss << "frame_id: " << '\'' << frame_id << '\'';
+                    ss << "\"seq\": " << seq << ',';
+                    ss << "\"stamp\": " << stamp.toJSON() << ',';
+                    ss << "\"frame_id\": " << '\'' << frame_id << '\'';
                     ss << '}';
                     return ss.str();
                 }

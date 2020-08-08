@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 
+#include "nanoros/json.h"
 #include "nanoros/rosprimitive.h"
 
 namespace ssr {
@@ -19,9 +20,11 @@ namespace ssr {
       virtual ~ROSMsg() {}
 
     public:
-      virtual std::string prettyString(const std::string& indent="") const = 0;
-      virtual std::string toJSON() const = 0;
-
+      virtual std::string prettyString(const std::string& indent="") const;
+      virtual std::string toJSONString() const = 0;
+      virtual std::shared_ptr<const JSONObject> toJSON() const {
+        return fromJSONString(toJSONString());
+      }
     };
 
   }

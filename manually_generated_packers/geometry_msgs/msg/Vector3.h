@@ -14,7 +14,7 @@ namespace ssr {
 
                 Vector3() {}
                 virtual ~Vector3() {}
-
+/*
                 virtual std::string prettyString(const std::string& indent="") const {
                     std::stringstream ss;
                     ss << indent << "x: " << x << std::endl;
@@ -22,13 +22,13 @@ namespace ssr {
                     ss << indent << "z: " << z << std::endl;
                     return ss.str();
                 }
-
-                virtual std::string toJSON() const {
+*/
+                virtual std::string toJSONString() const {
                     std::stringstream ss;
                     ss << '{';
-                    ss << "x: " << x << ',';
-                    ss << "y: " << y << ',';
-                    ss << "z: " << z;
+                    ss << "\"x\": " << x << ',';
+                    ss << "\"y\": " << y << ',';
+                    ss << "\"z\": " << z;
                     ss << '}';
                     return ss.str();
                 }

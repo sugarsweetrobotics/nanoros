@@ -112,6 +112,11 @@ public:
         if (!isArray()) return nullptr;
         return std::make_shared<JSONObjectImpl>(json_.at(key));
     }
+
+    virtual std::string prettyString(const std::string& indent) const override {
+        int len = indent.length();
+        return json_.dump(len);
+    }
 };
 
 

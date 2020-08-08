@@ -17,7 +17,7 @@ namespace ssr::nanoros {
             ByteMultiArray(const std_msgs::MultiArrayLayout& _layout, const std::vector<uint8_t>& _data):layout(_layout), data(_data){}
             ByteMultiArray():layout(), data(){}
             virtual ~ByteMultiArray(){}
-
+/*
             virtual std::string prettyString(const std::string& indent="") const {
                 std::stringstream ss;
                 ss << indent << "layout:" << std::endl;
@@ -33,12 +33,12 @@ namespace ssr::nanoros {
                 ss << ']' << std::endl;
                 return ss.str();
             }
-
-            virtual std::string toJSON() const {
+*/
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
                 ss << '{';
-                ss << "layout: " << layout.toJSON() << ',';
-                ss << "data: ";
+                ss << "\"layout\": " << layout.toJSON() << ',';
+                ss << "\"data\": ";
                 ss << '[';
                 for(int i = 0;i < data.size();i++) {
                     ss << data[i];

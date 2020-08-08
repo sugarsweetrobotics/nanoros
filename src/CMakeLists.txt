@@ -8,6 +8,7 @@ signal.cpp
 dllproxy.cpp
 json.cpp
 packerfactory.cpp
+rosmsg.cpp
 rosmsgpacker.cpp
 rosmsgpackerfactory.cpp
 rosnode.cpp
