@@ -20,20 +20,72 @@ namespace fs = std::filesystem;
 std::vector<fs::path> dependentPackages;
 
 
+std::optional<Constant> makeConstant(const std::vector<std::string> tokens) {
+	std::string comment = "";
+	auto subtokens = split(tokens[0], ' ');
+		
+	std::string typeName = subtokens[0];
+	std::string valueName = subtokens[1];
+	std::string value = tokens[1];
+	/*
+	if (tokens.size() >= 2 && tokens[1].find("=") != std::string::npos) {
+		if (subtokens.size() == 1) { // LIKE uint8 VALUE= 3
+			valueName = subtokens[0];
+			std::string s = tokens[2];
+			trim(s);
+			value = s;
+		} else { /// Like uint8 VALUE=1
+			valueName = subtokens[0];
+			value = subtokens[1];
+		}
+	} else if (tokens.size() > 2 && tokens[2].find("=") == 0) { 
+		if (tokens[2] == "=") {	// Like uint8 VALUE = 3
+
+
+		} else { // Like uint8 VALUE =3
+
+		}
+
+	}
+	*/
+	return Constant(typeName, valueName, value);
+	//return TypedValue{ tokens[0], tokens[1] , comment };
+}
+
+
 std::optional<MsgInfo> createMsgInfo(const fs::path& path, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
 	std::ifstream fin(path);
 	std::string line;
 	fs::path p = path;
 	MsgInfo msgInfo(p.remove_filename().parent_path().parent_path().filename().string(), path.filename().stem().string());
 	while (std::getline(fin, line)) {
+		std::string comment = "";
 		ltrim(line);
 		if (line[0] == '#') continue;
 		if (line.length() == 0) continue;
 		line = rtrim_copy(line);
-		auto tokens = split(line);
-		auto tv = typedValue(tokens);
-		if (!tv) return std::nullopt;
-		msgInfo.typedValues.emplace_back(std::move(tv.value()));
+		/// TODO: アルゴリズムはよくできる
+		/// まずコメントとそれ以外に分解して，
+		/// 次にイコール記号があるか判定してConstantかTypedValueかに分岐した方が得策だな
+		if (line.find('#') != std::string::npos) {
+			comment = line.substr(line.find('#')+1);
+			line = line.substr(0, line.find('#'));
+		}
+		if (line.find("=") != std::string::npos) {
+
+			auto tokens = split(line, '=');
+			auto c = makeConstant(tokens);
+			if (!c) continue;
+			c->comment = comment;
+			msgInfo.constants.emplace_back(std::move(c.value()));
+
+		} else {
+			auto tokens = split(line);
+			auto tv = typedValue(tokens);
+			if (!tv) continue;
+			tv->comment = comment;
+			msgInfo.typedValues.emplace_back(std::move(tv.value()));
+		}
 	}
 	auto hash = parse_md5(path, msgInfo.packageName, inputPaths, searchPaths);
 	msgInfo.setHash(hash.value());

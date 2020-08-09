@@ -1,3 +1,8 @@
+/**
+ * 
+ * coding: utf-8
+ */
+
 #include <string>
 #include <filesystem>
 #include <fstream>
@@ -18,8 +23,6 @@ using namespace msgparser;
 namespace fs = std::filesystem;
 
 
-
-
 std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 	std::stringstream ss;
 	ss << hdr_part[0] << std::endl;
@@ -30,78 +33,151 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 	}
 
 	ss << hdr_part[1] << std::endl;
-	// �l�[���X�y�[�X�g�ݗ���
+	// ネームスペースの作成
 	ss << "    namespace " << msgInfo.packageName << " {" << std::endl;
-	// �N���X�錾
+	// 構造体の宣言
 	ss << "        struct " << msgInfo.typeName << " : public ROSMsg {" << std::endl;
 
-	// �����o�ϐ��錾
+	// メンバ変数の宣言
 	for (auto& tv : msgInfo.typedValues) {
 		ss << "            " << concat_member(tv, msgInfo.packageName) << ";" << std::endl;
 	}
 
 	ss << "            " << std::endl;
-	// �R���X�g���N�^�i��������j
+	// コンストラクタ
 	ss << "            " << msgInfo.typeName << "(";
+	// コンストラクタの引数の生成
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
 		ss << "const " << concat_typeName(tv.typeName, msgInfo.packageName) << "& _" << tv.valueName;
 		if (i != msgInfo.typedValues.size() - 1) ss << ", ";
 	}
 	ss << "):";
+	// 引数をメンバに代入する部分
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
 		ss << tv.valueName << "(_" << tv.valueName << ")";
 		if (i != msgInfo.typedValues.size() - 1) ss << ", ";
 	}
 	ss << " {}" << std::endl;
-	// �f�t�H���g�R���X�g���N�^
+	// デフォルトコンストラクタ
 	ss << "            " << msgInfo.typeName << "():";
+	// 各メンバのデフォルト値の設定
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
 		ss << tv.valueName << "(" << concat_default_value(tv.typeName) << ")";
 		if (i != msgInfo.typedValues.size() - 1) ss << ", ";
 	}
 	ss << " {}" << std::endl;
-	// �f�X�g���N�^
+	// デストラクタ
 	ss << "            virtual ~" << msgInfo.typeName << "() {}" << std::endl;
 	ss << "\n";
-	// �����񐶐�
-	ss << "            virtual std::string prettyString(const std::string& indent=\"\") const {" << std::endl;
+	// JSON文字列への変換
+	ss << "            virtual std::string toJSONString() const {" << std::endl;
 	ss << "                std::stringstream ss;" << std::endl;
+	ss << "                ss << '{';" << std::endl;
 	for (int i = 0; i < msgInfo.typedValues.size(); i++) {
 		auto& tv = msgInfo.typedValues[i];
-		if (is_array(tv.typeName)) { // �����z��^��������E�E�E
+		if (is_array(tv.typeName)) { // メンバ変数のタイプが配列だったら
 			auto elemTypeName = tv.typeName.substr(0, tv.typeName.length() - 2);
 			if (to_cxx_typeName(elemTypeName)) {
-				ss << "                ss << indent << \"" << tv.valueName << "\" << \": [\";" << std::endl;
-				ss << "                auto it = " << tv.valueName << ".begin();" << std::endl;
-				ss << "                while (true) {" << std::endl;
-				ss << "                    ss << *it;" << std::endl;
-				ss << "                    ++it;" << std::endl;
-				ss << "                    if (it == " << tv.valueName << ".end()) break;" << std::endl;
+				ss << "                ss << \"" << tv.valueName << "\" << \": [\";" << std::endl;
+				ss << "                for(int i = 0;i < " << tv.valueName << ".size();i++) {" << std::endl;
+				ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+				ss << "                    if (i == " << tv.valueName << ".size() - 1) break;" << std::endl;
 				ss << "                    ss << ',';" << std::endl;
 				ss << "                }" << std::endl;
-				ss << "                ss << ']' << std::endl;" << std::endl;
+				ss << "                ss << \"]\";" << std::endl;
 			}
 			else {
-				ss << "                ss << indent << \"" << tv.valueName << ":\" << std::endl;" << std::endl;
-				ss << "                for(auto& elem : " << tv.valueName << ") {" << std::endl;
-				ss << "                    ss << indent << \" - \" << std::endl;" << std::endl;
-				ss << "                    ss << elem.prettyString(indent + \"    \");" << std::endl;
+				ss << "                ss << \"" << tv.valueName << ": \";" << std::endl;
+				ss << "                for(int i = 0; i < " << tv.valueName << ".size();i++) {" << std::endl;
+				ss << "                    ss << " << tv.valueName << ".toJSONString();" << std::endl;
+				ss << "                    if (i == " << tv.valueName << ".size() -1) break;" << std::endl;
+				ss << "                    ss << ',';" << std::endl;
 				ss << "                }" << std::endl;
+				ss << "                ss << \"]\";" << std::endl;
 			}
 		}
-		else { // �z��^�ł͂Ȃ��ꍇ
+		else if (is_fixed_array(tv.typeName)) {
+			auto size = fixed_array_size(tv.typeName);
+			auto elemTypeName = arrayElemType(tv.typeName);
+
+
+			if (is_fixed_array(elemTypeName)) {
+
+				auto size2 = fixed_array_size(elemTypeName);
+				elemTypeName = arrayElemType(elemTypeName);
+				if (to_cxx_typeName(elemTypeName)) {
+					ss << "                ss << \"" << tv.valueName << "\" << \": [\";" << std::endl;
+					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
+					ss << "                    ss << \"[\";" << std::endl;
+					ss << "                    for(int j = 0;j < " << size2 << ";j++) {" << std::endl;
+					ss << "                        ss << " << tv.valueName << "[i][j];" << std::endl;
+  					ss << "                        if (j == " << size2 -1 << ") break;" << std::endl;
+					ss << "                        ss << ',';" << std::endl;
+					ss << "                    }" << std::endl;
+					ss << "                    ss << \"]\";" << std::endl;
+  					ss << "                    if (i == " << size -1 << ") break;" << std::endl;
+					ss << "                    ss << ',';" << std::endl;
+					ss << "                }" << std::endl;
+					ss << "                ss << \"]\";" << std::endl;
+				} 
+				else {
+
+					ss << "                ss << \"" << tv.valueName << "\" << \": [\";" << std::endl;
+					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
+					ss << "                    ss << \"[\";" << std::endl;
+					ss << "                    for(int j = 0;j < " << size2 << ";j++) {" << std::endl;
+					ss << "                        ss << " << tv.valueName << "[i][j].toJSONString();" << std::endl;
+  					ss << "                        if (j == " << size2 -1 << ") break;" << std::endl;
+					ss << "                        ss << ',';" << std::endl;
+					ss << "                    }" << std::endl;
+					ss << "                    ss << \"]\";" << std::endl;
+  					ss << "                    if (i == " << size -1 << ") break;" << std::endl;
+					ss << "                    ss << ',';" << std::endl;
+					ss << "                }" << std::endl;
+					ss << "                ss << \"]\";" << std::endl;
+				}
+				
+				
+
+
+			} else {
+				if (to_cxx_typeName(elemTypeName)) {
+					ss << "                ss << \"" << tv.valueName << "\" << \": [\";" << std::endl;
+					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
+					ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+					ss << "                    if (i == " << size -1 << ") break;" << std::endl;
+					ss << "                    ss << ',';" << std::endl;
+					ss << "                }" << std::endl;
+					ss << "                ss << \"]\";" << std::endl;
+				} 
+				else {
+					ss << "                ss << \"" << tv.valueName << ": \";" << std::endl;
+					ss << "                for(int i = 0; i < " << size << ";i++) {" << std::endl;
+					ss << "                    ss << " << tv.valueName << ".toJSONString();" << std::endl;
+					ss << "                    if (i == " << size-1 << ") break;" << std::endl;
+					ss << "                    ss << ',';" << std::endl;
+					ss << "                }" << std::endl;
+					ss << "                ss << \"]\";" << std::endl;
+				}				
+			}
+
+		}
+		else { // メンバ変数が配列でなければ
 			if (to_cxx_typeName(tv.typeName)) {
-				ss << "                ss << indent << \"" << tv.valueName << "\" << ':' << " << tv.valueName << " << std::endl;" << std::endl;
+				ss << "                ss << \"" << tv.valueName << "\" << \": \" << " << tv.valueName << std::endl;
 			}
 			else {
-				ss << "                ss << indent << \"" << tv.valueName << ":\" << std::endl;" << std::endl;
-				ss << "                ss << " << tv.valueName << ".prettyString(indent + \"    \");" << std::endl;
+				ss << "                ss << \"" << tv.valueName << ": \";" << std::endl;
+				ss << "                ss << " << tv.valueName << ".toJSONString();" << std::endl;
 			}
 		}
+		if (i == msgInfo.typedValues.size() -1) break;
+		ss << "                ss << ',';" << std::endl;
 	}
+	ss << "                ss << '}'" << std::endl;
 	ss << "                return ss.str();" << std::endl;
 	ss << "            }" << std::endl;
 	ss << "        };" << std::endl;
@@ -147,6 +223,37 @@ std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 				ss << "                pushValue(val->" << tv.valueName << ", getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), msg, popedCount);" << std::endl;
 			}
 		}
+		else if (is_fixed_array(tv.typeName)) {
+			// TODO: Pattern Fixed Array
+
+			auto size = fixed_array_size(tv.typeName);
+			auto elemTypeName = arrayElemType(tv.typeName);
+			if (is_fixed_array(elemTypeName)) {
+				auto size2 = fixed_array_size(elemTypeName);
+				elemTypeName = arrayElemType(elemTypeName);
+
+				if (to_cxx_typeName(elemTypeName)) {
+					ss << "                pushValue(val->" << tv.valueName << ", msg, popedCount);" << std::endl;
+				}
+				else {
+					ss << "                pushValue(val->" << tv.valueName << ", getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), msg, popedCount);" << std::endl;
+				}
+
+
+			} else {
+
+				if (to_cxx_typeName(elemTypeName)) {
+					ss << "                pushValue(val->" << tv.valueName << ", " << size << ", msg, popedCount);" << std::endl;
+				}
+				else {
+					ss << "                pushValue(val->" << tv.valueName << ", " << size << ", getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), msg, popedCount);" << std::endl;
+				}
+
+			}
+
+
+
+		}
 		else {
 			if (to_cxx_typeName(tv.typeName)) {
 				ss << "                setValue(val, val->" << tv.valueName << ", msg->pop<" << to_cxx_typeName(tv.typeName).value() << ">(popedCount));" << std::endl;
@@ -171,6 +278,35 @@ std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 			else {
 				ss << "                pushVectorValue(pkt, getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), val." << tv.valueName << ");" << std::endl;
 			}
+
+		}
+		else if (is_fixed_array(tv.typeName)) {
+			// TODO: Pattern Fixed Array
+
+
+			auto size = fixed_array_size(tv.typeName);
+			auto elemTypeName = arrayElemType(tv.typeName);
+
+
+			if (is_fixed_array(elemTypeName)) {
+
+				auto size2 = fixed_array_size(elemTypeName);
+				elemTypeName = arrayElemType(elemTypeName);
+			} else {
+				if (to_cxx_typeName(elemTypeName)) {
+
+				    ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
+					ss << "                    pkt->push(val." << tv.valueName << ");" << std::endl;
+					ss << "                }" << std::endl;
+				}
+				else {
+					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
+					ss << "                    pushValue(pkt, getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), val." << tv.valueName << ");" << std::endl;
+					ss << "                }" << std::endl;
+				}
+			}
+			
+
 
 		}
 		else {
@@ -199,6 +335,21 @@ std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 			else {
 				ss << "                setArrayValue(val->" << tv.valueName << ", getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), json, \"" << tv.valueName << "\");" << std::endl;
 			}
+		}
+		else if (is_fixed_array(tv.typeName)) {
+			// TODO: Pattern Fixed Array
+
+
+			auto size = fixed_array_size(tv.typeName);
+			auto elemTypeName = arrayElemType(tv.typeName);
+		
+			if (to_cxx_typeName(elemTypeName)) {
+				ss << "                setArrayValue(val->" << tv.valueName << ", " << size << ", json, \"" << tv.valueName << "\");" << std::endl;
+			}
+			else {
+				ss << "                setArrayValue(val->" << tv.valueName << ", " << size << ", getMsgStub(\"" << concat_typePath(elemTypeName, msgInfo.packageName) << "\"), json, \"" << tv.valueName << "\");" << std::endl;
+			}
+
 		}
 		else {
 			if (to_cxx_typeName(tv.typeName)) {
@@ -231,8 +382,6 @@ std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 	return ss.str();
 }
 
-
-
 std::optional<std::string> msgparser::to_cxx_typeName(const std::string& typeName) {
 	if (is_array(typeName)) {
 		auto primitiveType = to_cxx_primitiveTypeName(arrayElemType(typeName));
@@ -241,9 +390,26 @@ std::optional<std::string> msgparser::to_cxx_typeName(const std::string& typeNam
 		}
 		return std::nullopt;
 	}
+	else if (is_fixed_array(typeName)) {
+		// TODO: Pattern Fixed Array
+
+
+		auto size = fixed_array_size(typeName);
+		auto elemTypeName = arrayElemType(typeName);
+
+
+		if (is_fixed_array(elemTypeName)) {
+
+			auto size2 = fixed_array_size(elemTypeName);
+			elemTypeName = arrayElemType(elemTypeName);
+		}
+			
+
+
+	}
+
 	return to_cxx_primitiveTypeName(typeName);
 }
-
 
 std::vector<std::string> msgparser::dependentTypeNames(const MsgInfo& msgInfo) {
 	std::vector<std::string> buf;
@@ -251,6 +417,10 @@ std::vector<std::string> msgparser::dependentTypeNames(const MsgInfo& msgInfo) {
 		auto typeName = tv.typeName;
 		if (is_array(tv.typeName)) {
 			typeName = tv.typeName.substr(0, tv.typeName.length() - 2);
+		}
+
+		if (is_fixed_array(typeName)) {
+			typeName = tv.typeName.substr(0, tv.typeName.find('['));
 		}
 
 		if (to_cxx_typeName(typeName)) {}
@@ -306,15 +476,10 @@ std::optional<std::string> msgparser::to_cxx_primitiveTypeName(const std::string
 	return std::nullopt;
 }
 
-
-
-
-
-
 extern std::vector<fs::path> dependentPackages;
 
 std::optional<std::string> msgparser::parse_md5(const std::string& fullName, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
-	auto tokens = split(fullName);
+	auto tokens = split(fullName, '/');
 	if (tokens.size() < 2) return std::nullopt;
 
 	auto pkgName = tokens[0];
@@ -348,6 +513,7 @@ std::optional<std::string> msgparser::parse_md5(const fs::path& path, const std:
 	std::string line;
 	fs::path p = path;
 	md5wrapper md5;
+	std::stringstream consts;
 	std::stringstream ss;
 	int i = 0;
 	while (std::getline(fin, line)) {
@@ -355,52 +521,76 @@ std::optional<std::string> msgparser::parse_md5(const fs::path& path, const std:
 		if (line[0] == '#') continue;
 		if (line.length() == 0) continue;
 		line = rtrim_copy(line);
-		auto tokens = split(line);
-		auto tv = typedValue(tokens);
-		if (!tv) return std::nullopt;
-		if (i != 0) ss << (char)0x0a;// << (char)0x0a;
-		if (is_array(tokens[0])) {
-			// TODO: 
-			std::cout << "Path:" << path << " has array member...(" << line << ")" << std::endl;
-			auto elemName = tokens[0].substr(0, tokens[0].length()-2);
-			
-			if (!to_cxx_typeName(elemName)) { // Not primitive type
-
-				if (elemName.find('/') == std::string::npos) {
-					// msg struct�Ȃ񂾂��ǁA'/'���܂܂�Ȃ��Ƃ������ƂŁA����f�B���N�g����msg������Ƃ킩��
-					auto h = parse_md5((path.parent_path() / elemName).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
-					ss << h.value()  << " " << tokens[1];
-				}
-				else {
-					auto h = parse_md5(tokens[0], inputPaths, searchPaths);
-					ss << h.value() << "[]" <<  " " << tokens[1];
-				}
-			}
-			else {
-				ss << elemName << "[]" << " " << tokens[1];
-			}
-
+		std::string comment = "";
+		if (line.find('#') != std::string::npos) {
+			comment = line.substr(line.find('#')+1);
+			line = line.substr(0, line.find('#'));
 		}
-		else {
-			if (!to_cxx_typeName(tokens[0])) { // Not primitive type
+		auto tokens = split(line);
+		if (line.find('=') != std::string::npos) {
+			 // TODO: 
+			auto tokens = split(line, '=');
+			auto subtokens = split(tokens[0]);
+			std::string typeName = subtokens[0];
+			std::string valueName = subtokens[1];
+			std::string valueValue = tokens[1];
+			consts << typeName << " " << valueName << " " << valueValue;
 
-				if (tokens[0].find('/') == std::string::npos) {
-					// msg struct�Ȃ񂾂��ǁA'/'���܂܂�Ȃ��Ƃ������ƂŁA����f�B���N�g����msg������Ƃ킩��
-					auto h = parse_md5((path.parent_path() / tokens[0]).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
-					ss << h.value() << " " << tokens[1];
+		} else {
+			auto tv = typedValue(tokens);
+			if (!tv) return std::nullopt;
+			if (i != 0) ss << (char)0x0a;// << (char)0x0a;
+			if (is_array(tokens[0])) {
+				// std::cout << "Path:" << path << " has array member...(" << line << ")" << std::endl;
+				auto elemName = tokens[0].substr(0, tokens[0].length()-2);
+				
+				if (!to_cxx_typeName(elemName)) { // Not primitive type
+					if (elemName.find('/') == std::string::npos) {
+						if (elemName == "Header") {
+							auto h = parse_md5("std_msgs/Header", inputPaths, searchPaths);
+							ss << h.value()  << "[] " << tokens[1];
+
+						} else {
+							// msg struct�Ȃ񂾂��ǁA'/'���܂܂�Ȃ��Ƃ������ƂŁA����f�B���N�g����msg������Ƃ킩��
+							auto h = parse_md5((path.parent_path() / elemName).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
+							
+							ss << h.value()  << "[] " << tokens[1];
+						}
+					}
+					else {
+						auto h = parse_md5(elemName, inputPaths, searchPaths);
+						ss << h.value() << "[]" <<  " " << tokens[1];
+					}
 				}
 				else {
-					auto h = parse_md5(tokens[0], inputPaths, searchPaths);
-					ss << h.value() << " " << tokens[1];
+					ss << elemName << "[]" << " " << tokens[1];
 				}
+
+			}
+			else if (is_fixed_array(tokens[0])) {
+				// TODO: Pattern Fixed Array
 			}
 			else {
-				ss << tokens[0] << " " << tokens[1];
+				if (!to_cxx_typeName(tokens[0])) { // Not primitive type
+
+					if (tokens[0].find('/') == std::string::npos) {
+						// msg struct�Ȃ񂾂��ǁA'/'���܂܂�Ȃ��Ƃ������ƂŁA����f�B���N�g����msg������Ƃ킩��
+						auto h = parse_md5((path.parent_path() / tokens[0]).replace_extension(".msg"), pkgName, inputPaths, searchPaths);
+						ss << h.value() << " " << tokens[1];
+					}
+					else {
+						auto h = parse_md5(tokens[0], inputPaths, searchPaths);
+						ss << h.value() << " " << tokens[1];
+					}
+				}
+				else {
+					ss << tokens[0] << " " << tokens[1];
+				}
 			}
 		}
 		i++;
 	}
-	return md5.getHashFromString(ss.str());
+	return md5.getHashFromString(consts.str() + ss.str());
 
 }
 
@@ -422,11 +612,37 @@ std::string msgparser::concat_typeName(const std::string& typeName, const std::s
 
 		return "std::vector<" + structPkgName + "::" + structElemName + ">";
 	}
+	else if (is_fixed_array(typeName)) {
+		auto elemType = arrayElemType(typeName);
+		auto size = fixed_array_size(typeName);
+		auto primitiveTypeName2 = to_cxx_typeName(elemType);
+		if (primitiveTypeName2) {
+			return primitiveTypeName2.value();
+		}
+		if (elemType.find('/') == std::string::npos) {
+			if (elemType == "Header") {
+				return "std_msgs::Header";
+			}
+			return pkgName + "::" + typeName;
+		}
+		auto structPkgName = typeName.substr(0, typeName.find('/'));
+		auto structElemName = typeName.substr(typeName.find('/')+1);
+		return structPkgName + "::" + structElemName;
+
+
+		// TODO: Multi Dimention Array
+
+		
+	}
+	// もし'/'がなければ同一パッケージ内の要素
 	if (typeName.find('/') == std::string::npos) {
+		if (typeName == "Header") {
+			return "std_msgs::Header";
+		}
 		return pkgName + "::" + typeName;
 	}
 	auto structPkgName = typeName.substr(0, typeName.find('/'));
-	auto structElemName = typeName.substr(typeName.find('/'));
+	auto structElemName = typeName.substr(typeName.find('/')+1);
 	return structPkgName + "::" + structElemName;
 }
 
@@ -437,7 +653,11 @@ std::string msgparser::concat_typePath(const std::string& typeName, const std::s
 	if (primitiveTypeName) {
 		return primitiveTypeName.value();
 	}
+	// もし'/'がなければ同一パッケージの要素だが・・・
 	if (typeName.find('/') == std::string::npos) {
+		if (typeName == "Header") {
+			return "std_msgs/Header";
+		}
 		return pkgName + "/" + typeName;
 	}
 	return typeName;
@@ -446,8 +666,21 @@ std::string msgparser::concat_typePath(const std::string& typeName, const std::s
 
 std::string msgparser::concat_member(const TypedValue& tv, const std::string& pkgName) {
 	std::string output = concat_typeName(tv.typeName, pkgName) + " " + tv.valueName;
+	if (is_fixed_array(tv.typeName)) {
+		auto size = fixed_array_size(tv.typeName);
+		if (size != 0) {
+			output += "[";
+			output += std::to_string(size);
+			output += "]";
+		} else {
+			if (is_fixed_array(tv.typeName))
+			output += " ";
+		}
+	}
+
+
 	if (tv.comment.length() > 0) {
 		output += ("; // " + tv.comment);
-	}
+	} 
 	return output;
 }

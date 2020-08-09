@@ -39,8 +39,22 @@ namespace msgparser {
 		return false;
 	}
 
+	inline bool is_fixed_array(const std::string& typeName) {
+		if (typeName.find("[") != std::string::npos &&
+			(typeName.find("]") - typeName.find("[") > 1)) {
+			return true;
+		}
+		return false;
+	}
+
+	inline int fixed_array_size(const std::string& typeName) {
+		if (!is_fixed_array(typeName)) { return 0; }
+		auto sizeStr = typeName.substr(typeName.rfind("[")+1, typeName.rfind("]")-typeName.rfind("[")-1);
+		return atoi(sizeStr.c_str());
+	}
+
 	inline std::string arrayElemType(const std::string& typeName) {
-		return typeName.substr(0, typeName.length() - 2);
+		return typeName.substr(0, typeName.rfind("["));
 	}
 
 	inline std::vector<std::string> split(const std::string& str, const char sep = ' ') {
@@ -69,6 +83,15 @@ namespace msgparser {
 		TypedValue(const std::string& tn, const std::string& vn) : typeName(tn), valueName(vn), comment("") {}
 		TypedValue(const std::string& tn, const std::string& vn, const std::string& cmt) : typeName(tn), valueName(vn), comment(cmt) {}
 
+	};
+
+	struct Constant {
+		std::string typeName;
+		std::string valueName;
+		std::string value;
+		std::string comment;
+		Constant(const std::string& tn, const std::string& vn, const std::string& v) : typeName(tn), valueName(vn), value(v), comment("") {}
+		Constant(const std::string& tn, const std::string& vn, const std::string& v, const std::string& cmt) : typeName(tn), valueName(vn), value(v), comment(cmt) {}
 	};
 
 	inline std::string join(std::vector<std::string>::const_iterator it, const std::vector<std::string>::const_iterator& end, const std::string& sep) {
@@ -102,6 +125,7 @@ namespace msgparser {
 		std::string typeName;
 		std::string md5sum;
 		std::vector<TypedValue> typedValues;
+		std::vector<Constant> constants;
 		void setHash(const std::string& md5) { md5sum = md5; }
 		MsgInfo(const std::string& pkg, const std::string& name, const std::string& md5 = "*") : packageName(pkg), typeName(name), md5sum(md5) {}
 	};
