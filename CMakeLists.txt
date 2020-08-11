@@ -27,7 +27,7 @@ add_subdirectory(apps)
 add_subdirectory(examples)
 add_subdirectory(manually_generated_packers)
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/automatically_generated_packers)
-# add_subdirectory(automatically_generated_packers)
+add_subdirectory(automatically_generated_packers)
 endif ()
 
 set(INCLUDE_INSTALL_DIR include/ )
