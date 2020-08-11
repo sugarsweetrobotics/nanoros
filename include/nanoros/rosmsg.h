@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 
+#include "nanoros/nanoros.h"
 #include "nanoros/json.h"
 #include "nanoros/rosprimitive.h"
 
@@ -14,7 +15,7 @@ namespace ssr {
     template<typename T>
     std::string msgTypeName() { return ""; }
     
-    class ROSMsg {
+    class NANOROS_API ROSMsg {
     public:
       ROSMsg() {}
       virtual ~ROSMsg() {}

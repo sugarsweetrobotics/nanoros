@@ -53,14 +53,13 @@ namespace ssr {
         return nullptr;
       }
 
-      virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) {
-        return nullptr;
-      }
+      virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject>& json) = 0;
+
     };
 
 
     template<typename ReqPkr, typename ResPkr>
-    class NANOROS_API AbstractROSSrvPacker : public ROSSrvPacker {
+    class AbstractROSSrvPacker : public ROSSrvPacker {
     protected:
       std::map<std::string, std::shared_ptr<ROSMsgPacker>> packers_;
 
@@ -87,32 +86,33 @@ namespace ssr {
       virtual std::string md5sum() const { return ""; }
       virtual std::string typeName() const { return ""; }
 
-      virtual std::shared_ptr<const ROSMsg> toSrvRequest(const std::optional<TCPROSPacket>& msg) { 
+      virtual std::shared_ptr<const ROSMsg> toSrvRequest(const std::optional<TCPROSPacket>& msg) override { 
         int32_t popedCount = 0;
         return toSrvRequest(msg, popedCount);
       }
 
-      virtual std::shared_ptr<const ROSMsg> toSrvResponse(const std::optional<TCPROSPacket>& msg) { 
+      virtual std::shared_ptr<const ROSMsg> toSrvResponse(const std::optional<TCPROSPacket>& msg) override { 
         int32_t popedCount = 0;
         return toSrvResponse(msg, popedCount);
       }
 
-      virtual std::shared_ptr<const ROSMsg> toSrvResponse(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) {
+      virtual std::shared_ptr<const ROSMsg> toSrvResponse(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override {
         return responsePacker.toMsg(msg, popedCount);
       }
 
-      virtual std::shared_ptr<const ROSMsg> toSrvRequest(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) { 
+      virtual std::shared_ptr<const ROSMsg> toSrvRequest(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
         return requestPacker.toMsg(msg, popedCount);
       }
 
-      virtual std::shared_ptr<TCPROSPacket> requestToPacket(const ROSMsg& msg) {
+      virtual std::shared_ptr<TCPROSPacket> requestToPacket(const ROSMsg& msg) override {
         return requestPacker.toPacket(msg);
       }
-      virtual std::shared_ptr<TCPROSPacket> responseToPacket(const ROSMsg& msg) {
+
+      virtual std::shared_ptr<TCPROSPacket> responseToPacket(const ROSMsg& msg) override {
         return responsePacker.toPacket(msg);
       }
 
-      virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) {
+      virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject>& json) override {
         return requestPacker.fromJSON(json);
       }
     };

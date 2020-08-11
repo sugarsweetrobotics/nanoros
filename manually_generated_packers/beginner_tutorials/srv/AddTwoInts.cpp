@@ -27,6 +27,10 @@ namespace ssr::nanoros {
             using DataType = AddTwoIntsRequest;
 
         public:
+            AddTwoIntsRequestPacker() {}
+            virtual ~AddTwoIntsRequestPacker() {}
+
+        public:
             virtual std::string md5sum() const override { return "73fcbf46b49191e672908e50842a83d4"; }
             virtual std::string typeName() const override { return "beginner_tutorials/AddTwoIntsRequest"; }
             virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override { 
@@ -48,15 +52,21 @@ namespace ssr::nanoros {
             virtual std::shared_ptr<ROSMsg> fromJSON(const std::shared_ptr<const JSONObject> json) override { 
                 if (!json) return nullptr;
                 auto val = std::make_shared<DataType>();
-                setValue<int64_t>(val->a, json, "a");
+                setValue<int64_t>(val->a, json,
+                    "a");
                 setValue<int64_t>(val->b, json, "b");
                 return val;
             }
         };
 
         class AddTwoIntsResponsePacker : public ROSMsgPacker {
- public:
+         public:
             using DataType = AddTwoIntsResponse;
+
+        public:
+            AddTwoIntsResponsePacker() {}
+            virtual ~AddTwoIntsResponsePacker() {}
+
 
         public:
             virtual std::string md5sum() const override { return "73fcbf46b49191e672908e50842a83d4"; }
@@ -85,6 +95,10 @@ namespace ssr::nanoros {
 
         class AddTwoIntsPacker : public AbstractROSSrvPacker<AddTwoIntsRequestPacker, AddTwoIntsResponsePacker>  {
         public:
+
+            AddTwoIntsPacker() : AbstractROSSrvPacker<AddTwoIntsRequestPacker, AddTwoIntsResponsePacker>() {}
+            virtual ~AddTwoIntsPacker() {}
+
 
         public:
             virtual std::string md5sum() const override { return "6a2e34150c00229791cc89ff309fff21"; }
