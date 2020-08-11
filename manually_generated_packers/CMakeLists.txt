@@ -58,9 +58,9 @@ function(add_srv_packer PKGNAME NAME)
   )
 endfunction(add_srv_packer)
 
-add_subdirectory(roscpp)
-add_subdirectory(std_msgs)
-add_subdirectory(geometry_msgs)
+# add_subdirectory(roscpp)
+# add_subdirectory(std_msgs)
+# add_subdirectory(geometry_msgs)
 add_subdirectory(beginner_tutorials)
 
 set(PACKER_INSTALL_DIR ${PACKER_BASE_DIR} PARENT_SCOPE)

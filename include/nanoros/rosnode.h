@@ -104,7 +104,7 @@ namespace ssr {
         if (!factory) return false;
         auto packer = factory->getPacker(srvTypeName<ReqType>());
         if (!packer) return false;
-        return advertiseService(srvName, packer, [func, packer](const std::shared_ptr<const ROSSrvRequest>& request) -> const std::shared_ptr<ROSSrvResponse> {
+        return advertiseService(srvName, packer, [func, packer](const std::shared_ptr<const ROSMsg>& request) -> const std::shared_ptr<ROSMsg> {
           const std::shared_ptr<const ReqType> req = std::dynamic_pointer_cast<const ReqType>(request);
           //const std::shared_ptr<ResType> res = std::dynamic_pointer_cast<ResType>(response);
           if(!req) return nullptr;
@@ -112,7 +112,7 @@ namespace ssr {
         });
       }
 
-      virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) {
+      virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSMsg>(const std::shared_ptr<const ROSMsg>&)>& func) {
         return false; 
       }
 

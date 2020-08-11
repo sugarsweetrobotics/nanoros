@@ -251,6 +251,14 @@ namespace ssr {
         }
     }
 
+    template<>
+    inline void setValue<ssr::nanoros::duration>(ssr::nanoros::duration& value, const std::shared_ptr<const ssr::nanoros::JSONObject>& data) {
+        if (data && data->isObject()) {
+          setValue<uint32_t>(value.sec, data, "sec");
+          setValue<uint32_t>(value.nsec, data, "nsec");
+        }
+    }
+
     template<typename V, typename T>
     void setValue(std::shared_ptr<V>& value, T& v, const std::optional<T>& data) {
       if (!data) {

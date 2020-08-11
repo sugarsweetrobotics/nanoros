@@ -14,9 +14,7 @@ namespace ssr {
     public:
       ROSSrvPackerFactory() {}
       virtual ~ROSSrvPackerFactory() {}
-
     public:
-
     };
 
     NANOROS_API std::shared_ptr<ROSSrvPackerFactory> getROSSrvPackerFactory();

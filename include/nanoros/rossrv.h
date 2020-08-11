@@ -5,11 +5,13 @@
 
 #include "nanoros/rosprimitive.h"
 
+#include "nanoros/rosmsg.h"
+
 namespace ssr {
   namespace nanoros {
 
-    
-    class ROSSrvResponse {
+    /*
+    class ROSSrvResponse : public ROSMsg{
     public:
       bool ok;
       std::string message;
@@ -19,20 +21,24 @@ namespace ssr {
       virtual ~ROSSrvResponse() {}
 
     public:
-      virtual std::string prettyString(const std::string& indent="") const { return indent + "ok: " + (ok ? "true" : "false") + "¥n" + indent + "message: " + message + "¥n"; };
-
+      // virtual std::string prettyString(const std::string& indent="") const { return indent + "ok: " + (ok ? "true" : "false") + "¥n" + indent + "message: " + message + "¥n"; };
+      virtual std::string toJSONString() const { 
+        return "";
+      }
     };
 
-    class ROSSrvRequest {
+    class ROSSrvRequest : public ROSMsg {
     public:
       ROSSrvRequest() {}
       virtual ~ROSSrvRequest() {}
 
     public:
-      virtual std::string prettyString(const std::string& indent="") const = 0;
-
+      // virtual std::string prettyString(const std::string& indent="") const = 0;
+      virtual std::string toJSONString() const { 
+        return "";
+      }
     };
-
+    */
 
     template<typename T>
     std::string srvTypeName() { return ""; }

@@ -140,7 +140,7 @@ public:
     return publisher;
   }
 
-  virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) override {
+  virtual bool advertiseService(const std::string& srvName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSMsg>(const std::shared_ptr<const ROSMsg>&)>& func) override {
     if (getRegisteredServiceProvider(srvName) != nullptr) return false;
     auto provider = createROSServiceProvider(this, srvName, packer, func);
     if (!provider) return false;

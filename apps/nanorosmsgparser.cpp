@@ -166,12 +166,13 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 	cmakeFile << "set(" << pkgName << "_VERSION 0.0.1)" << std::endl;
 	cmakeFile << "project(" << inputPath.filename() << " LANGUAGES CXX VERSION ${" << pkgName << "_VERSION})" << std::endl;
 	cmakeFile << cmk[1];
+	cmakeFile << cmk[2];
 	cmakeFile << "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/" << pkgName << ".wix.patch.in" << std::endl;
 	cmakeFile << "  ${CMAKE_CURRENT_BINARY_DIR}/" << pkgName << ".wix.patch)" << std::endl;
 
-	cmakeFile << cmk[2];
-	cmakeFile << "set(CPACK_WIX_PATCH_FILE \"${CMAKE_CURRENT_BINARY_DIR}/" << pkgName << ".wix.patch\")" << std::endl;
 	cmakeFile << cmk[3];
+	cmakeFile << "set(CPACK_WIX_PATCH_FILE \"${CMAKE_CURRENT_BINARY_DIR}/" << pkgName << ".wix.patch\")" << std::endl;
+	cmakeFile << cmk[4];
 
 	fs::create_directories(outputPath / inputPath.filename() / "cmake");
 	std::ofstream cmakeInFile(outputPath / inputPath.filename() / "cmake" / ( pkgName + "Config.cmake.in"));

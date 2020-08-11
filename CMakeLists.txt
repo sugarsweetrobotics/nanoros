@@ -13,6 +13,11 @@ set(CMAKE_CXX_STANDARD 17)
 option(nanoros_JSON_Install Off)
 
 
+set(nanoros_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+set(PACKER_BASE_DIR share/nanoros/packers)
+set(PACKER_INSTALL_DIR ${PACKER_BASE_DIR} )
+
 add_subdirectory(thirdparty)
 
 add_subdirectory(include)
@@ -21,6 +26,7 @@ add_subdirectorY(src)
 add_subdirectory(apps)
 add_subdirectory(examples)
 add_subdirectory(manually_generated_packers)
+add_subdirectory(automatically_generated_packers)
 
 set(INCLUDE_INSTALL_DIR include/ )
 set(RUNTIME_INSTALL_DIR bin )

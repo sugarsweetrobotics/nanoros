@@ -28,8 +28,8 @@ namespace ssr {
         template<typename T>
         class PackerFactory : public PackerFactoryBase {
         protected:
-            std::map<std::string, std::shared_ptr<T>> packers_;
             std::map<std::string, std::shared_ptr<DLLProxy>> dllproxies_;
+            std::map<std::string, std::shared_ptr<T>> packers_;
 
         public:
             PackerFactory() {

@@ -17,11 +17,11 @@ class ROSServiceProviderImpl : public ROSServiceProvider {
 private:
     int32_t port_;
     const std::shared_ptr<ROSSrvPacker> packer_;
-    const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)> callback_;
+    const std::function<const std::shared_ptr<ROSMsg>(const std::shared_ptr<const ROSMsg>&)> callback_;
     std::shared_ptr<std::thread> thread_;
     std::shared_ptr<TCPROS> tcpros_;
 public:
-    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func) :
+    ROSServiceProviderImpl(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer, const std::function<const std::shared_ptr<ROSMsg>(const std::shared_ptr<const ROSMsg>&)>& func) :
         ROSServiceProvider(node, serviceName), packer_(packer), callback_(func) {
         port_ = getEmptyPort(40000);
 
@@ -74,7 +74,7 @@ public:
                             tcpros_->sendString("Provider's callback can not create Response");
                             continue;
                         }
-                        auto respkt = packer_->toPacket(*res.get());
+                        auto respkt = packer_->responseToPacket(*res.get());
                         if (!respkt) {
                             tcpros_->sendByte(0);
                             tcpros_->sendString("Provider's callback created invalid Response");
@@ -113,7 +113,7 @@ public:
 };
 
 std::shared_ptr<ROSServiceProvider> ssr::nanoros::createROSServiceProvider(ROSNode* node, const std::string& serviceName, const std::shared_ptr<ROSSrvPacker>& packer,
-            const std::function<const std::shared_ptr<ROSSrvResponse>(const std::shared_ptr<const ROSSrvRequest>&)>& func)
+            const std::function<const std::shared_ptr<ROSMsg>(const std::shared_ptr<const ROSMsg>&)>& func)
             {
 
 	 if (!packer) return nullptr;

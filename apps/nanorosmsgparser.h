@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "msgparser.h"
+#include "msgparser/msgparser.h"
 
 const std::string hdr_part[] = {
 	R"(
@@ -98,7 +98,7 @@ cmake_minimum_required(VERSION 3.5)
 
 
 set(VENDOR_NAME "nanoros_vendor_id")
-set(PROJECT_DESCRIPTION "Msg Stub for nanoros")
+set(PROJECT_DESCRIPTION "Msg Packer for nanoros")
 set(PROJECT_VERSION "0.0.1")
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
@@ -109,9 +109,12 @@ R"(
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)
 
-
+if (!${nanoros_FOUND})
 find_package(nanoros REQUIRED)
-
+endif ()
+)",
+//find_package(nanoros REQUIRED)
+R"(
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)

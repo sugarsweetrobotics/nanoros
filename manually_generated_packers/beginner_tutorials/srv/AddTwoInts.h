@@ -20,28 +20,32 @@
 namespace ssr::nanoros {
     namespace beginner_tutorials {
 
-        class AddTwoIntsRequest : public ROSSrvRequest {
+        class AddTwoIntsRequest : public ROSMsg {
         public:
             int64_t a;
             int64_t b;
 
-            virtual std::string prettyString(const std::string& indent="") const {
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
-                ss << indent << "a: " << a << std::endl;
-                ss << indent << "b: " << b << std::endl;
+                ss << "{";
+                ss << "\"a\": " << a << ",";
+                ss << "\"b\": " << b;
+                ss << "}";
                 return ss.str();
             }
 
         };
 
 
-        class AddTwoIntsResponse : public ROSSrvResponse {
+        class AddTwoIntsResponse : public ROSMsg{
         public:
             int64_t sum;
         public:
-            virtual std::string prettyString(const std::string& indent="") const {
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
-                ss << indent << "sum: " << sum << std::endl;
+                ss << "{";
+                ss << "\"sum\": " << sum;
+                ss << "}";
                 return ss.str();
             }
         };

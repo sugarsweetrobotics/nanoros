@@ -104,6 +104,12 @@ namespace ssr {
             }
 
             template<>
+            void push<ssr::nanoros::duration>(const ssr::nanoros::duration& t) {
+                push<uint32_t>(t.sec);
+                push<uint32_t>(t.nsec);
+            }
+
+            template<>
             void push<ssr::nanoros::TCPROSPacket>(const ssr::nanoros::TCPROSPacket& t) {
                 auto size = t.bytes().size();
                 for(size_t i = 0;i < size;i++) {
@@ -218,6 +224,16 @@ namespace ssr {
                 auto arg1 = pop<uint32_t>(popedCount);
                 if (!arg1) return std::nullopt;
                 return ssr::nanoros::time{arg0.value(), arg1.value()};
+            }
+
+            template<>
+            std::optional<ssr::nanoros::duration> pop<ssr::nanoros::duration>(int32_t& popedCount) const {
+                ssr::nanoros::duration t;
+                auto arg0 = pop<uint32_t>(popedCount);
+                if (!arg0) return std::nullopt;
+                auto arg1 = pop<uint32_t>(popedCount);
+                if (!arg1) return std::nullopt;
+                return ssr::nanoros::duration{arg0.value(), arg1.value()};
             }
 
             std::optional<ssr::nanoros::time> popTime(int32_t& popedCount) const {

@@ -4,12 +4,4 @@
 using namespace ssr::nanoros;
 
 
-std::shared_ptr<ROSMsgPacker> ROSSrvPacker::getMsgPacker(const std::string& key) {
-    if (packers_.count(key) > 0) return packers_.at(key);
-
-    auto factory = getROSMsgPackerFactory();
-    auto packer = factory->getPacker(key);
-    if (!packer) return nullptr;
-    packers_[key] = packer;
-    return packer;
-}
+// std::shared_ptr<ROSMsgPacker> AbstractROSSrvPacker::getMsgPacker(const std::string& key) 

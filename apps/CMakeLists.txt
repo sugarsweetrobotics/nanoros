@@ -29,7 +29,7 @@ set(md5_codes
   ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/hashlibpp/src/hl_md5wrapper.cpp 
 )
   include_directories(../thirdparty/hashlibpp/src)
-  add_executable(nanorosmsgparser nanorosmsgparser.cpp msgparser.h msgparser.cpp ${md5_codes})
+  add_executable(nanorosmsgparser nanorosmsgparser.cpp msgparser/msgparser.h msgparser/msgparser.cpp msgparser/md5.cpp ${md5_codes})
   target_link_libraries(nanorosmsgparser ${EXT_LIBRARIES})
   set_target_properties(nanorosmsgparser
     PROPERTIES

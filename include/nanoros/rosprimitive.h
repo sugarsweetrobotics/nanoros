@@ -27,7 +27,24 @@ namespace ssr {
                 return ss.str();
             }
   */          
-            virtual std::string toJSON() const {
+            virtual std::string toJSONString() const {
+                std::stringstream ss;
+                ss << '{';
+                ss << "\"sec\": " << sec << ',';
+                ss << "\"nsec\": " << nsec;
+                ss << '}';
+                return ss.str();
+            }
+        };
+
+        struct duration{
+            uint32_t sec;
+            uint32_t nsec;
+
+            duration(): sec(0), nsec(0) {}
+            duration(uint32_t s, uint32_t ns) : sec(s), nsec(ns) {}
+         
+            virtual std::string toJSONString() const {
                 std::stringstream ss;
                 ss << '{';
                 ss << "\"sec\": " << sec << ',';

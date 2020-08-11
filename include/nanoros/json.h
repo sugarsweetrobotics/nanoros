@@ -29,6 +29,7 @@ namespace ssr {
 
             virtual operator int8_t() const = 0;
             virtual operator uint8_t() const = 0;
+            virtual operator char() const = 0;
             virtual operator int16_t() const = 0;
             virtual operator uint16_t() const = 0;
             virtual operator int32_t() const = 0;

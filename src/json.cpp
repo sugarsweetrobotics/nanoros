@@ -49,6 +49,10 @@ public:
         return json_.get<int8_t>();
     }
 
+    virtual operator char() const override {
+        return json_.get<char>();
+    }
+
     virtual operator uint8_t() const override {
         return json_.get<uint8_t>();
     }
