@@ -53,11 +53,24 @@ std::optional<Constant> makeConstant(const std::vector<std::string> tokens) {
 }
 
 
+std::optional<MsgInfo> createMsgInfo(std::istream& fin, const std::string& pkgName, const std::string& msgName, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths);
+
 std::optional<MsgInfo> createMsgInfo(const fs::path& path, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
 	std::ifstream fin(path);
-	std::string line;
+	std::string msgName = path.filename().stem().string();
 	fs::path p = path;
-	MsgInfo msgInfo(p.remove_filename().parent_path().parent_path().filename().string(), path.filename().stem().string());
+	std::string pkgName = p.remove_filename().parent_path().parent_path().filename().string();
+
+	return createMsgInfo(fin, pkgName, msgName, inputPaths, searchPaths);
+}
+
+
+
+std::optional<MsgInfo> createMsgInfo(std::istream& fin, const std::string& pkgName, const std::string& msgName, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
+// 	std::ifstream fin(path);
+	std::string line;
+	//fs::path p = path;
+	MsgInfo msgInfo(pkgName, msgName);
 	while (std::getline(fin, line)) {
 		std::string comment = "";
 		ltrim(line);
@@ -87,17 +100,17 @@ std::optional<MsgInfo> createMsgInfo(const fs::path& path, const std::vector<fs:
 			msgInfo.typedValues.emplace_back(std::move(tv.value()));
 		}
 	}
-	auto hash = parse_md5(path, msgInfo.packageName, inputPaths, searchPaths);
+	///auto hash = parse_md5(/*path, msgInfo.packageName*/, inputPaths, searchPaths);
+	auto hash = parse_md5(pkgName + "/" + msgName, inputPaths, searchPaths);
 	msgInfo.setHash(hash.value());
 	return msgInfo;
 }
 
 
-
 int parseMsgDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
 	fs::path msgs_fullpath = inputPath / "msg";
 	if (fs::file_type::directory != fs::status(msgs_fullpath).type()) {
-		return -2;
+		return 0;
 	}
 	fs::path msg_outputDir(outputPath / inputPath.filename() / "msg");
 	if (!fs::create_directories(msg_outputDir)) {
@@ -153,6 +166,68 @@ int parseMsgDir(fs::path& inputPath, const fs::path& outputPath, const std::vect
 }
 
 
+std::optional<MsgInfo> createSrvInfo(const fs::path& path, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
+	return std::nullopt;
+}
+
+
+int parseSrvDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
+	fs::path srvs_fullpath = inputPath / "srv";
+	if (fs::file_type::directory != fs::status(srvs_fullpath).type()) {
+		return 0;
+	}
+	fs::path srv_outputDir(outputPath / inputPath.filename() / "srv");
+	if (!fs::create_directories(srv_outputDir)) {
+		std::cerr << "Can not create path (" << srv_outputDir << ")" << std::endl;
+		//return -1;
+	}
+	std::vector<std::string> srvNames;
+	for (const auto& f : fs::directory_iterator(srvs_fullpath)) {
+		if (f.path().extension() == ".srv") {
+
+			auto srvInfo = createSrvInfo(f.path(), inputPaths, searchPaths);
+			if (!srvInfo) continue;
+			auto hdr = buildHeader(srvInfo.value());
+			auto src = buildSrc(srvInfo.value());
+			if (!hdr || !src) continue;
+			std::ofstream hdrFile((srv_outputDir / f.path().stem()).replace_extension(".h"));
+			hdrFile << hdr.value();
+			std::ofstream srcFile((srv_outputDir / f.path().stem()).replace_extension(".cpp"));
+			srcFile << src.value();
+			auto srvFilePath((srv_outputDir / f.path().stem()).replace_extension(".srv"));
+			if (!fs::is_regular_file(srvFilePath)) {
+				fs::copy_file(f.path(), srvFilePath);
+			}
+
+			srvNames.push_back(srvInfo->typeName);
+		}
+	}
+	auto pkgName = inputPath.filename().string();
+	//auto srvName = inputPath.filename().string();
+
+
+	std::ofstream cmakeFile(srv_outputDir / "CMakeLists.txt");
+	// TODO: CMake�̎�������
+	cmakeFile << "# cmake for " << inputPath.filename() / "srv" << std::endl;
+	cmakeFile << "set(_" << pkgName << "_PACKERS)";
+	
+    cmakeFile << msgcmk[0];
+	for (auto& srvName : srvNames) {
+		cmakeFile << "add_srv_packer(" << pkgName << " " << srvName << ")" << std::endl;
+		cmakeFile << "set(_" << pkgName << "_PACKERS " << "${_" << pkgName << "_PACKERS} " << pkgName << "_" << srvName << ")" << std::endl;
+	}
+	cmakeFile << "set(" << pkgName << "_PACKERS " << "${_" << pkgName << "_PACKERS} PARENT_SCOPE)" << std::endl;
+
+
+	cmakeFile << "INSTALL(TARGETS ${" << pkgName << "_PACKERS}" << std::endl;
+	cmakeFile << "	RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR}" << std::endl;
+	cmakeFile << "	LIBRARY DESTINATION ${LIB_INSTALL_DIR}" << std::endl;
+	cmakeFile << "	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}" << std::endl;
+	cmakeFile << "	PUBLIC_HEADER DESTINATION include/${PROJECT_NAME})" << std::endl;
+
+	return 0;
+}
+
 int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<fs::path>& inputPaths, const std::vector<fs::path>& searchPaths) {
 	int ret = parseMsgDir(inputPath, outputPath, inputPaths, searchPaths);
 	if (ret < 0) return ret;
@@ -178,7 +253,7 @@ int parseDir(fs::path& inputPath, const fs::path& outputPath, const std::vector<
 	std::ofstream cmakeInFile(outputPath / inputPath.filename() / "cmake" / ( pkgName + "Config.cmake.in"));
 	cmakeInFile << "set(" << pkgName << "_VERSION 0.0.1)\n"
 		<< "@PACKAGE_INIT@\n"
-		<< "set_and_check(" << pkgName << "__DIR \"@PACKAGE_PACKER_BASE_DIR@\")\n"
+		<< "set_and_check(" << pkgName << "_DIR \"@PACKAGE_PACKER_BASE_DIR@\")\n"
 		<< "check_required_components(nanoros)\n";
 
 	std::ofstream cmakePatchFile(outputPath / inputPath.filename() / "cmake" / (pkgName + ".wix.patch.in"));
