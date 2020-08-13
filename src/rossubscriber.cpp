@@ -9,6 +9,8 @@
 #include "nanoros/rosutil.h"
 #include "nanoros/rosslaveserver.h"
 
+#include <iostream>
+
 using namespace ssr::nanoros;
 
 template<typename T>
@@ -70,14 +72,17 @@ public:
 	return true; 
   }
 
-  virtual void spinOnce() {
-	if(tcpros_) {
+  virtual bool spinOnce() {
+	if(tcpros_ ) {
+		if (!tcpros_->isConnected()) return false;
 		auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
 		auto maybeMsg = packer_->toMsg(maybePacket);
 		if (maybeMsg) {
 			callback_(maybeMsg);
 		}
+		return true;
 	}
+	return true;
   }
   
 };
@@ -100,18 +105,24 @@ public:
 
 private:
   virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
+	  std::cout << "ROSSbuscriberImpl::connect(" << host << ", " << port << ")" << std::endl;
 	  if (!packer_) {
 		  // if packer_ is null, connection should not be done.
 		  auto types = this->node_->master()->getTopicTypes(this->node_->name());
 		  auto topicName = this->getTopicName();
-		  if (!types) { return nullptr;}
+		  if (!types) { 
+			  std::cout << " - TopicTypes can not be found." << std::endl;
+			  return nullptr;
+		  }
 		  auto vs = filter<TopicTypeInfo>(types->topicTypes, [topicName](const TopicTypeInfo& v) { return v.topicName == topicName; });
 		  if (vs.size() == 0) { 
+			  std::cout << " - Appropriate topic(" << topicName << ") not found." << std::endl;
      		  return nullptr;
 		  }
 		  auto topicTypeName = vs[0].topicType;
 		  auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
           if (!packer) {
+			  std::cout << " - Packer for topicType(" << topicTypeName << ") can not load" << std::endl;
 			  return nullptr;
 		  }
 		  packer_ = packer;
@@ -120,6 +131,7 @@ private:
 	  if(worker->connect(host, port)) {
 		  return std::static_pointer_cast<ROSSubscriberWorker>(worker);
 	  }
+	  std::cout << " - connect worker faild." << std::endl;
 	  return nullptr;
   } 
 
@@ -153,8 +165,14 @@ public:
   virtual ~ROSSubscriberImpl() {}
 
   virtual void spinOnce() override {
-	  for(auto& worker: workers_) {
-		  worker->spinOnce();
+	  for (auto it = workers_.begin(); it != workers_.end(); ) {
+		  auto& worker = *it;
+		  if (!worker->spinOnce()) {
+			  it = workers_.erase(it);
+		  }
+		  else {
+			  ++it;
+		  }
 	  }
   }
 

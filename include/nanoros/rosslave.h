@@ -35,6 +35,12 @@ namespace ssr {
       virtual std::optional<RequestTopicResult> requestTopic(const std::string& caller_id,
 							     const std::string& topicName,
 							     const std::vector<ProtocolInfo>& info) { return std::nullopt; }
+
+      virtual std::optional<MasterMsg> publisherUpdate(const std::string& caller_id,
+          const std::string& topic_name,
+          const std::vector<std::string>& publishers) {
+          return std::nullopt;
+      }
     };
 
     std::shared_ptr<ROSSlave> rosslave(const std::string& publisherUri);

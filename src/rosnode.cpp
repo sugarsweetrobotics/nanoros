@@ -7,6 +7,7 @@
 #include "nanoros/rosserviceprovider.h"
 
 #include <thread>
+#include <iostream>
 
 using namespace ssr::nanoros;
 
@@ -80,9 +81,12 @@ public:
   }
 
   virtual bool subscribeUri(const std::string& topicName, const std::string& uri, const bool latching=false, const double negotiateTimeout=1.0) override { 
+      std::cout << "ROSNodeImpl::subscribeUri(" << topicName << ", " << uri << ", " << latching << ")" << std::endl;
     auto subscriber = this->getRegisteredSubscriber(topicName);
     if (!subscriber) {
+        std::cout << " - subscriber not found." << std::endl;
       return false;
+
     }
     auto worker = subscriber->connect(uri, latching, negotiateTimeout);
     return true;

@@ -27,7 +27,7 @@ bool standbyProtocol(ROSSlaveServerImpl* slaveServerImpl, const std::string& top
 std::optional<std::vector<TopicTypeInfo>> getPublications(ROSSlaveServerImpl* slaveServerImpl);
 std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* slaveServerImpl);
 
-bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris);
+bool publisherUpdate(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris);
 
 class ROSSlaveMethod : public XmlRpcServerMethod {
 protected:
@@ -152,11 +152,13 @@ public:
   PublisherUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("publisherUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
+    std::cout << "PublisherUpdate::execute(" << params << ")" << std::endl;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
       result[0] = -1;
       result[1] = "None of suggested protocol is available in publisher.";
+      std::cout << "- PublisherUpdate: failed: " << result << std::endl;
       return;
     }
     std::vector<std::string> newUris;
@@ -164,7 +166,12 @@ public:
       newUris.push_back(params[2][i]);
     }
  
-    updatePublishers(slaveServerImpl_, topicName, newUris);
+    publisherUpdate(slaveServerImpl_, topicName, newUris);
+
+
+    result[0] = 1;
+    result[1] = "Publisher successfully updated.";
+    result[2] = "";
   }
 };
 
@@ -340,7 +347,8 @@ std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* s
  * 
  * 
  */
-bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
+bool publisherUpdate(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
+    std::cout << "SlaveServer::publisherUpdate(" << topicName << ")" << std::endl;
   auto pubs = slaveServerImpl->getNode()->getCurrentSubscribingPublisherUris();
   if (!pubs) return false;
   for(auto pubUri : pubs.value()) {
@@ -348,7 +356,8 @@ bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& to
       // Do nothing
     } else { // Current Subscribing Uri is NOT included in New Uris
       // Unsubscribe Uri
-      slaveServerImpl->getNode()->unsubscribeUri(topicName, pubUri);
+        std::cout << " - uri: " << pubUri << " - unsubscribe." << std::endl;
+        slaveServerImpl->getNode()->unsubscribeUri(topicName, pubUri);
     }
   }
 
@@ -357,7 +366,8 @@ bool updatePublishers(ROSSlaveServerImpl* slaveServerImpl, const std::string& to
       // Do nothing
     } else {
       // Subscribe Uri
-      slaveServerImpl->getNode()->subscribeUri(topicName, newUri);
+        std::cout << " - uri: " << newUri << " - subscribe." << std::endl;
+        slaveServerImpl->getNode()->subscribeUri(topicName, newUri);
     }
   }
   return false;

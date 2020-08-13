@@ -1,11 +1,15 @@
 #pragma once
 
+
+
 #include "nanoros/nanoros_define.h"
+#include "nanoros/nanoros.h"
 
 #include <memory>
 #include <string>
 #include <cstdint>
 #include <optional>
+#include <thread>   
 
 namespace ssr {
 
@@ -21,6 +25,17 @@ namespace ssr {
 
         public:
             virtual void start(const bool blocking = true) {}
+
+            virtual void spinOnce() {
+
+            }
+
+            virtual void spin() {
+                while (!nanoros::is_shutdown()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    spinOnce();
+                }
+            }
         };
 
 

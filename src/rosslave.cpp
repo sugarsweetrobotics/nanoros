@@ -71,6 +71,34 @@ public:
   virtual ~ROSSlaveImpl() {}
 
 
+  virtual std::optional<MasterMsg> publisherUpdate(const std::string& caller_id, const std::string& topic_name, const std::vector<std::string>& publishers) {
+      std::cout << "Slave::publisherUpdate(" << caller_id << ", " << topic_name << ")" << std::endl;
+      XmlRpc::XmlRpcValue v, result;
+      v[0] = caller_id;
+      v[1] = topic_name;
+      v[2] = XmlRpc::XmlRpcValue();
+      //v[2].setSize(publishers.size());
+      for (uint32_t i = 0; i < publishers.size(); ++i) {
+          std::cout << " - publisher: " << publishers[i] << std::endl;
+          XmlRpc::XmlRpcValue vv;
+          vv = publishers[i];
+          v[2][i] = vv;
+
+      }
+
+      std::cout << " - v: " << v << std::endl;
+      if (client_.execute("publisherUpdate", v, result)) {
+          if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+              // Error
+              std::cout << " - failed: " << result << std::endl;
+
+              return std::nullopt;
+          }
+          return MasterMsg(result[0], result[2]);
+      }
+      return std::nullopt;
+  }
+
   virtual std::optional<RequestTopicResult> requestTopic(const std::string& caller_id,
                 const std::string& topicName,
                 const std::vector<ProtocolInfo>& info) 
