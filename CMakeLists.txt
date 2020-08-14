@@ -87,8 +87,8 @@ set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_SUBMINOR})
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "nanoros")
 SET(CPACK_NSIS_MODIFY_PATH ON)
 
-if(EXISTS cmake/WixID.cmake)
-include(cmake/WixID.cmake)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/WixID.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/WixID.cmake)
 endif()
 
 # set(CPACK_WIX_UPGRADE_GUID "")
