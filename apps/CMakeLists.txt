@@ -18,6 +18,7 @@ endfunction(add_app)
 
 
 add_app(nanorostopic)
+add_app(nanorosversion)
 add_app(nanorosservice)
 add_app(nanoroscore)
 add_app(nanorosmsg)

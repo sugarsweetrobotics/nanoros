@@ -22,6 +22,9 @@ namespace {
   }
 }
 
+const char* ssr::nanoros::nanoros_version_str() {
+    return NANOROS_VERSION_STRING;
+}
 void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
   ssr::aqua2::initializeSocket();
 
