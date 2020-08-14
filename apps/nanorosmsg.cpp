@@ -20,7 +20,7 @@ int main(const int _argc, const char* _argv[]) {
     if (_argc >= 2) {  
         std::string cmd = _argv[1];
         if (cmd == "show") {
-            auto topic = "nanorosmsg show";
+            auto topic = "nanorosmsg show $topic_type_name";
             std::vector<ssr::option_type> options{}; //  No option
 
             auto argv = ssr::parseArg({}, topic, args);
@@ -39,46 +39,25 @@ int main(const int _argc, const char* _argv[]) {
             std::cout << packer->typeInfo() << std::endl;
 
             return 0;
-            /**
+            
+        }
+        else if (cmd == "md5") {
+            auto topic = "nanorosmsg md5 $topic_type_name";
+            std::vector<ssr::option_type> options{}; //  No option
 
-            auto tokens = stringSplit(fullTypeName, '/');
-            if (tokens.size() != 2) {
-                std::cout << "Error. Invalid TypeName. ex: std_msgs/Int32." << std::endl;
+            auto argv = ssr::parseArg({}, topic, args);
+            if (argv.size() < 3) { // If no argument
                 ssr::showHelp(topic, options);
             }
-            auto pkgName = tokens[0];
-            auto typeName = tokens[1];
-            for (auto dirHint : getROSMsgPackerFactory()->getPackerDirHints()) {
-                std::filesystem::path path = dirHint;
-                auto filepath = path / pkgName / "msg" / (typeName + ".msg");
-                std::cout << " - " << filepath << std::endl;
-                if (std::filesystem::is_regular_file(filepath)) {
-                    std::ifstream fin(filepath);
-                    std::string line;
-                    while (std::getline(fin, line)) {
-                        std::cout << line << std::endl;
-                    }
-                    return 0;
-                }
-#ifdef WIN32
-                else {
-                    filepath = path / pkgName / "msg" / "Debug" / (typeName + ".msg");
-                    std::cout << " - " << filepath << std::endl;
-                    if (std::filesystem::is_regular_file(filepath)) {
-                        std::ifstream fin(filepath);
-                        std::string line;
-                        while (std::getline(fin, line)) {
-                            std::cout << line << std::endl;
-                        }
-                        return 0;
-                    }
-                }
-#endif
+
+            auto fullTypeName = args[2];
+            auto packer = getROSMsgPackerFactory()->getPacker(fullTypeName);
+            if (!packer) {
+                std::cout << " Can not find type information of " << fullTypeName << std::endl;
+                return -1;
             }
-            
-            std::cout << "Do not found type: " << fullTypeName << std::endl;
-            exit(1);
-            */
+            std::cout << packer->md5sum() << std::endl;
+            return 0;
         }
 
 
