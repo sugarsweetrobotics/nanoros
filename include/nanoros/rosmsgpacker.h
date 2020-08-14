@@ -40,6 +40,7 @@ namespace ssr {
     public:
       virtual std::string md5sum() const { return ""; }
       virtual std::string typeName() const { return ""; }
+      virtual std::string typeInfo(const std::string& indent="") const { return ""; }
 
       virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg) { 
         int32_t popedCount = 0;

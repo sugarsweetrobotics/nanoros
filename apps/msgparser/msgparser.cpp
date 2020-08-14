@@ -213,10 +213,54 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 	ss << "            }" << std::endl;
 	ss << "        };" << std::endl;
 	ss << "    }" << std::endl;
-	// �^�C�v������擾�֐�
+	// Type Name String getter
 	ss << "    template<>" << std::endl;
 	ss << "    std::string msgTypeName<" << msgInfo.packageName << "::" << msgInfo.typeName << ">() { return \""
-		<< msgInfo.packageName << "/" << msgInfo.typeName << "\"; }" << std::endl;
+		<< msgInfo.packageName << "/" << msgInfo.typeName 
+		<< "\"; }" << std::endl;
+
+	// Type Declaration Show String getter
+	ss << "    template<>" << std::endl;
+	ss << "    std::string showTypeInfo<" << msgInfo.packageName << "::" << msgInfo.typeName << ">(const std::string& indent) {" << std::endl;
+	ss << "    std::stringstream ss;" << std::endl;
+	for (auto c : msgInfo.constants) {
+		ss << "      ss << indent << \"" << c.typeName << " " << c.valueName << " = " << c.value << "\\n\";"<< std::endl;
+	}
+	for (auto tv : msgInfo.typedValues) {
+		auto typeName = tv.typeName;
+		if (typeName.find("[") != std::string::npos) { // Not Array
+			typeName = typeName.substr(0, typeName.find("["));
+		}
+		//ss << "// typeName=" << typeName << std::endl;
+		auto fullTypeName = tv.typeName;
+		if ((!is_primitive_typename(typeName)) && (fullTypeName.find('/') == std::string::npos)) {
+			if (fullTypeName == "Header") fullTypeName = "std_msgs/Header";
+			else if (fullTypeName == "time") fullTypeName = "time";
+			else if (fullTypeName == "duration") fullTypeName = "duration";
+			else fullTypeName = msgInfo.packageName + "/" + fullTypeName;
+		}
+		typeName = fullTypeName;
+		if (fullTypeName.find("[") != std::string::npos) { // Not Array
+			typeName = fullTypeName.substr(0, fullTypeName.find("["));
+		}
+		//ss << "// typeName2=" << typeName << std::endl;
+		//ss << "// fullTypeName=" << fullTypeName << std::endl;
+		ss << "      ss << indent << \"" << fullTypeName << " " << tv.valueName << "\\n\";" << std::endl;
+		if (!is_primitive_typename(typeName)) {
+			auto cppTypeName = typeName;
+			if (typeName == "time") cppTypeName = "ssr::nanoros::time";
+			else if (typeName == "duration") cppTypeName = "ssr::nanoros::duration";
+			else {
+				auto tokens = split(typeName, '/');
+				cppTypeName = tokens[0] + "::" + tokens[1];
+			}
+			ss << "         ss << showTypeInfo<" << cppTypeName << ">(indent+\"  \");" << std::endl;
+		}
+	}
+	ss << "    return ss.str();" << std::endl;
+	ss << "    }" << std::endl;
+
+	// Namespace
 	ss << "}" << std::endl;
 	return ss.str();
 }
@@ -224,24 +268,25 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 std::optional<std::string> msgparser::buildSrc(const MsgInfo& msgInfo) {
 	std::stringstream ss;
 	ss << src_part[0];
-	// �w�b�_�t�@�C��
+	// Header
 	ss << "#include \"" << msgInfo.typeName << ".h\"" << std::endl;
-	// �l�[���X�y�[�X�g�ݗ���
+	// Namespace
 	ss << "namespace ssr::nanoros {" << std::endl;
 	ss << "    namespace " << msgInfo.packageName << " {" << std::endl;
-	// �N���X�錾
+	// Class Desclare
 	ss << "        class " << msgInfo.typeName << "Packer : public ROSMsgPacker {" << std::endl;
 	ss << "        private:" << std::endl;
 	ss << "            using DataType = " << msgInfo.typeName << ";" << std::endl;
 	ss << "        public:" << std::endl;
-	// �R���X�g���N�^�A�f�X�g���N�^
+	// Declare Constructor
 	ss << "            " << msgInfo.typeName
 		<< "Packer() {}" << std::endl;
 	ss << "            virtual ~" << msgInfo.typeName << "Packer() {}" << std::endl;
 	ss << "        public:" << std::endl;
-	// Packer�p���\�b�h
+	// Packer Interfaces
 	ss << "            virtual std::string md5sum() const override { return \"" << msgInfo.md5sum << "\"; }" << std::endl;
 	ss << "            virtual std::string typeName() const override { return \"" << msgInfo.packageName << "/" << msgInfo.typeName << "\"; }" << std::endl;
+	ss << "            virtual std::string typeInfo(const std::string& indent=\"\") const override { return showTypeInfo<DataType>(indent); }" << std::endl;
 	ss << "            virtual std::shared_ptr<const ROSMsg> toMsg(const std::optional<TCPROSPacket>& msg, int32_t& popedCount) override {" << std::endl;
 	ss << "                auto val = std::make_shared<DataType>();" << std::endl;
 	for (auto& tv : msgInfo.typedValues) {

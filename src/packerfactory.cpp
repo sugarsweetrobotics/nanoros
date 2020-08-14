@@ -35,14 +35,14 @@ std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::str
             dllproxy = createDLLProxy(dirHint + "/" + dirName + "/Release", fileName);
 #endif
             if (!dllproxy) {
-                std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
+                //std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
                 //return nullptr;
                 continue;
             }
 
             func = dllproxy->functionSymbol(funcName);
             if (!func) {
-                std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
+                //std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
                 //return nullptr;
                 continue;
             }
@@ -54,6 +54,6 @@ std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::str
         func(this);
         return dllproxy;
     }
-    std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
+    // std::cout << "WARN: Can not find symbol (" << funcName << ")" << std::endl;
     return nullptr;
 }

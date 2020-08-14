@@ -20,6 +20,7 @@ endfunction(add_app)
 add_app(nanorostopic)
 add_app(nanorosservice)
 add_app(nanoroscore)
+add_app(nanorosmsg)
 
 # add_app(nanorosmsgparser)
 set(md5_codes 

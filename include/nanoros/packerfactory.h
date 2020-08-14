@@ -22,6 +22,7 @@ namespace ssr {
 
         public:
             void addPackerDirHint(const std::string& hint) { packerDirHints_.push_back(hint); }
+            std::vector<std::string> getPackerDirHints() const { return packerDirHints_; }
         };
 
 

@@ -14,6 +14,9 @@ namespace ssr {
 
     template<typename T>
     std::string msgTypeName() { return ""; }
+
+    template<typename T>
+    std::string showTypeInfo(const std::string& indent) { return ""; }
     
     class NANOROS_API ROSMsg {
     public:
