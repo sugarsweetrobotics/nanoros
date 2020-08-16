@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <set>
 #include <thread>
 
@@ -103,19 +105,38 @@ int main(const int _argc, const char* _argv[]) {
         else if (cmd == "pub") {
             auto topic = "nanorostopic pub $topic_name $topic_type_name $topic_value";
             double rate = -1;
+            std::string filename = "";
             std::vector<ssr::option_type> options{
                 {"-r", "--rate", "double", "Continuously publish topic with rate [hz]", [&rate](std::string arg) {
                     rate = atof(arg.c_str());
                     return 0;
+                }},
+                {"-f", "--file", "string", "JSON file input data.", [&filename](std::string arg) {
+                    filename = arg;
+                    return 0;
                 }}
             };
             auto argv = ssr::parseArg(options, topic, args);
-            if (argv.size() < 5) {
+            if ( (filename.length() == 0 && argv.size() < 5) || argv.size() < 4 ) {
                 ssr::showHelp(topic, options);
             }
             const std::string topicName = argv[2];
             const std::string topicTypeName = argv[3];
-            const std::string topicDataStr = argv[4];
+
+            std::string topicDataStr = "";
+            
+            if (filename.length() == 0) topicDataStr = argv[4];
+            else {
+                std::stringstream ss;
+                std::ifstream ifs (filename);
+                std::string line;
+                while (std::getline(ifs, line)) {
+                    ss << line;
+                }
+                std::cout << ss.str() << std::endl;
+                topicDataStr = ss.str();
+            }
+
             auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
             if (!packer) {
                 std::cout << "ERROR: Topic Type Packer not found(" << topicTypeName << ")" << std::endl;
