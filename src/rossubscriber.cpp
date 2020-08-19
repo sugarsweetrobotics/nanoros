@@ -9,7 +9,9 @@
 #include "nanoros/rosutil.h"
 #include "nanoros/rosslaveserver.h"
 
+#include <mutex>
 #include <iostream>
+
 
 using namespace ssr::nanoros;
 
@@ -29,11 +31,15 @@ private:
 	std::shared_ptr<TCPROS> tcpros_;
 	std::string host_;
 	int32_t port_;
-  const std::shared_ptr<ROSMsgPacker> packer_;
-  const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
+
+	std::mutex tcpros_mutex_;
+
+    const std::shared_ptr<ROSMsgPacker> packer_;
+    const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
 	ROSSubscriberWorker(const std::shared_ptr<ROSMsgPacker>& packer, 
-       const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) : receiveTimeout_(1.0), packer_(packer), callback_(callback) {}
+       const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback) 
+		: receiveTimeout_(1.0), packer_(packer), callback_(callback), port_(-1) {}
 	virtual ~ROSSubscriberWorker() {}
 
 public:
@@ -41,48 +47,75 @@ public:
 	  return "tcpros://" + host_ + ":" + std::to_string(port_);
   }
 
-  virtual bool connect(const std::string& host, const int32_t port) {
+  virtual bool connect(const std::string& host, const int32_t port, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout = 1.0) {
+	  std::cout << "ROSSubscriberWorker::connect(" << host << ", " << port << ")" << std::endl;
 	  host_ = host;
 	  port_ = port;
-	  tcpros_ = tcpros_connect(host, port);
-	  return tcpros_ ? true : false;
+	  auto tcpros = tcpros_connect(host, port);
+	  if (!tcpros) {
+		  std::cout << " - connection failed." << std::endl;
+		  return false;
+	  }
+
+
+	  if (!negotiateHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching, timeout)) {
+		  return false;
+	  }
+
+	  {
+		  std::lock_guard<std::mutex> grd(tcpros_mutex_);
+		  tcpros_ = tcpros;
+	  }
+	  return true;
   } 
 
   virtual bool disconnect() {
+	  std::lock_guard<std::mutex> grd(tcpros_mutex_);
 	  tcpros_disconnect(tcpros_);
 	  tcpros_ = nullptr;
 	  return true;
   }
 
-  virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
-	if (!tcpros_) return false;
-	return tcpros_->sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
+  virtual bool sendHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
+	  //std::lock_guard<std::mutex> grd(tcpros_mutex_);
+	  if (!tcpros) return false;
+      return tcpros->sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
   }
 
-  virtual std::map<std::string, std::string> receiveHeader(const double timeout) {
-	if (!tcpros_) return {};
-	return tcpros_->receiveHeader(timeout);
+  virtual std::map<std::string, std::string> receiveHeader(std::shared_ptr<TCPROS>& tcpros, const double timeout) {
+	  ///std::lock_guard<std::mutex> grd(tcpros_mutex_);
+	  if (!tcpros) return {};
+	return tcpros->receiveHeader(timeout);
 	
   }
 
-  virtual bool negotiateHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {		
-	sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
-	auto hdr = receiveHeader(timeout);
+  virtual bool negotiateHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+	sendHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching);
+	auto hdr = receiveHeader(tcpros, timeout);
 	if (hdr["topic"] != topicName) return false;
 	return true; 
   }
 
   virtual bool spinOnce() {
-	if(tcpros_ ) {
-		if (!tcpros_->isConnected()) return false;
-		auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
-		auto maybeMsg = packer_->toMsg(maybePacket);
-		if (maybeMsg) {
-			callback_(maybeMsg);
-		}
-		return true;
-	}
-	return true;
+	  std::lock_guard<std::mutex> grd(tcpros_mutex_);
+	  if(tcpros_ ) {
+		  if (!tcpros_->isConnected()) {
+			  std::cout << " - Detecting SubscriptionWorker is not connected already." << std::endl;
+			  tcpros_ = nullptr;
+			  return false;
+		  }
+			auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
+			if (!maybePacket) {
+				std::cout << " - maybePacket is invalid." << std::endl;
+				return false;
+			}
+			auto maybeMsg = packer_->toMsg(maybePacket);
+			if (maybeMsg) {
+				callback_(maybeMsg);
+				return true;
+			}
+      }
+	  return true;
   }
   
 };
@@ -90,12 +123,15 @@ public:
 
 class ROSSubscriberImpl : public ROSSubscriber {
 private:
+	std::mutex workers_mutex_;
   std::vector<std::shared_ptr<ROSSubscriberWorker>> workers_;
   std::shared_ptr<ROSMsgPacker> packer_;
   const std::function<void(const std::shared_ptr<const ROSMsg>& msg)> callback_;
 public:
 	virtual std::string getTopicTypeName() const override { return packer_->typeName(); }
   const std::shared_ptr<ROSMsgPacker>& packer() { return packer_; }
+
+
   ROSSubscriberImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer, const std::function<void(const std::shared_ptr<const ROSMsg>& msg)>& func) 
   : ROSSubscriber(node, topicName), packer_(packer), callback_(func) {
 	  if (!packer_) {
@@ -104,7 +140,7 @@ public:
   }
 
 private:
-  virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port) {
+  virtual std::shared_ptr<ROSSubscriberWorker> connect(const std::string& host, const int32_t port, bool latching, const double negotiateTimeout) {
 	  std::cout << "ROSSbuscriberImpl::connect(" << host << ", " << port << ")" << std::endl;
 	  if (!packer_) {
 		  // if packer_ is null, connection should not be done.
@@ -128,7 +164,11 @@ private:
 		  packer_ = packer;
 	  }
 	  auto worker = std::make_shared<ROSSubscriberWorker>(packer_, callback_);
-	  if(worker->connect(host, port)) {
+	  if(worker->connect(host, port, node_->name(), topicName_, packer_->typeName(), packer_->md5sum(), latching, negotiateTimeout)) {
+		  //if (!worker->negotiateHeader(node_->name(), topicName_, packer_->typeName(), packer_->md5sum(), latching, negotiateTimeout)) {
+			//  return nullptr;
+		  //}
+
 		  return std::static_pointer_cast<ROSSubscriberWorker>(worker);
 	  }
 	  std::cout << " - connect worker faild." << std::endl;
@@ -144,15 +184,19 @@ public:
 	if (!result) return false;
 	if (result->code != 1) return false;
 
-	auto worker = connect(result->protocolInfo.arg0, result->protocolInfo.arg1);
-	if (!worker) { return false;
+	auto worker = connect(result->protocolInfo.arg0, result->protocolInfo.arg1, latching, negotiateTimeout);
+	if (!worker) {
+		return false;
 	}
-	if (!worker->negotiateHeader(node_->name(), topicName_, packer_->typeName(), packer_->md5sum(), latching, negotiateTimeout)) return false;
-	workers_.push_back(worker);
+	{
+		std::lock_guard<std::mutex> grd(workers_mutex_);
+		workers_.push_back(worker);
+	}
 	return true;
   }
 
   virtual bool disconnectUri(const std::string& uri) override {
+	  std::lock_guard<std::mutex> grd(workers_mutex_);
 	  for(auto it = workers_.begin(); it != workers_.end(); ++it) {
 		  if ((*it)->getPublisherUri() == uri) {
 			  disconnect();
@@ -165,6 +209,8 @@ public:
   virtual ~ROSSubscriberImpl() {}
 
   virtual void spinOnce() override {
+
+	  std::lock_guard<std::mutex> grd(workers_mutex_);
 	  for (auto it = workers_.begin(); it != workers_.end(); ) {
 		  auto& worker = *it;
 		  if (!worker->spinOnce()) {
@@ -176,8 +222,10 @@ public:
 	  }
   }
 
-  virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() const override { 
+  virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() override { 
 	  std::vector<std::string> val;
+	  std::lock_guard<std::mutex> grd(workers_mutex_);
+
 	  for(auto worker: workers_) {
 		  val.push_back(worker->getPublisherUri());
 	  }

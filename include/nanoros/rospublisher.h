@@ -23,7 +23,7 @@ namespace ssr {
 
       virtual std::string getTopicTypeName() const { return ""; }
 
-      virtual bool isConnected() const { return false; }
+      virtual bool isConnected() { return false; }
     public:
       virtual bool publish(const std::shared_ptr<ROSMsg>& msg) {return false; }
 

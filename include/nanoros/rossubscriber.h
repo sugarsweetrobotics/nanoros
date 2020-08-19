@@ -32,7 +32,7 @@ namespace ssr {
       virtual bool disconnectUri(const std::string& uri) { return false; }
       virtual void spinOnce() {}
 
-      virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() const { return std::nullopt; }
+      virtual std::optional<std::vector<std::string>> getSubscribingPublisherUris() { return std::nullopt; }
     };
 
 

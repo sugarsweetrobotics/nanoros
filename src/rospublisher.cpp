@@ -7,6 +7,7 @@
 #include "nanoros/rosmsgpacker.h"
 #include <vector>
 #include <thread>
+#include <mutex>
 
 
 using namespace ssr::nanoros;
@@ -23,8 +24,10 @@ class ROSPublisherWorker {
     std::string topicName_;
     std::string topicTypeName_;
     std::string md5sum_;
+
+    std::mutex tcpros_mutex_;
 public:
-    ROSPublisherWorker(): connected_(false) {}
+    ROSPublisherWorker(): connected_(false), port_(-1) {}
 
     virtual ~ROSPublisherWorker() {
         if (thread_) {
@@ -38,7 +41,8 @@ public:
     }
 public:
 
-    bool isConnected() const { 
+    bool isConnected() { 
+        std::lock_guard<std::mutex> grd(tcpros_mutex_);
         return tcpros_->isConnected();
     }
 
@@ -51,12 +55,16 @@ public:
         md5sum_ = md5sum;
         thread_ = std::make_shared<std::thread>([this, latching, timeout]() {
             try {
-                tcpros_ = tcpros_server();
-                tcpros_->bind("0.0.0.0", port_);
-                tcpros_->listen(5);
-                tcpros_->accept();
-                negotiateHeader(caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout);
+                auto tcpros = tcpros_server();
+                tcpros->bind("0.0.0.0", port_);
+                tcpros->listen(5);
+                tcpros->accept();
+                negotiateHeader(tcpros, caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout);
                 connected_ = true;
+                {
+                    std::lock_guard<std::mutex> grd(tcpros_mutex_);
+                    tcpros_ = tcpros;
+                }
             } catch (ssr::aqua2::SocketException& ex) {
                 //tcpros_->close();
                 //serverSocket_.close();
@@ -68,24 +76,35 @@ public:
         return *this;
     }
 
-    virtual bool negotiateHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {		
-        auto hdr = receiveHeader(timeout);
-        if (!sendHeader(caller_id, topicName, topicTypeName, md5sum, latching)) return false;
+    virtual bool negotiateHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+        auto hdr = receiveHeader(tcpros, timeout);
+        if (!sendHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching)) return false;
         if (hdr["topic"] != topicName) return false;
         return true; 
     }
 
     virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
-        if (!tcpros_) return false;
-        return tcpros_->sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
+        std::lock_guard<std::mutex> grd(tcpros_mutex_);
+        return sendHeader(tcpros_, caller_id, topicName, topicTypeName, md5sum, latching);
+    }
+
+    virtual bool sendHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
+        if (!tcpros) return false;
+        return tcpros->sendHeader(caller_id, topicName, topicTypeName, md5sum, latching);
     }
 
     virtual std::map<std::string, std::string> receiveHeader(const double timeout) {
-        if (!tcpros_) return {};
-        return tcpros_->receiveHeader(timeout);
+        std::lock_guard<std::mutex> grd(tcpros_mutex_);
+        return receiveHeader(tcpros_, timeout);
+    }
+
+    virtual std::map<std::string, std::string> receiveHeader(std::shared_ptr<TCPROS>& tcpros, const double timeout) {
+        if (!tcpros) return {};
+        return tcpros->receiveHeader(timeout);
     }
 
     virtual void sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {
+        std::lock_guard<std::mutex> grd(tcpros_mutex_);
         if (tcpros_) {
             tcpros_->sendPacket(pkt);
         }
@@ -93,8 +112,12 @@ public:
 };
 
 class ROSPublisherImpl: public ROSPublisher {
+private:
+
     const std::shared_ptr<ROSMsgPacker> packer_;
+    std::mutex workers_mutex_;
     std::vector<std::shared_ptr<ROSPublisherWorker>> workers_;
+
 public:
     ROSPublisherImpl(ROSNode* node, const std::string& topicName, const std::shared_ptr<ROSMsgPacker>& packer) :  
         ROSPublisher(node, topicName), packer_(packer) {
@@ -107,8 +130,9 @@ public:
 
 public:
 
-    virtual bool isConnected() const override { 
+    virtual bool isConnected() override { 
         bool flag = false;
+        std::lock_guard<std::mutex> grd(workers_mutex_);
         for(auto& worker : workers_) {
             flag |= worker->isConnected();
         }
@@ -119,6 +143,7 @@ public:
         try {
             auto pkt = packer_->toPacket(msg);
             if (pkt) {
+                std::lock_guard<std::mutex> grd(workers_mutex_);
                 for(auto& worker : workers_) {
                     worker->sendPacket(pkt);
                 }
@@ -140,7 +165,10 @@ public:
         auto worker = std::make_shared<ROSPublisherWorker>();
         worker->wait(caller_id, selfIP, port, getTopicName(), packer_->typeName(), packer_->md5sum(), false);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        workers_.emplace_back(std::move(worker));
+        {
+            std::lock_guard<std::mutex> grd(workers_mutex_);
+            workers_.emplace_back(std::move(worker));
+        }
         return true;
     }
 };

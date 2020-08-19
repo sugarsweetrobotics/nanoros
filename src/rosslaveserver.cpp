@@ -180,6 +180,7 @@ public:
   RequestTopic(class ROSSlaveServerImpl * si) : ROSSlaveMethod("requestTopic", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
+      std::cout << "RequestTopic::execute(" << params << ")" << std::endl;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
@@ -322,11 +323,15 @@ bool standbyProtocol(ROSSlaveServerImpl* slaveServerImpl, const std::string& top
 
 
 std::optional<std::pair<std::string, int32_t>> standbyTCPROSNode(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id) {
+    std::cout << "standbyTCPROSNode(" << topicName << ", " << caller_id << ")" << std::endl;
   const std::string selfIP = getSelfIP();
   auto port = getEmptyPort(port_base);
 
   auto pub = slaveServerImpl->getNode()->getRegisteredPublisher(topicName);
-  if (!pub) return std::nullopt;
+  if (!pub) {
+      std::cout << " - Publisher for topic(" << topicName << ") not found." << std::endl;
+      return std::nullopt;
+  }
   if (!pub->standBy(caller_id, selfIP, port)) return std::nullopt;
   //if (!slaveServerImpl->standByNode(topicName, caller_id, selfIP, port)) return std::nullopt;
 

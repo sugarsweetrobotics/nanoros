@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <optional>
 #include <thread>   
+#include <iostream>
 
 namespace ssr {
 
@@ -31,10 +32,16 @@ namespace ssr {
             }
 
             virtual void spin() {
+                static int p = 0;
+                std::cout << "ROSMasterServer::spin() entry" << std::endl;
                 while (!nanoros::is_shutdown()) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     spinOnce();
+                    if (++p % 1000 == 0) {
+                        std::cout << "ROSMasterServer::spin() is still alive." << std::endl;
+                    }
                 }
+                std::cout << "ROSMasterServer::spin() exit" << std::endl;
             }
         };
 

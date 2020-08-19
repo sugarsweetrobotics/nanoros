@@ -114,16 +114,23 @@ public:
         return socket_.getSizeInRxBuffer() ;
     }
 
-    virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) override { 
+    virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeoutMs = -1) override { 
         uint32_t bytes = 0;
+        auto start = std::chrono::system_clock::now();
         while (socket_.getSizeInRxBuffer() < sizeof(int32_t)) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+            if (timeoutMs >= 0 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() >= timeoutMs) {
+                return std::nullopt;
+            }
         }
         socket_.read(&bytes, sizeof(int32_t));
         uint32_t size = from_little_endian(bytes);//ntohl(bytes);
         std::vector<uint8_t> val(size);
         while (socket_.getSizeInRxBuffer() < size) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+            if (timeoutMs >= 0 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() >= timeoutMs) {
+                return std::nullopt;
+            }
         }
         socket_.read(&(val[0]), size);
         return TCPROSPacket(std::move(val)); 
@@ -187,7 +194,14 @@ std::shared_ptr<TCPROS> ssr::nanoros::tcpros_server() {
 }
 
 std::shared_ptr<TCPROS> ssr::nanoros::tcpros_connect(const std::string& host, const int32_t port) {
-    return std::static_pointer_cast<TCPROS>(std::make_shared<TCPROSImpl>(host, port));
+    try {
+        auto tcpros = std::make_shared<TCPROSImpl>(host, port);
+        return tcpros;
+    }
+    catch (ssr::aqua2::SocketException& ex) {
+        std::cout << "Socket::connect failed. " << ex.what() << std::endl;
+        return nullptr;
+    }
 }
 
 bool ssr::nanoros::tcpros_disconnect(const std::shared_ptr<TCPROS>& tcpros) {

@@ -389,40 +389,47 @@ public:
 	std::queue<task_type> task_queue_;
 
 	virtual void spinOnce() {
-		if (!task_queue_.empty()) {
-			auto task = task_queue_.front();
-			task_queue_.pop();
+		static int p = 0;
+		++p;
+		if (task_queue_.empty()) {
+			if (p % 1000 == 0) {
+				std::cout << "ROSMasterServerImpl::spinOnce(): task_queue_ is empty." << std::endl;
+			}
+			return;
+		}
 
-			if (taskName(task) == "publisherUpdate") {
-				std::cout << "MasterServer::spinOnce()::publisherUpdate: " << std::endl;
-				for (auto topic : topics_) {
-					if (topic.topicName == taskTopicName(task)) {
-						std::cout << " - topic: " << topic.topicName << std::endl;
-						std::vector<std::string> pubs;
-						std::cout << " - publishers: " << std::endl;
-						for (auto pub : topic.publishers) {
-							std::cout << "     - uri: " << pub.nodeUri << std::endl;
-							pubs.push_back(pub.nodeUri);
+		auto task = task_queue_.front();
+		task_queue_.pop();
+
+		if (taskName(task) == "publisherUpdate") {
+			std::cout << "MasterServer::spinOnce()::publisherUpdate: " << std::endl;
+			for (auto topic : topics_) {
+				if (topic.topicName == taskTopicName(task)) {
+					std::cout << " - topic: " << topic.topicName << std::endl;
+					std::vector<std::string> pubs;
+					std::cout << " - publishers: " << std::endl;
+					for (auto pub : topic.publishers) {
+						std::cout << "     - uri: " << pub.nodeUri << std::endl;
+						pubs.push_back(pub.nodeUri);
+					}
+
+					std::cout << " - subscribers:" << std::endl;
+					for (auto sub : topic.subscribers) {
+						std::cout << "    - uri: " << sub.nodeUri << std::endl;
+						auto slave = rosslave(sub.nodeUri);
+						std::cout << " - Calling publisherUpdate function" << std::endl;
+						auto result = slave->publisherUpdate("rosmaster", topic.topicName, pubs);
+						if (!result) {
+							std::cout << " - failed." << std::endl;
 						}
-
-						std::cout << " - subscribers:" << std::endl;
-						for (auto sub : topic.subscribers) {
-							std::cout << "    - uri: " << sub.nodeUri << std::endl;
-							auto slave = rosslave(sub.nodeUri);
-							auto result = slave->publisherUpdate("rosmaster", topic.topicName, pubs);
-							if (!result) {
-								std::cout << " - failed." << std::endl;
-							}
-							else {
-								if (result->code != 1) {
-									std::cout << " - failed: " << result->statusMessage << std::endl;
-								}
+						else {
+							if (result->code != 1) {
+								std::cout << " - failed: " << result->statusMessage << std::endl;
 							}
 						}
 					}
 				}
 			}
-
 		}
 	}
 };
@@ -553,41 +560,49 @@ std::optional<SubscribersInfo> registerPublisher(ROSMasterServerImpl* impl, cons
 	std::cout << "MasterServer::registerPublisher(" << caller_id << ", " << topic_name << ", " << topic_type << ", " << caller_uri << ")" << std::endl;
 	for (auto& topic : impl->topics_) {
 		if (topic.topicName == topic_name) {
+			std::cout << " - Found Topic (" << topic_name << ")" << std::endl;
 			// TODO: Topic Type check must be done by roscore?
 			if (topic.topicTypeName == "*") {
+				std::cout << " - Previously registered topic name is *. Update to " << topic_type << std::endl;
+				topic.topicTypeName = topic_type;
+			} else if (topic.topicTypeName != topic_type) {
+				std::cout << " - Warning: Preregistered Topic Type(" << topic.topicTypeName << ") is not same to the newly registered topic type name (" << topic_type << ")" << std::endl;
 				topic.topicTypeName = topic_type;
 			}
-
 
 			// If master already has the same caller_id, uri must be updated by the request.
 			for (auto& nodeInfo : topic.publishers) {
 				if (nodeInfo.nodeName == caller_id) {
 					nodeInfo.nodeUri = caller_uri; // Update Node URI
+					std::cout << " - Found previously registered publisher with the same name. URI updated." << std::endl;
 
 					std::vector<std::string> subInfos;
 					for (auto& p : topic.subscribers) {
 						subInfos.push_back(p.nodeUri);
 
-						// In this implementation, XmlRpc can not be done in XmlRpcServer callbacks.
-						impl->task_queue_.push({ "publisherUpdate", topic_name });
 					}
+					// In this implementation, XmlRpc can not be done in XmlRpcServer callbacks.
+					impl->task_queue_.push({ "publisherUpdate", topic_name });
 					return SubscribersInfo(1, "OK", subInfos);
 				}
 			}
 
+			std::cout << " - Publisher not found. New publisher." << std::endl;
 			// If master does not have the caller_id, register new record.
 			topic.publishers.push_back(SystemNodeInfo(caller_id, caller_uri));
+			// In this implementation, XmlRpc can not be done in XmlRpcServer callbacks.
+			impl->task_queue_.push({ "publisherUpdate", topic_name });
 
 			std::vector<std::string> subInfos;
 			for (auto& p : topic.subscribers) {
+				std::cout << " - Subscriber(" << p.nodeName << ") found." << std::endl;
 				subInfos.push_back(p.nodeUri);
 
-				// In this implementation, XmlRpc can not be done in XmlRpcServer callbacks.
-				impl->task_queue_.push({ "publisherUpdate", topic_name });
 			}
 			return SubscribersInfo(1, "OK", subInfos);
 		}
 	}
+	std::cout << " - Topic(" << topic_name << ") not found. New topic." << std::endl;
 
 	SystemTopicsInfo info;
 	SystemNodeInfo nodeInfo(caller_id, caller_uri);
@@ -610,6 +625,9 @@ std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, con
 				if (info.nodeName == caller_id) {
 					std::cout << "Found caller_id:" << caller_id << std::endl;
 					it2 = topic.publishers.erase(it2);
+
+					// In this implementation, XmlRpc can not be done in XmlRpcServer callbacks.
+					impl->task_queue_.push({ "publisherUpdate", topic_name });
 				}
 				else {
 					++it2;
@@ -621,9 +639,7 @@ std::optional<UnregisterInfo> unregisterPublisher(ROSMasterServerImpl* impl, con
 			return UnregisterInfo(1, "OK", 1);
 		}
 	}
-
 	return UnregisterInfo(1, "Not found", 0);
-
 }
 
 

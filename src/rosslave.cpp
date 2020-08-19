@@ -65,9 +65,10 @@ class ROSSlaveImpl : public ROSSlave {
 private:
   const std::string ip_;
   const int32_t port_;
-  XmlRpc::XmlRpcClient client_;
+  MyXmlRpcClient client_;
+  double xmlrpc_timeout_;
 public:
-  ROSSlaveImpl(const std::string& ip, const int32_t port) : ip_(ip), port_(port), client_(ip.c_str(), port)  {}
+  ROSSlaveImpl(const std::string& ip, const int32_t port) : ip_(ip), port_(port), client_(ip.c_str(), port), xmlrpc_timeout_(3.0) {}
   virtual ~ROSSlaveImpl() {}
 
 
@@ -77,7 +78,7 @@ public:
       v[0] = caller_id;
       v[1] = topic_name;
       v[2] = XmlRpc::XmlRpcValue();
-      //v[2].setSize(publishers.size());
+      v[2].setSize(publishers.size());
       for (uint32_t i = 0; i < publishers.size(); ++i) {
           std::cout << " - publisher: " << publishers[i] << std::endl;
           XmlRpc::XmlRpcValue vv;
@@ -87,7 +88,7 @@ public:
       }
 
       std::cout << " - v: " << v << std::endl;
-      if (client_.execute("publisherUpdate", v, result)) {
+      if (client_.execute("publisherUpdate", v, result, xmlrpc_timeout_)) {
           if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
               // Error
               std::cout << " - failed: " << result << std::endl;
@@ -115,7 +116,7 @@ public:
       pi[2] = p.arg1;
       v[2][i] = pi;
     }
-    if (client_.execute("requestTopic", v, result)) {
+    if (client_.execute("requestTopic", v, result, xmlrpc_timeout_)) {
         int32_t port = -1;
         if (result[2][2].getType() == XmlRpc::XmlRpcValue::TypeString) {
             port = std::atoi(static_cast<std::string>(result[2][2]).c_str());
