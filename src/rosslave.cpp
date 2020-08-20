@@ -102,7 +102,7 @@ public:
                 const std::string& topicName,
                 const std::vector<ProtocolInfo>& info) 
   {
-    PLOGV << "ROSSlaveImpl::requestTopic(" <<caller_id << ", " << topic_name << ", ...)";    
+    PLOGV << "ROSSlaveImpl::requestTopic(" <<caller_id << ", " << topicName << ", ...)";    
     XmlRpc::XmlRpcValue v, result;
     v[0] = caller_id;
     v[1] = topicName;
