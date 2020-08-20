@@ -25,6 +25,7 @@ rosserviceprovider.cpp
 rosmasterserver.cpp
 )
 
+
 set(EXT_LIBRARIES XmlRpc)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -32,6 +33,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/XmlRpc/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/nlohmann-json/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/plog/include)
 
 
 foreach(a IN ITEMS ${nanoros_headers})

@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 
+#include "plog/Log.h"
 
 using namespace ssr::nanoros;
 
@@ -27,7 +28,8 @@ class ROSPublisherWorker {
 
     std::mutex tcpros_mutex_;
 public:
-    ROSPublisherWorker(): connected_(false), port_(-1) {}
+    ROSPublisherWorker(): connected_(false), port_(-1) {
+    }
 
     virtual ~ROSPublisherWorker() {
         if (thread_) {
@@ -47,6 +49,7 @@ public:
     }
 
     ROSPublisherWorker& wait(const std::string& caller_id, const std::string& selfIP, const int32_t port, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+        PLOGV << "ROSPublisherImpl::wait(" << caller_id << ", " << selfIP << ", " << port << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ", " << timeout << ") called." ;
         caller_id_ = caller_id;
         selfIP_ = selfIP;
         port_ = port;
@@ -54,23 +57,25 @@ public:
         topicTypeName_ = topicTypeName;
         md5sum_ = md5sum;
         thread_ = std::make_shared<std::thread>([this, latching, timeout]() {
+            PLOGV << "ROSPublisherImpl::wait()::lambda function called in thread. port is " << port_ ;
             try {
                 auto tcpros = tcpros_server();
                 tcpros->bind("0.0.0.0", port_);
                 tcpros->listen(5);
                 tcpros->accept();
-                negotiateHeader(tcpros, caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout);
+                PLOGV << "ROSPublisherImpl::wait()::lambda. TCPROS accepted" ;
+                if (!negotiateHeader(tcpros, caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout)) {
+                    PLOGE << "ROSPublisherImpl::wait()::lambda. negotiateHeader failed" ;
+                }
                 connected_ = true;
                 {
                     std::lock_guard<std::mutex> grd(tcpros_mutex_);
                     tcpros_ = tcpros;
                 }
             } catch (ssr::aqua2::SocketException& ex) {
-                //tcpros_->close();
-                //serverSocket_.close();
+                PLOGE << "ROSPublisherImpl::wait()::lambda. SocketException caught:" << ex.what() ;
             } catch (std::exception& ex) {
-                //tcpros_->close();
-                //serverSocket_.close();
+                PLOGE << "ROSPublisherImpl::wait()::lambda. Exception caught:" << ex.what() ;
             }
         });
         return *this;
@@ -79,11 +84,18 @@ public:
     virtual bool negotiateHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
         auto hdr = receiveHeader(tcpros, timeout);
         if (!sendHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching)) return false;
-        if (hdr["topic"] != topicName) return false;
+        for (auto& h : hdr) {
+            PLOGV << " - Header[" << h.first << "] = " << h.second ;
+        }
+        if (hdr["topic"] != topicName) {
+            PLOGE << "ROSPublisherWorker::neotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
+            return false;
+        }
         return true; 
     }
 
     virtual bool sendHeader(const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching) {
+        PLOGV << "ROSPublisherWorker::sendHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ") called." ;
         std::lock_guard<std::mutex> grd(tcpros_mutex_);
         return sendHeader(tcpros_, caller_id, topicName, topicTypeName, md5sum, latching);
     }
@@ -94,6 +106,7 @@ public:
     }
 
     virtual std::map<std::string, std::string> receiveHeader(const double timeout) {
+        PLOGV << "ROSPublisherWorker::receiveHeader() called." ;
         std::lock_guard<std::mutex> grd(tcpros_mutex_);
         return receiveHeader(tcpros_, timeout);
     }
@@ -140,6 +153,7 @@ public:
     }
 
     virtual bool publish(const ROSMsg& msg) override {
+        PLOGV << "ROSPublisherImpl::publish() called." ;
         try {
             auto pkt = packer_->toPacket(msg);
             if (pkt) {
@@ -148,9 +162,13 @@ public:
                     worker->sendPacket(pkt);
                 }
             }
+            else {
+                PLOGE << "ROSPublisherImpl::publish() failed. Received Packet is nullptr" ;
+
+            }
             return true;
         } catch (std::bad_cast& bc) {
-            std::cerr << "ROSPublisherImpl::publish() catched exception: Bad Cast" << std::endl;
+            PLOGE << "ROSPublisherImpl::publish() catched exception: Bad Cast" ;
             return false;
         }
     }

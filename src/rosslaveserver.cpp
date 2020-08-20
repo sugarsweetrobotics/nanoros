@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include "plog/Log.h"
+
 using namespace ssr::nanoros;
 using namespace XmlRpc;
 
@@ -43,7 +45,9 @@ public:
   GetBusStats(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getBusStatus", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
 
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -54,7 +58,9 @@ public:
   GetBusInfo(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getBusInfo", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
 
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -65,10 +71,12 @@ public:
   GetMasterUri(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getMasterUri", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-    result[0] = 1;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      result[0] = 1;
     result[1] = "MasterURI";
     auto val = getROSMasterInfo();
     result[3] = "http://" + val->first + ":" + std::to_string(val->second);
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -79,7 +87,9 @@ public:
   Shutdown(class ROSSlaveServerImpl * si) : ROSSlaveMethod("shutdown", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
 
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -88,9 +98,11 @@ public:
   GetPid(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPid", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-    result[0] = 1;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      result[0] = 1;
     result[1] = "GetPid";
     result[2] = getProcessId();
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -99,10 +111,12 @@ public:
   GetSubscriptions(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getSubscriptions", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-    auto subs = getSubscriptions(this->slaveServerImpl_);
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      auto subs = getSubscriptions(this->slaveServerImpl_);
     if (!subs) {
       result[0] = 0;
       result[1] = "Failed to get subscriptionss";
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
       return;
     }
     result[0] = 1;
@@ -113,6 +127,7 @@ public:
       result[2][i][0] = subs.value()[i].topicName;
       result[2][i][1] = subs.value()[i].topicType;
     }
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -121,10 +136,12 @@ public:
   GetPublications(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPublications", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-    auto pubs = getPublications(this->slaveServerImpl_);
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      auto pubs = getPublications(this->slaveServerImpl_);
     if (!pubs) {
       result[0] = 0;
       result[1] = "Failed to get publications";
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
       return;
     }
     result[0] = 1;
@@ -135,6 +152,7 @@ public:
       result[2][i][0] = pubs.value()[i].topicName;
       result[2][i][1] = pubs.value()[i].topicType;
     }
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -143,7 +161,8 @@ public:
   ParamUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("paramUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -152,13 +171,13 @@ public:
   PublisherUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("publisherUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-    std::cout << "PublisherUpdate::execute(" << params << ")" << std::endl;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
       result[0] = -1;
       result[1] = "None of suggested protocol is available in publisher.";
-      std::cout << "- PublisherUpdate: failed: " << result << std::endl;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
       return;
     }
     std::vector<std::string> newUris;
@@ -172,6 +191,7 @@ public:
     result[0] = 1;
     result[1] = "Publisher successfully updated.";
     result[2] = "";
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -180,12 +200,13 @@ public:
   RequestTopic(class ROSSlaveServerImpl * si) : ROSSlaveMethod("requestTopic", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      std::cout << "RequestTopic::execute(" << params << ")" << std::endl;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
       result[0] = -1;
       result[1] = "None of suggested protocol is available in publisher.";
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
       return;
     }
     for(int i = 0;i < params[2].size();i++) {
@@ -214,11 +235,13 @@ public:
       }
       */
      if (standbyProtocol(slaveServerImpl_, topicName, caller_id, protocolName, result)) {
-       return;
+         PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+         return;
      }
     }
     result[0] = -1;
     result[1] = "None of suggested protocol is available in publisher.";
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
   }
 };
 
@@ -259,18 +282,19 @@ public:
     paramUpdate_(this),
     publisherUpdate_(this),
     requestTopic_(this)
-  {
-      std::cout << "Starting ROS node slave server in (" << ip << ":" << port << ")" << std::endl;
-
-      exit_flag_ = false;
-      thread_ = std::make_shared<std::thread>([this]() {
-    server_->bindAndListen(port_);
-    server_->enableIntrospection(true);
-    while (!exit_flag_) {
-        server_->work(1.0);
+    {
+        PLOGV << "ROSSlaveServerImpl::ROSSlaveServerImpl(" << ip << ", " << port << ") called" ;
+        exit_flag_ = false;
+        thread_ = std::make_shared<std::thread>([this]() {
+            PLOGV << "ROSSlaveServerImpl::ROSSlaveServerImpl()::lambda function in thread" ;
+            server_->bindAndListen(port_);
+            server_->enableIntrospection(true);
+            while (!exit_flag_) {
+                server_->work(1.0);
+            }
+            PLOGV << "ROSSlaveServerImpl::ROSSlaveServerImpl()::lambda function exiting..." ;
+         });
     }
-    });
-  }
 
   virtual ~ROSSlaveServerImpl() {
     server_->shutdown();
@@ -323,13 +347,12 @@ bool standbyProtocol(ROSSlaveServerImpl* slaveServerImpl, const std::string& top
 
 
 std::optional<std::pair<std::string, int32_t>> standbyTCPROSNode(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::string& caller_id) {
-    std::cout << "standbyTCPROSNode(" << topicName << ", " << caller_id << ")" << std::endl;
   const std::string selfIP = getSelfIP();
   auto port = getEmptyPort(port_base);
 
   auto pub = slaveServerImpl->getNode()->getRegisteredPublisher(topicName);
   if (!pub) {
-      std::cout << " - Publisher for topic(" << topicName << ") not found." << std::endl;
+//      std::cout << " - Publisher for topic(" << topicName << ") not found." ;
       return std::nullopt;
   }
   if (!pub->standBy(caller_id, selfIP, port)) return std::nullopt;
@@ -353,7 +376,7 @@ std::optional<std::vector<TopicTypeInfo>> getSubscriptions(ROSSlaveServerImpl* s
  * 
  */
 bool publisherUpdate(ROSSlaveServerImpl* slaveServerImpl, const std::string& topicName, const std::vector<std::string>& newUris) {
-    std::cout << "SlaveServer::publisherUpdate(" << topicName << ")" << std::endl;
+//    std::cout << "SlaveServer::publisherUpdate(" << topicName << ")" ;
   auto pubs = slaveServerImpl->getNode()->getCurrentSubscribingPublisherUris();
   if (!pubs) return false;
   for(auto pubUri : pubs.value()) {
@@ -361,7 +384,7 @@ bool publisherUpdate(ROSSlaveServerImpl* slaveServerImpl, const std::string& top
       // Do nothing
     } else { // Current Subscribing Uri is NOT included in New Uris
       // Unsubscribe Uri
-        std::cout << " - uri: " << pubUri << " - unsubscribe." << std::endl;
+      //  std::cout << " - uri: " << pubUri << " - unsubscribe." ;
         slaveServerImpl->getNode()->unsubscribeUri(topicName, pubUri);
     }
   }
@@ -371,7 +394,7 @@ bool publisherUpdate(ROSSlaveServerImpl* slaveServerImpl, const std::string& top
       // Do nothing
     } else {
       // Subscribe Uri
-        std::cout << " - uri: " << newUri << " - subscribe." << std::endl;
+      //  std::cout << " - uri: " << newUri << " - subscribe." ;
         slaveServerImpl->getNode()->subscribeUri(topicName, newUri);
     }
   }

@@ -73,7 +73,7 @@ public:
 
 
   virtual std::optional<MasterMsg> publisherUpdate(const std::string& caller_id, const std::string& topic_name, const std::vector<std::string>& publishers) {
-      std::cout << "Slave::publisherUpdate(" << caller_id << ", " << topic_name << ")" << std::endl;
+      //std::cout << "Slave::publisherUpdate(" << caller_id << ", " << topic_name << ")" << std::endl;
       XmlRpc::XmlRpcValue v, result;
       v[0] = caller_id;
       v[1] = topic_name;
@@ -87,11 +87,11 @@ public:
 
       }
 
-      std::cout << " - v: " << v << std::endl;
+     // std::cout << " - v: " << v << std::endl;
       if (client_.execute("publisherUpdate", v, result, xmlrpc_timeout_)) {
           if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
               // Error
-              std::cout << " - failed: " << result << std::endl;
+              //std::cout << " - failed: " << result << std::endl;
 
               return std::nullopt;
           }
@@ -125,7 +125,7 @@ public:
             port = result[2][2];
         }
         else {
-            std::cout << "ROSSlave::requestTopic(" << caller_id << ", " << topicName << ") failed. Invalid return value type." << std::endl;
+            //std::cout << "ROSSlave::requestTopic(" << caller_id << ", " << topicName << ") failed. Invalid return value type." << std::endl;
             return std::nullopt;
         }
       return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], port));

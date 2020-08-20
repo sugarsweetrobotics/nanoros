@@ -4,6 +4,8 @@
 #include <map>
 #include <iostream>
 
+#include "plog/Log.h"
+
 using namespace ssr::nanoros;
 
 class ROSMsgPackerFactoryImpl : public ROSMsgPackerFactory {
@@ -17,24 +19,26 @@ public:
 
 public:
 
-  bool tryLoadPackerDLL(const std::string& topicTypeName) {
-    auto tokens = stringSplit(topicTypeName, '/');
-    if (tokens.size() != 2) {
-      return false;
+    bool tryLoadPackerDLL(const std::string& topicTypeName) {
+        PLOGD << "ROSMsgPackerFactoryImpl::tryLoadPackerDLL(" << topicTypeName << ") called" ;
+        auto tokens = stringSplit(topicTypeName, '/');
+        if (tokens.size() != 2) {
+            return false;
+        }
+
+        auto dirName = tokens[0] + "/msg";
+        auto fileName = tokens[1];
+        auto funcName = "init_msg_" + tokens[0] + "_" + tokens[1];
+
+        auto dllproxy = loadPackerFactoryDLL(dirName, fileName, funcName);
+
+        if (!dllproxy) {
+            PLOGE << "ROSMsgPackerFactoryImpl::tryLoadPackerDLL(" << topicTypeName << ") failed." ;
+            return false;
+        }
+        dllproxies_[topicTypeName] = dllproxy;
+        return true;
     }
-
-    auto dirName = tokens[0] + "/msg";
-    auto fileName = tokens[1];
-    auto funcName = "init_msg_" + tokens[0] + "_" + tokens[1];
-
-    auto dllproxy = loadPackerFactoryDLL(dirName, fileName, funcName);
-
-    if (!dllproxy) return false;
-
-    dllproxies_[topicTypeName] = dllproxy;
-    return true;
-     
-  }
 };
 
 namespace {
