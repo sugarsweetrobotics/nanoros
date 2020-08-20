@@ -39,9 +39,9 @@ public:
   GetBusStats(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getBusStatus", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
 
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -52,9 +52,9 @@ public:
   GetBusInfo(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getBusInfo", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
 
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -65,12 +65,12 @@ public:
   GetMasterUri(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getMasterUri", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
       result[0] = 1;
     result[1] = "MasterURI";
     auto val = getROSMasterInfo();
     result[3] = "http://" + val->first + ":" + std::to_string(val->second);
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -81,9 +81,9 @@ public:
   Shutdown(class ROSSlaveServerImpl * si) : ROSSlaveMethod("shutdown", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
 
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -92,11 +92,11 @@ public:
   GetPid(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPid", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
       result[0] = 1;
     result[1] = "GetPid";
     result[2] = getProcessId();
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -105,12 +105,12 @@ public:
   GetSubscriptions(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getSubscriptions", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
       auto subs = getSubscriptions(this->slaveServerImpl_);
     if (!subs) {
       result[0] = 0;
       result[1] = "Failed to get subscriptionss";
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
       return;
     }
     result[0] = 1;
@@ -121,7 +121,7 @@ public:
       result[2][i][0] = subs.value()[i].topicName;
       result[2][i][1] = subs.value()[i].topicType;
     }
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -130,12 +130,12 @@ public:
   GetPublications(class ROSSlaveServerImpl * si) : ROSSlaveMethod("getPublications", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
       auto pubs = getPublications(this->slaveServerImpl_);
     if (!pubs) {
       result[0] = 0;
       result[1] = "Failed to get publications";
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
       return;
     }
     result[0] = 1;
@@ -146,7 +146,7 @@ public:
       result[2][i][0] = pubs.value()[i].topicName;
       result[2][i][1] = pubs.value()[i].topicType;
     }
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -155,8 +155,8 @@ public:
   ParamUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("paramUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -165,13 +165,13 @@ public:
   PublisherUpdate(class ROSSlaveServerImpl * si) : ROSSlaveMethod("publisherUpdate", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
       result[0] = -1;
       result[1] = "None of suggested protocol is available in publisher.";
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
       return;
     }
     std::vector<std::string> newUris;
@@ -185,7 +185,7 @@ public:
     result[0] = 1;
     result[1] = "Publisher successfully updated.";
     result[2] = "";
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 
@@ -194,13 +194,13 @@ public:
   RequestTopic(class ROSSlaveServerImpl * si) : ROSSlaveMethod("requestTopic", si) {}
 
   void execute(XmlRpcValue& params, XmlRpcValue& result) {
-      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << static_cast<std::string>(params) << ") called." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", params=" << params.toXml() << ") called." ;
     const std::string caller_id = params[0];
     const std::string topicName = params[1];
     if (params[2].getType() != XmlRpcValue::TypeArray) {
       result[0] = -1;
       result[1] = "None of suggested protocol is available in publisher.";
-      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+      PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
       return;
     }
     for(int i = 0;i < params[2].size();i++) {
@@ -229,13 +229,13 @@ public:
       }
       */
      if (standbyProtocol(slaveServerImpl_, topicName, caller_id, protocolName, result)) {
-         PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+         PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
          return;
      }
     }
     result[0] = -1;
     result[1] = "None of suggested protocol is available in publisher.";
-    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+    PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
   }
 };
 

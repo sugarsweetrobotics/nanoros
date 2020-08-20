@@ -15,6 +15,8 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 
 
+#include <ctime>
+#include <cstdlib>
 #include <thread>
 #include <filesystem>
 
@@ -35,8 +37,21 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
     ssr::nanoros::ArgParser parser;
     // parser.option()
 
+    // Format Filename of Log
+    std::stringstream ss;
+    std::filesystem::path path = argv[0];
 
-    std::string logfileName("nanoros.log");
+    time_t now = ::time(0);
+    char       buf[80];
+    struct tm tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%0Y%0m%0d%0H%0M%0S", &tstruct);
+
+    
+    ss << path.filename().stem().string() << buf << ".log";
+    
+    std::string logfileName = ss.str();
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(logfileName.c_str());
     plog::init(plog::verbose, &consoleAppender).addAppender(&fileAppender);
@@ -65,15 +80,18 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 
     getROSMsgPackerFactory()->addPackerDirHint(p.parent_path().string());
     auto packerDir = ssr::nanoros::getEnv("NANOROS_PACKER_DIR");
+    PLOGV << " - NANOROS_PACKER_DIR: " << packerDir;    
     if (packerDir.length() > 0) {
         if (packerDir.rfind('/') != packerDir.length() - 1) {
             packerDir += '/';
         }
-        PLOGV << " - NANOROS_PACKER_DIR:" << packerDir ;
         getROSMsgPackerFactory()->addPackerDirHint(packerDir);
 
+    } else {
+      PLOGW << "Set Environmental Variable NANOROS_PACKER_DIR";
     }
     auto packerDirs = ssr::nanoros::getEnv("NANOROS_PACKER_DIRS");
+    PLOGV << " - NANOROS_PACKER_DIRS: " << packerDirs;
     if (packerDirs.length() > 0) {
     #ifdef WIN32
         const char sep = ';';
@@ -81,7 +99,6 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
         const char sep = ':';
     #endif
         auto dirs = ssr::nanoros::stringSplit(packerDirs, sep);
-        PLOGV << " - NANOROS_PACKER_DIRS:" ;
         for (auto dir : dirs) {
             if (dir.rfind('/') != dir.length() - 1) {
                 dir += '/';
@@ -89,6 +106,8 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
             PLOGV << " -  - dir:" << dir << std:: endl;
             getROSMsgPackerFactory()->addPackerDirHint(dir);
         }
+    } else {
+
     }
 
     auto hint0 = (p.parent_path().parent_path() / "share" / "nanoros" / "packers").string();

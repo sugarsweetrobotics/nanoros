@@ -86,13 +86,13 @@ public:
       v[2][i] = vv;
     }
     
-    PLOGD << "ROSSlaveImpl::publisherUpdate(): Calling XmlRpcClient::execute(v=" << static_cast<std::string>(v) << ")";
+    PLOGD << "ROSSlaveImpl::publisherUpdate(): Calling XmlRpcClient::execute(v=" << v.toXml() << ")";
     if (client_.execute("publisherUpdate", v, result, xmlrpc_timeout_)) {
           if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-	    PLOGE << "ROSSlaveImpl::publisherUpdate() failed. Return value is not array type(result=" << static_cast<std::string>(result);
+	    PLOGE << "ROSSlaveImpl::publisherUpdate() failed. Return value is not array type(result=" << result.toXml();
 	    return std::nullopt;
           }
-	  PLOGD << "ROSSlaveImpl::publisherUpdate() OK.  result=" << static_cast<std::string>(result);	  
+	  PLOGD << "ROSSlaveImpl::publisherUpdate() OK.  result=" << result.toXml();	  
           return MasterMsg(result[0], result[2]);
       }
       return std::nullopt;
@@ -115,7 +115,7 @@ public:
       pi[2] = p.arg1;
       v[2][i] = pi;
     }
-    PLOGD << "ROSSlaveImpl::requestTopic(): Calling XmlRpcClient::execute(v=" << static_cast<std::string>(v) << ")";    
+    PLOGD << "ROSSlaveImpl::requestTopic(): Calling XmlRpcClient::execute(v=" << v.toXml() << ")";    
     if (client_.execute("requestTopic", v, result, xmlrpc_timeout_)) {
         int32_t port = -1;
         if (result[2][2].getType() == XmlRpc::XmlRpcValue::TypeString) {
@@ -125,10 +125,10 @@ public:
             port = result[2][2];
         }
         else {
-	  PLOGE << "ROSSlaveImpl::requestTopic() failed. Return value is invalid. Port value must be string or integer. (result=" << static_cast<std::string>(result);	  
+	  PLOGE << "ROSSlaveImpl::requestTopic() failed. Return value is invalid. Port value must be string or integer. (result=" << result.toXml();	  
             return std::nullopt;
         }
-      return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], port));
+	return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], port));
     }
     return std::nullopt;
   }

@@ -59,7 +59,7 @@ public:
 	RegisterService(class ROSMasterServerImpl* si) : ROSMasterMethod("registerServer", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string service_name = params[1];
 		std::string service_uri = params[2];
@@ -67,7 +67,7 @@ public:
 		auto msg = registerService(impl_, caller_id, service_name, service_uri, caller_uri);
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -76,7 +76,7 @@ public:
 	UnregisterService(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterServer", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string service_name = params[1];
 		std::string caller_uri = params[2];
@@ -84,7 +84,7 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->numUnregistered;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -93,7 +93,7 @@ public:
 	RegisterPublisher(class ROSMasterServerImpl* si) : ROSMasterMethod("registerPublisher", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+	  PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string topic_name = params[1];
 		std::string topic_type = params[2];
@@ -110,7 +110,7 @@ public:
 			//	result[2][i][j] = msg->subscribers[i][j];
 			//}
 		}
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -119,7 +119,7 @@ public:
 	UnregisterPublisher(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterPublisher", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string topic_name = params[1];
 		std::string caller_uri = params[2];
@@ -127,7 +127,7 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->numUnregistered;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -136,7 +136,7 @@ public:
 	RegisterSubscriber(class ROSMasterServerImpl* si) : ROSMasterMethod("registerSubscriber", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string topic_name = params[1];
 		std::string topic_type = params[2];
@@ -150,7 +150,7 @@ public:
 			result[2][i] = XmlRpcValue();
 			result[2][i] = msg->publishers[i];
 		}
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -159,7 +159,7 @@ public:
 	UnregisterSubscriber(class ROSMasterServerImpl* si) : ROSMasterMethod("unregisterSubscriber", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string topic_name = params[1];
 		std::string caller_uri = params[2];
@@ -167,7 +167,7 @@ public:
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->numUnregistered;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -179,14 +179,14 @@ public:
 	LookupNode(class ROSMasterServerImpl* si) : ROSMasterMethod("lookupNode", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string node_name = params[1];
 		auto msg = lookupNode(impl_, caller_id, node_name);
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->uri;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -196,7 +196,7 @@ public:
 	GetPublishedTopics(class ROSMasterServerImpl* si) : ROSMasterMethod("getPublishedTopics", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string subgraph = params[1];
 		auto msg = getPublishedTopics(impl_, caller_id, subgraph);
@@ -209,7 +209,7 @@ public:
 			result[2][i][0] = msg->topicTypes[i].topicName;
 			result[2][i][1] = msg->topicTypes[i].topicType;
 		}
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -219,7 +219,7 @@ public:
 	GetTopicTypes(class ROSMasterServerImpl* si) : ROSMasterMethod("getTopicTypes", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		auto msg = getTopicTypes(impl_, caller_id);
 		result[0] = msg->code;
@@ -231,7 +231,7 @@ public:
 			result[2][i][0] = msg->topicTypes[i].topicName;
 			result[2][i][1] = msg->topicTypes[i].topicType;
 		}
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -241,7 +241,7 @@ public:
 	GetSystemState(class ROSMasterServerImpl* si) : ROSMasterMethod("getSystemState", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		auto msg = getSystemState(impl_, caller_id);
 		result[0] = msg->code;
@@ -279,7 +279,7 @@ public:
 				result[2][2][i][1][j] = msg->systemState.services[i].services[j];
 			}
 		}
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -289,13 +289,13 @@ public:
 	GetUri(class ROSMasterServerImpl* si) : ROSMasterMethod("getUri", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		auto msg = getUri(impl_, caller_id);
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->uri;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 
@@ -305,14 +305,14 @@ public:
 	LookupService(class ROSMasterServerImpl* si) : ROSMasterMethod("lookupService", si) {}
 
 	void execute(XmlRpcValue& params, XmlRpcValue& result) {
-		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << static_cast<std::string>(params) << ") called." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", param=" << params.toXml() << ") called." ;
 		std::string caller_id = params[0];
 		std::string service_name = params[1];
 		auto msg = lookupService(impl_, caller_id, service_name);
 		result[0] = msg->code;
 		result[1] = msg->statusMessage;
 		result[2] = msg->uri;
-		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << static_cast<std::string>(result) << ") exit." ;
+		PLOGD << "ROSMasterMethod(name=" << name() << ", result=" << result.toXml() << ") exit." ;
 	}
 };
 

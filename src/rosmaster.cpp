@@ -56,7 +56,7 @@ public:
         XmlRpc::XmlRpcValue v, result;
         v[0] = caller_id;
         if (client_.execute("getUri", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return MasterUriInfo(result[0], result[1], result[2]);
         }
         PLOGE << "ROSMasterImpl::getUri(" << caller_id << ") failed." ;
@@ -69,7 +69,7 @@ public:
         XmlRpc::XmlRpcValue v, result;
         v[0] = caller_id;
         if (client_.execute("getSystemState", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             auto pubs = conv<TopicPublishersInfo>(result[2][0]);
             auto subs = conv<TopicSubscribersInfo>(result[2][1]);;
             auto srvs = conv<ServicesInfo>(result[2][2]);
@@ -84,7 +84,7 @@ public:
         XmlRpc::XmlRpcValue v, result;
         v[0] = caller_id;
         if (client_.execute("getTopicTypes", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return TopicTypes(result[0], result[1], forEach<TopicTypeInfo>(result[2], [](auto& v) -> TopicTypeInfo {
 										        return {v[0], v[1]}; }));
         }
@@ -98,7 +98,7 @@ public:
         v[0] = caller_id;
         v[1] = node_name;
         if (client_.execute("lookupNode", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return NodeUriInfo(result[0], result[1], result[2]);
         }
         PLOGE << "ROSMasterImpl::lookupNode(" << caller_id << ", " << node_name << ") failed." ;
@@ -111,7 +111,7 @@ public:
         v[0] = caller_id;
         v[1] = srv_name;
         if (client_.execute("lookupService", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return ServiceUriInfo(result[0], result[1], result[2]);
         }
         PLOGE << "ROSMasterImpl::lookupService(" << caller_id << ", " << srv_name << ") failed." ;
@@ -124,7 +124,7 @@ public:
         v[0] = caller_id;
         v[1] = subgraph; 
         if (client_.execute("getPublishedTopics", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return TopicTypes(result[0], result[1], forEach<TopicTypeInfo>(result[2], [](auto& v) -> TopicTypeInfo {
 										        return {v[0], v[1]}; }));
         }
@@ -140,7 +140,7 @@ public:
         v[2] = topicType;
         v[3] = caller_api;
         if (client_.execute("registerSubscriber", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return PublishersInfo(result[0], result[1], forEach<std::string>(result[2], [](auto& v) -> std::string {
 										        return std::string(v); }));
         }
@@ -155,27 +155,34 @@ public:
         v[1] = topicName;
         v[2] = caller_api;
         if (client_.execute("unregisterSubscriber", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return UnregisterInfo(result[0], result[1], result[2]);
         }
-        PLOGE << "ROSMasterImpl::unregisterSubscriber(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") failed." ;
+        PLOGE << "ROSMasterImpl::unregisterSubscriber(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") XmlRpcClient.execute() failed." ;
         return std::nullopt;
     }
 
 
     virtual std::optional<SubscribersInfo> registerPublisher(const std::string& caller_id, const std::string& topicName, const std::string& topicType, const std::string& caller_api) override { 
-        PLOGD << "ROSMasterImpl::registerPublisher(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") called." ;
-        XmlRpc::XmlRpcValue v, result;
-        v[0] = caller_id;
-        v[1] = topicName;
-        v[2] = topicType;
-        v[3] = caller_api;
-        if (client_.execute("registerPublisher", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+        PLOGD << "ROSMasterImpl::registerPublisher( " << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") called." ;
+	try {
+	  XmlRpc::XmlRpcValue v, result;
+	  v.setSize(4);
+	  v[0] = caller_id;
+	  v[1] = topicName;
+	  v[2] = topicType;
+	  v[3] = caller_api;
+	  PLOGD << "ROSMasterImpl::registerPublisher() calling XmlRpcClient.execute: v=" << v.toXml();
+	  if (client_.execute("registerPublisher", v, result)) {
+            PLOGV << "result: " << result.toXml();
             return SubscribersInfo(result[0], result[1], forEach<std::string>(result[2], [](auto& v) -> std::string {
-										        return std::string(v); }));
-        }
-        PLOGE << "ROSMasterImpl::registerPublisher(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") failed." ;
+											   return std::string(v); }));
+	  }
+	} catch (XmlRpc::XmlRpcException& ex) {
+	  PLOGE << "ROSMasterImpl::registerPublisher(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") XmlRpcException: " << ex.getMessage();
+	  return std::nullopt;
+	}
+        PLOGE << "ROSMasterImpl::registerPublisher(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") XmlRpcClient.execute() failed." ;
         return std::nullopt;
     }  
 
@@ -186,7 +193,7 @@ public:
         v[1] = topicName;
         v[2] = caller_api;
         if (client_.execute("unregisterPublisher", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return UnregisterInfo(result[0], result[1], result[2]);
         }
         PLOGE << "ROSMasterImpl::unregisterPublisher(" << caller_id << ", " << topicName << ", " << topicType << ", " << caller_api << ") failed." ;
@@ -201,7 +208,7 @@ public:
         v[2] = serviceUri;
         v[3] = caller_api;
         if (client_.execute("registerService", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return MasterMsg(result[0], result[1]);
         }
         PLOGE << "ROSMasterImpl::registerService(" << caller_id << ", " << serviceName << ", " << serviceUri << ", " << caller_api << ") failed." ;
@@ -216,7 +223,7 @@ public:
         v[2] = serviceUri;
         v[3] = caller_api;
         if (client_.execute("unregisterService", v, result)) {
-            PLOGV << "result: " << static_cast<std::string>(result) ;
+            PLOGV << "result: " << result.toXml() ;
             return UnregisterInfo(result[0], result[1], result[2]);
         }
         PLOGE << "ROSMasterImpl::unregisterService(" << caller_id << ", " << serviceName << ", " << serviceUri << ", " << caller_api << ") called." ;
