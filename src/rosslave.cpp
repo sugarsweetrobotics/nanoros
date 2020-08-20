@@ -5,6 +5,7 @@
 #include "XmlRpc/XmlRpcUtil.h"
 
 #include <iostream>
+#include "plog/Log.h"
 
 using namespace ssr::nanoros;
 
@@ -73,28 +74,25 @@ public:
 
 
   virtual std::optional<MasterMsg> publisherUpdate(const std::string& caller_id, const std::string& topic_name, const std::vector<std::string>& publishers) {
-      //std::cout << "Slave::publisherUpdate(" << caller_id << ", " << topic_name << ")" << std::endl;
-      XmlRpc::XmlRpcValue v, result;
-      v[0] = caller_id;
-      v[1] = topic_name;
-      v[2] = XmlRpc::XmlRpcValue();
-      v[2].setSize(publishers.size());
-      for (uint32_t i = 0; i < publishers.size(); ++i) {
-          std::cout << " - publisher: " << publishers[i] << std::endl;
-          XmlRpc::XmlRpcValue vv;
-          vv = publishers[i];
-          v[2][i] = vv;
-
-      }
-
-     // std::cout << " - v: " << v << std::endl;
-      if (client_.execute("publisherUpdate", v, result, xmlrpc_timeout_)) {
+    PLOGV << "ROSSlaveImpl::publisherUpdate(" <<caller_id << ", " << topic_name << ", ...)";
+    XmlRpc::XmlRpcValue v, result;
+    v[0] = caller_id;
+    v[1] = topic_name;
+    v[2] = XmlRpc::XmlRpcValue();
+    v[2].setSize(publishers.size());
+    for (uint32_t i = 0; i < publishers.size(); ++i) {
+      XmlRpc::XmlRpcValue vv;
+      vv = publishers[i];
+      v[2][i] = vv;
+    }
+    
+    PLOGD << "ROSSlaveImpl::publisherUpdate(): Calling XmlRpcClient::execute(v=" << static_cast<std::string>(v) << ")";
+    if (client_.execute("publisherUpdate", v, result, xmlrpc_timeout_)) {
           if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-              // Error
-              //std::cout << " - failed: " << result << std::endl;
-
-              return std::nullopt;
+	    PLOGE << "ROSSlaveImpl::publisherUpdate() failed. Return value is not array type(result=" << static_cast<std::string>(result);
+	    return std::nullopt;
           }
+	  PLOGD << "ROSSlaveImpl::publisherUpdate() OK.  result=" << static_cast<std::string>(result);	  
           return MasterMsg(result[0], result[2]);
       }
       return std::nullopt;
@@ -103,7 +101,8 @@ public:
   virtual std::optional<RequestTopicResult> requestTopic(const std::string& caller_id,
                 const std::string& topicName,
                 const std::vector<ProtocolInfo>& info) 
-  { 
+  {
+    PLOGV << "ROSSlaveImpl::requestTopic(" <<caller_id << ", " << topic_name << ", ...)";    
     XmlRpc::XmlRpcValue v, result;
     v[0] = caller_id;
     v[1] = topicName;
@@ -116,6 +115,7 @@ public:
       pi[2] = p.arg1;
       v[2][i] = pi;
     }
+    PLOGD << "ROSSlaveImpl::requestTopic(): Calling XmlRpcClient::execute(v=" << static_cast<std::string>(v) << ")";    
     if (client_.execute("requestTopic", v, result, xmlrpc_timeout_)) {
         int32_t port = -1;
         if (result[2][2].getType() == XmlRpc::XmlRpcValue::TypeString) {
@@ -125,7 +125,7 @@ public:
             port = result[2][2];
         }
         else {
-            //std::cout << "ROSSlave::requestTopic(" << caller_id << ", " << topicName << ") failed. Invalid return value type." << std::endl;
+	  PLOGE << "ROSSlaveImpl::requestTopic() failed. Return value is invalid. Port value must be string or integer. (result=" << static_cast<std::string>(result);	  
             return std::nullopt;
         }
       return RequestTopicResult((int)result[0], result[1], ProtocolInfo(result[2][0], result[2][1], port));

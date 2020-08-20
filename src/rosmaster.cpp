@@ -1,11 +1,7 @@
 #include <iostream>
 #include "nanoros/rosmaster.h"
-
-
 #include "XmlRpc/XmlRpc.h"
-
 #include <functional>
-
 #include "plog/Log.h"
 
 using namespace ssr::nanoros;

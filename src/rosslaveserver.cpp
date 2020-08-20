@@ -1,16 +1,10 @@
-
 #include <thread>
-
 #include "nanoros/rosslaveserver.h"
 #include "nanoros/rosnode.h"
 #include "nanoros/os.h"
-
-
 #include "XmlRpc/XmlRpc.h"
 #include "XmlRpc/XmlRpcServer.h"
-
 #include <iostream>
-
 #include "plog/Log.h"
 
 using namespace ssr::nanoros;
