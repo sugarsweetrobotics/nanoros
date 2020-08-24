@@ -143,6 +143,7 @@ public:
         if (getRegisteredSubscriber(sub->getTopicName()) != nullptr) {
             for(auto it = subscribers_.begin(); it != subscribers_.end(); ++it) {
             if ((*it)->getTopicName() == sub->getTopicName()) {
+	      PLOGI << "ROSNodeImpl::unsubscribe(" << sub->getTopicName() << "): remove Subscriber";
                 it = subscribers_.erase(it);
                 return true;
             } 
@@ -248,9 +249,12 @@ public:
     }
 
     virtual void spinOnce() override {
-        for(auto& sub: subscribers_) {
-            sub->spinOnce();
-        }
+      PLOGV << "ROSNodeImpl::spinOnce() called";
+      for(auto& sub: subscribers_) {
+	PLOGV << " subscriber spins" << std::endl;
+	sub->spinOnce();
+      }
+      PLOGV << "ROSNodeImpl::spinOnce() exit";
     }
 
     virtual void spin() override  {

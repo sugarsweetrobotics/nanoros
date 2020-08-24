@@ -24,6 +24,8 @@ namespace ssr {
             virtual bool okay() { return false; }
 
             virtual bool isConnected() { return false; }
+
+	  virtual bool isPacketReceived() { return false; } 
         public:
 
             virtual bool bind(const std::string& host, const int32_t port, const int32_t timeoutUsec = 3000*1000) { return false; }

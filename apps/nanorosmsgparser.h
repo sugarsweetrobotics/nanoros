@@ -109,7 +109,9 @@ R"(
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)
 
-if (!${nanoros_FOUND})
+if (${nanoros_FOUND} MATCHES "Yes")
+
+else()
 find_package(nanoros REQUIRED)
 endif ()
 )",

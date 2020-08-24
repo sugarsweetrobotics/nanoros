@@ -8,6 +8,9 @@
 #include <thread>
 #include <chrono>
 
+
+#include "plog/Log.h"
+
 using namespace ssr::nanoros;
 
 namespace {
@@ -114,36 +117,47 @@ public:
         return socket_.getSizeInRxBuffer() ;
     }
 
-    virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeoutMs = -1) override { 
+  virtual bool isPacketReceived() override {
+    return socket_.getSizeInRxBuffer() >= sizeof(int32_t);
+  }
+    
+  
+    virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeoutMs = -1) override {
+      PLOGV << "TCPROSImpl::receivePacket(timeout=" << timeoutMs << ")";
         uint32_t bytes = 0;
         auto start = std::chrono::system_clock::now();
         while (socket_.getSizeInRxBuffer() < sizeof(int32_t)) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
             if (timeoutMs >= 0 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() >= timeoutMs) {
+	      PLOGD << "TCPROSImpl::receivePacket timoeut in packet size search case." << std::endl;
                 return std::nullopt;
             }
         }
         socket_.read(&bytes, sizeof(int32_t));
         uint32_t size = from_little_endian(bytes);//ntohl(bytes);
+	PLOGD << "TCPROSImpl::receivePacket. Receiving packet size is " << size;
         std::vector<uint8_t> val(size);
         while (socket_.getSizeInRxBuffer() < size) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
-            if (timeoutMs >= 0 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() >= timeoutMs) {
-                return std::nullopt;
-            }
+            //if (timeoutMs >= 0 && std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() >= timeoutMs) {
+	    //PLOGD << "TCPROSImpl::receivePacket timoeut." << std::endl;
+            //    return std::nullopt;
+            //}
         }
         socket_.read(&(val[0]), size);
         return TCPROSPacket(std::move(val)); 
     }
 
-    virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt)  override{ 
+    virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt)  override{
+      PLOGV << "TCPROSImpl::sendPacket() called";
         int32_t size = to_little_endian(pkt->bytes().size()); // littel_endian
         socket_.write(&size, 4);
         socket_.write(&(pkt->bytes()[0]), size);
         return true;
     }
 
-    virtual bool sendPacket(TCPROSPacket&& pkt) override { 
+    virtual bool sendPacket(TCPROSPacket&& pkt) override {
+      PLOGV << "TCPROSImpl::sendPacket() called";      
         int32_t size = to_little_endian(pkt.bytes().size()); // littel_endian must be
         socket_.write(&size, sizeof(int32_t));
         socket_.write(&(pkt.bytes()[0]), size);

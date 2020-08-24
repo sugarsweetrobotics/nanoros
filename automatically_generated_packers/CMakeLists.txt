@@ -5,6 +5,8 @@ function(add_sub NAME)
   endif ()
 endfunction(add_sub)
 
+set(nanoros_FOUND "Yes")
+
 add_sub(roscpp)
 add_sub(std_msgs)
 add_sub(geometry_msgs)

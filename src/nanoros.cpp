@@ -35,26 +35,63 @@ const char* ssr::nanoros::nanoros_version_str() {
 }
 void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
     ssr::nanoros::ArgParser parser;
-    // parser.option()
+    parser.option<std::string>("-L", "--loglevel", "Log Level (VERBOSE|DEBUG|INFO|WARN|ERROR)", false, "INFO");
+    std::filesystem::path argv0 = argv[0];
+    std::string fileFormat = argv0.stem().filename().string() + "%t" + ".log";
+    parser.option("-F", "--logfile", "Log File path", false, fileFormat);
+    parser.option("-C", "--logconsole", "Output Log to console", false, std::string("true"));
+    auto options = parser.parse(argc, argv);
+
+    auto logfilestr = options.get<std::string>("logfile");
+    auto logconsolestr = options.get<std::string>("logconsole");    
+    auto loglevelstr = options.get<std::string>("loglevel");
+    
+    auto loglevel = plog::info;
+    if (loglevelstr == "VERBOSE") {
+      loglevel = plog::verbose;
+    } else if (loglevelstr == "DEBUG") {
+      loglevel = plog::debug;
+    } else if (loglevelstr == "INFO") {
+      loglevel = plog::info;
+    } else if (loglevelstr == "WARN") {
+      loglevel = plog::warning;
+    } else if (loglevelstr == "ERROR") {
+      loglevel = plog::error;
+    }      
+
+    bool logconsole = true;
+    if (logconsolestr == "TRUE" || logconsolestr == "True" || logconsolestr == "true") {
+      logconsole = true;
+    } else {
+      logconsole = true;
+    }
 
     // Format Filename of Log
-    std::stringstream ss;
-    std::filesystem::path path = argv[0];
-
-    time_t now = ::time(0);
-    char       buf[80];
-    struct tm tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
-    strftime(buf, sizeof(buf), "%0Y%0m%0d%0H%0M%0S", &tstruct);
+    auto logfile = logfilestr;
+    if (logfilestr.find("%t") != std::string::npos) {
+      time_t now = ::time(0);
+      char buf[80];
+      struct tm tstruct = *localtime(&now);
+      // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+      // for more information about date/time format
+      strftime(buf, sizeof(buf), "%0Y%0m%0d%0H%0M%0S", &tstruct);
+      logfile = logfilestr.substr(0, logfilestr.find("%t")) + buf + logfilestr.substr(logfilestr.find("%t") + 2);
+    }
+    
+    //    ss << path.filename().stem().string() << buf << ".log";
+    std::string logfileName = logfile;// ss.str();
 
     
-    ss << path.filename().stem().string() << buf << ".log";
-    
-    std::string logfileName = ss.str();
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(logfileName.c_str());
-    plog::init(plog::verbose, &consoleAppender).addAppender(&fileAppender);
+    
+    
+    if (logconsole ) {
+      plog::init(loglevel, &consoleAppender)
+      .addAppender(&fileAppender);
+    } else {
+      plog::init(loglevel, &fileAppender);
+    }
 
    // plog::Severity
     
@@ -68,7 +105,10 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 #else
     PLOGV << " - Platform: Unknown" ;
 #endif
-
+    PLOGV << " - args:";
+    PLOGV << " -- logfile: " << logfilestr;
+    PLOGV << " -- loglevel: " << loglevelstr;
+    PLOGV << " -- logconsole: " << logconsolestr;
     ssr::aqua2::initializeSocket();
 
     ssr::nanoros::signal(ssr::nanoros::SIGNAL_INT, signal_handler);

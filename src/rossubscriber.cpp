@@ -24,7 +24,12 @@ std::vector<T> filter(const std::vector<T>& vals, const std::function<bool(const
   }
   return retval;
 }
-  
+
+
+
+void ROSSubscriber::spinOnce() {
+  PLOGV << "ROSSubscriber::spinOnce() called";
+}
 
 class ROSSubscriberWorker {
 private:
@@ -111,32 +116,37 @@ public:
 			PLOGE << "ROSSubscriberWorker::neotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
 			return false;
 		}
-		return true; 
+	return true; 
 	}
 
 	virtual bool spinOnce() {
-		std::lock_guard<std::mutex> grd(tcpros_mutex_);
-		if(tcpros_ ) {
-			if (!tcpros_->isConnected()) {
-				PLOGE << "ROSSubscriberWoerk::spinOnce() failed. Detecting SubscriptionWorker is not connected already." ;
-				tcpros_ = nullptr;
-				return false;
-			}
-			auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
-			if (!maybePacket) {
-				PLOGE << "ROSSubscriberWoerk::spinOnce() failed. maybePacket is invalid." ;
-				return false;
-			}
-			auto maybeMsg = packer_->toMsg(maybePacket);
-			if (maybeMsg) {
-				callback_(maybeMsg);
-				return true;
-			}
-			else {
-				PLOGE << "ROSSubscriberWoerk::spinOnce() failed. maybeMsg is nullopt." ;
-			}
-		}
+	  PLOGV << "ROSSubscriberWorker::spinOnce() called";
+	  std::lock_guard<std::mutex> grd(tcpros_mutex_);
+	  if(tcpros_ ) {
+	    if (!tcpros_->isConnected()) {
+	      PLOGE << "ROSSubscriberWorker::spinOnce() failed. Detecting SubscriptionWorker is not connected already." ;
+	      tcpros_ = nullptr;
+	      return false;
+	    }
+	    if (tcpros_->isPacketReceived()) {
+	      auto maybePacket = tcpros_->receivePacket(receiveTimeout_);
+	      if (!maybePacket) {
+		PLOGE << "ROSSubscriberWorker::spinOnce() failed. maybePacket is invalid." ;
+		return false;
+	      }
+	      auto maybeMsg = packer_->toMsg(maybePacket);
+	      if (maybeMsg) {
+		callback_(maybeMsg);
 		return true;
+	      }
+	      else {
+		PLOGE << "ROSSubscriberWorker::spinOnce() failed. maybeMsg is nullopt." ;
+	      }
+	    }
+	  } else {
+	    PLOGV << "ROSSubscriberWorker::spinOnce: tcpros_ member is nullptr.";
+	  }
+	  return true;
 	}
   
 };
@@ -235,11 +245,13 @@ public:
 	virtual ~ROSSubscriberImpl() {}
 
 	virtual void spinOnce() override {
+	  PLOGV << "ROSSubscriberImpl::spinOnce() called";
 		std::lock_guard<std::mutex> grd(workers_mutex_);
 		for (auto it = workers_.begin(); it != workers_.end(); ) {
 			auto& worker = *it;
 			if (!worker->spinOnce()) {
-				it = workers_.erase(it);
+			  PLOGD << "ROSSubscriberImpl::spinOnce() worker failed.";
+			  //it = workers_.erase(it);
 			}
 			else {
 				++it;
