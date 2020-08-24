@@ -172,7 +172,7 @@ namespace ssr::nanoros {
 
     bool checkMatch(Options& options, std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) {
         for(auto& option: options_) {
-            if (option->matched()) continue;
+	  if (option->matched()) continue; //already matched
 
             if (option->match(*it)) {
                 auto result = option->makeResult(it, end);
@@ -221,17 +221,22 @@ namespace ssr::nanoros {
     Options parse(std::vector<std::string>&& args) {
         Options options;
         auto it = args.begin();
+	options.unknown_args.push_back(*it);
         ++it; // first argument is program name;
         for(;it != args.end();) {
             if (*it == "--") {
+	      options.unknown_args.push_back(*it);
                 ++it;
                 break;
             }
-            if(!checkMatch(options, it, args.end())) {
-                // Unknown Argument
-                options.error(true);
-                break;
-            }
+            if(checkMatch(options, it, args.end())) {
+	      // Unknown Argument
+
+	      //options.error(true);
+              //  break;
+            } else {
+	      options.unknown_args.push_back(*it);
+	    }
             ++it;
         }
         for(auto op : options_) {
@@ -239,9 +244,9 @@ namespace ssr::nanoros {
                 options.results.emplace(op->key(), std::move(op->makeDefaultResult()));
             }
         }
-        for(;it != args.end();++it) {
-            options.unknown_args.push_back(*it);
-        }
+        //for(;it != args.end();++it) {
+	//options.unknown_args.push_back(*it);
+	//}
 
         return options;
     }

@@ -98,11 +98,14 @@ public:
         if (!publishersInfo->code) {
             PLOGE << "ROSNodeImpl(name=" << name() << ")::subscribe: - registerSubscriber failed. Code is '" << publishersInfo->code << "', msg is '" << publishersInfo->statusMessage  << "'" ;
         }
+	PLOGI << "ROSNodeImpl::subscribe(" << topicName << ", " << typeName << "): MasterServer::registerSubscriber success.";	
         for(auto& pub: publishersInfo->publishers) {
             if (!subscriber->connect(pub, latching, negotiateTimeout)) {
                 PLOGE << "ROSNodeImpl(name=" << name() << ")::subscribe: - connecting the subscriber to the publisher(uri=" << pub << ") failed." ;
                 return nullptr;
-            }
+            } else {
+	      PLOGI << "ROSNodeImpl::subscribe(" << topicName << ", " << typeName << "): subscriber->connect success";
+	    }
         }
         subscribers_.push_back(subscriber);
         return subscriber;
@@ -176,6 +179,7 @@ public:
         }
         auto subscribersInfo = master_->registerPublisher(name_, topicName, packer->typeName(), slaveServer_->getSlaveUri());
         if (subscribersInfo->code) {
+	  PLOGI << "ROSNodeImpl::advertise(" << topicName << ", " << packer->typeName() << "): MasterServer::registerPublisher success.";
             for(auto& sub: subscribersInfo->subscribers) {
             // do nothing
             }
@@ -196,6 +200,9 @@ public:
             return false;
         }
         auto subscribersInfo = master_->registerService(name_, srvName, provider->getUri(), slaveServer_->getSlaveUri());
+	if (subscribersInfo->code) {
+	  PLOGI << "ROSNodeImpl::advertiseService(" << srvName << ", " << packer->typeName() << "): MasterServer::registerService success.";
+	}
         serviceProviders_.push_back(provider);
         return true; 
     }

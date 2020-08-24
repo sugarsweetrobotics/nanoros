@@ -9,9 +9,12 @@ using namespace ssr::nanoros;
 std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName) {
     PLOGD << "PackerFactoryBase::loadPackerFactoryDLL(" << dirName << ", " << fileName << ", " << funcName << ") called." ;
     for (auto dirHint : packerDirHints_) {
-        PLOGV << "searching DLL with dirHint:" << dirHint ;
+      if (dirHint.rfind('/') != dirHint.length() -1) {
+	dirHint += '/';
+      }
+      PLOGV << "searching DLL with dirHint:" << dirHint;
 
-        auto dllproxy = createDLLProxy(dirHint + "/" + dirName, fileName);
+        auto dllproxy = createDLLProxy(dirHint + dirName, fileName);
         if (!dllproxy || (dllproxy && dllproxy->failed())) {
 #ifdef WIN32
             PLOGV << "createDLLProxy failed with hint: " << dirHint + "/" + dirName ;

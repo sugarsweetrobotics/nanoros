@@ -49,7 +49,7 @@ public:
     }
 
     ROSPublisherWorker& wait(const std::string& caller_id, const std::string& selfIP, const int32_t port, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
-        PLOGV << "ROSPublisherImpl::wait(" << caller_id << ", " << selfIP << ", " << port << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ", " << timeout << ") called." ;
+        PLOGD << "ROSPublisherImpl::wait(" << caller_id << ", " << selfIP << ", " << port << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ", " << timeout << ") called." ;
         caller_id_ = caller_id;
         selfIP_ = selfIP;
         port_ = port;
@@ -57,19 +57,20 @@ public:
         topicTypeName_ = topicTypeName;
         md5sum_ = md5sum;
         thread_ = std::make_shared<std::thread>([this, latching, timeout]() {
-            PLOGV << "ROSPublisherImpl::wait()::lambda function called in thread. port is " << port_ ;
+            PLOGD << "ROSPublisherImpl::wait()::lambda function called in thread. port is " << port_ ;
             try {
                 auto tcpros = tcpros_server();
                 tcpros->bind("0.0.0.0", port_);
                 tcpros->listen(5);
                 tcpros->accept();
-                PLOGV << "ROSPublisherImpl::wait()::lambda. TCPROS accepted" ;
+                PLOGD << "ROSPublisherImpl::wait()::lambda. TCPROS accepted" ;
                 if (!negotiateHeader(tcpros, caller_id_, topicName_, topicTypeName_, md5sum_, latching, timeout)) {
                     PLOGE << "ROSPublisherImpl::wait()::lambda. negotiateHeader failed" ;
                 }
                 connected_ = true;
                 {
                     std::lock_guard<std::mutex> grd(tcpros_mutex_);
+		    PLOGD << "ROSPublisherImpl::wait()::lambda success. Updating tpcros member.";
                     tcpros_ = tcpros;
                 }
             } catch (ssr::aqua2::SocketException& ex) {
@@ -82,10 +83,11 @@ public:
     }
 
     virtual bool negotiateHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+      PLOGD << "ROSPublisherWorker::negotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ")";
         auto hdr = receiveHeader(tcpros, timeout);
         if (!sendHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching)) return false;
         for (auto& h : hdr) {
-            PLOGV << " - Header[" << h.first << "] = " << h.second ;
+            PLOGD << " - Header[" << h.first << "] = " << h.second ;
         }
         if (hdr["topic"] != topicName) {
             PLOGE << "ROSPublisherWorker::neotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
@@ -116,11 +118,21 @@ public:
         return tcpros->receiveHeader(timeout);
     }
 
-    virtual void sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {
+    virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {
+      PLOGV << "ROSPublisherWorker::sendPacket called.";
         std::lock_guard<std::mutex> grd(tcpros_mutex_);
         if (tcpros_) {
-            tcpros_->sendPacket(pkt);
-        }
+	  if (tcpros_->isConnected()) {
+	    return tcpros_->sendPacket(pkt);
+	  } else {
+	    PLOGI << "ROSPublisherWorker::sendPacket(): Detect Socket is disconnected.";
+	    tcpros_ = nullptr;
+	    return false;
+	  }
+        } else {
+	  PLOGV << " - tcpros is null";
+	  return true;
+	}
     }
 };
 
@@ -159,18 +171,22 @@ public:
             if (pkt) {
                 std::lock_guard<std::mutex> grd(workers_mutex_);
                 for(auto& worker : workers_) {
-                    worker->sendPacket(pkt);
+                    PLOGV << "ROSPublisherImpl::publish() worker is sending packet...";		  
+                    if (!worker->sendPacket(pkt)) {
+		      PLOGE << "ROSPublisherImpl::publish() worker failed sending packet.";
+		    }
                 }
             }
             else {
                 PLOGE << "ROSPublisherImpl::publish() failed. Received Packet is nullptr" ;
-
             }
+	    PLOGV << "ROSPublisherImpl::publish() exit";	    
             return true;
         } catch (std::bad_cast& bc) {
             PLOGE << "ROSPublisherImpl::publish() catched exception: Bad Cast" ;
             return false;
         }
+	PLOGV << "ROSPublisherImpl::publish() exit";
     }
 
 

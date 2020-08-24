@@ -118,7 +118,11 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 			if (to_cxx_typeName(elemTypeName)) {
 				ss << "                ss << \"\\\"" << tv.valueName << "\\\"\" << \": [\";" << std::endl;
 				ss << "                for(int i = 0;i < " << tv.valueName << ".size();i++) {" << std::endl;
-				ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+				if (elemTypeName == "string") {
+				  ss << "                    ss << \"\\\"\" << " << tv.valueName << "[i] << \"\\\"\";" << std::endl;
+				} else {
+				  ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+				}
 				ss << "                    if (i == " << tv.valueName << ".size() - 1) break;" << std::endl;
 				ss << "                    ss << ',';" << std::endl;
 				ss << "                }" << std::endl;
@@ -148,7 +152,11 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
 					ss << "                    ss << \"[\";" << std::endl;
 					ss << "                    for(int j = 0;j < " << size2 << ";j++) {" << std::endl;
-					ss << "                        ss << " << tv.valueName << "[i][j];" << std::endl;
+					if (elemTypeName == "string") {
+					  ss << "                        ss << \"\\\"\" << " << tv.valueName << "[i][j] << \"\\\"\";" << std::endl;
+					} else {
+					  ss << "                        ss << " << tv.valueName << "[i][j];" << std::endl;
+					}
   					ss << "                        if (j == " << size2 -1 << ") break;" << std::endl;
 					ss << "                        ss << ',';" << std::endl;
 					ss << "                    }" << std::endl;
@@ -165,6 +173,7 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 					ss << "                    ss << \"[\";" << std::endl;
 					ss << "                    for(int j = 0;j < " << size2 << ";j++) {" << std::endl;
 					ss << "                        ss << " << tv.valueName << "[i][j].toJSONString();" << std::endl;
+
   					ss << "                        if (j == " << size2 -1 << ") break;" << std::endl;
 					ss << "                        ss << ',';" << std::endl;
 					ss << "                    }" << std::endl;
@@ -178,7 +187,12 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 				if (to_cxx_typeName(elemTypeName)) {
 					ss << "                ss << \"\\\"" << tv.valueName << "\\\"\" << \": [\";" << std::endl;
 					ss << "                for(int i = 0;i < " << size << ";i++) {" << std::endl;
-					ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+					if (elemTypeName == "string") {
+					  ss << "                    ss << \"\\\"\" << " << tv.valueName << "[i] << \"\\\"\";" << std::endl;
+					} else {
+					  
+					  ss << "                    ss << " << tv.valueName << "[i];" << std::endl;
+					}
 					ss << "                    if (i == " << size -1 << ") break;" << std::endl;
 					ss << "                    ss << ',';" << std::endl;
 					ss << "                }" << std::endl;
@@ -198,7 +212,12 @@ std::optional<std::string> msgparser::buildHeader(const MsgInfo& msgInfo) {
 		}
 		else { // メンバ変数が配列でなければ
 			if (is_primitive_typename(tv.typeName)) {
-				ss << "                ss << \"\\\"" << tv.valueName << "\\\"\" << \": \" << " << tv.valueName << ';' << std::endl;
+			  if (tv.typeName == "string") {
+			    ss << "                ss << \"\\\"" << tv.valueName << "\\\"\" << \": \" << \"\\\"\" << " <<  tv.valueName << " << \"\\\"\";" << std::endl;
+			  } else {
+
+			    ss << "                ss << \"\\\"" << tv.valueName << "\\\"\" << \": \" << " << tv.valueName << ';' << std::endl;
+			  }
 			}
 			else {
 				ss << "                ss << \"\\\"" << tv.valueName << "\\\": \";" << std::endl;

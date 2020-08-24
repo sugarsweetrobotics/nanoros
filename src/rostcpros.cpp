@@ -22,12 +22,15 @@ private:
     ssr::aqua2::ServerSocket serverSocket_;
     ssr::aqua2::Socket socket_;
     bool okay_;
+
+  uint64_t numSentPacket_;
+  uint64_t numRecvPacket_;
 public:
-    TCPROSImpl(const std::string& host, const int32_t port): socket_(host.c_str(), port) {
+  TCPROSImpl(const std::string& host, const int32_t port): socket_(host.c_str(), port), numSentPacket_(0), numRecvPacket_(0) {
     }
 
 
-    TCPROSImpl() {
+  TCPROSImpl(): numSentPacket_(0), numRecvPacket_(0) {
     }
 
     virtual ~TCPROSImpl() {
@@ -136,6 +139,7 @@ public:
         socket_.read(&bytes, sizeof(int32_t));
         uint32_t size = from_little_endian(bytes);//ntohl(bytes);
 	PLOGD << "TCPROSImpl::receivePacket. Receiving packet size is " << size;
+	numRecvPacket_++;
         std::vector<uint8_t> val(size);
         while (socket_.getSizeInRxBuffer() < size) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
@@ -149,18 +153,34 @@ public:
     }
 
     virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt)  override{
-      PLOGV << "TCPROSImpl::sendPacket() called";
+      PLOGV << "TCPROSImpl::sendPacket(size=" << pkt->bytes().size() << ") called";
         int32_t size = to_little_endian(pkt->bytes().size()); // littel_endian
-        socket_.write(&size, 4);
-        socket_.write(&(pkt->bytes()[0]), size);
+        if (socket_.write(&size, 4) != 4) {
+	  PLOGE << "TCPROSImpl::sendPacket fail. Sending Size index failed.";
+	  return false;
+	}
+        if (socket_.write(&(pkt->bytes()[0]), size) != size) {
+	  PLOGE << "TCPROSImpl::sendPacket fail. Sending Packet body failed.";
+	  return false;
+	}
+	numSentPacket_++;
+	PLOGD << "TCPROSImpl::sendPacket(num=" << numSentPacket_ << ") success.";		
         return true;
     }
 
     virtual bool sendPacket(TCPROSPacket&& pkt) override {
-      PLOGV << "TCPROSImpl::sendPacket() called";      
+      PLOGV << "TCPROSImpl::sendPacket(size=" << pkt.bytes().size() << ") called";      
         int32_t size = to_little_endian(pkt.bytes().size()); // littel_endian must be
-        socket_.write(&size, sizeof(int32_t));
-        socket_.write(&(pkt.bytes()[0]), size);
+        if (socket_.write(&size, sizeof(int32_t)) != sizeof(int32_t)) {
+	  PLOGE << "TCPROSImpl::sendPacket fail. Sending Size index failed.";
+	  return false;
+	}
+        if (socket_.write(&(pkt.bytes()[0]), size) != size) {
+	  PLOGE << "TCPROSImpl::sendPacket fail. Sending Packet body failed.";
+	  return false;
+	}
+	numSentPacket_++;
+	PLOGD << "TCPROSImpl::sendPacket(num=" << numSentPacket_ << ") success.";	
         return true;
     }
     

@@ -58,11 +58,8 @@ void show(const std::optional<T>& vals) {
 }
 
 int main(const int _argc, const char* _argv[]) {
-    ssr::nanoros::init_nanoros(_argc, _argv);
-
-    std::vector<std::string> args;
-    for (int i = 0; i < _argc; i++) args.push_back(_argv[i]);
-
+  std::cout << "nanorostopic" << std::endl;  
+  auto args = ssr::nanoros::init_nanoros(_argc, _argv);
     
     if (_argc >= 2) {  
         std::string cmd = _argv[1];
@@ -92,8 +89,8 @@ int main(const int _argc, const char* _argv[]) {
             const std::string topicTypeName = topicType(rosmaster()->getTopicTypes("/nanorostopic"), topicName);
             auto packer = getROSMsgPackerFactory()->getPacker(topicTypeName);
             auto node = registerROSNode("/nanorostopic_echo");
-            node->subscribe(topicName, packer, [](auto& topic) {
-                std::cout << topic->prettyString() << std::endl
+            node->subscribe(topicName, packer, [](auto& topicMsg) {
+                std::cout << topicMsg->prettyString() << std::endl
                     << "---" << std::endl;
                 });
             while (!ssr::nanoros::is_shutdown()) {

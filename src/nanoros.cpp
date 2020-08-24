@@ -33,13 +33,13 @@ namespace {
 const char* ssr::nanoros::nanoros_version_str() {
     return NANOROS_VERSION_STRING;
 }
-void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
+std::vector<std::string> ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
     ssr::nanoros::ArgParser parser;
-    parser.option<std::string>("-L", "--loglevel", "Log Level (VERBOSE|DEBUG|INFO|WARN|ERROR)", false, "INFO");
     std::filesystem::path argv0 = argv[0];
     std::string fileFormat = argv0.stem().filename().string() + "%t" + ".log";
+    parser.option<std::string>("-L", "--loglevel", "Log Level (VERBOSE|DEBUG|INFO|WARN|ERROR)", false, "INFO");
     parser.option("-F", "--logfile", "Log File path", false, fileFormat);
-    parser.option("-C", "--logconsole", "Output Log to console", false, std::string("true"));
+    parser.option("-C", "--logconsole", "Output Log to console", false, std::string("false"));
     auto options = parser.parse(argc, argv);
 
     auto logfilestr = options.get<std::string>("logfile");
@@ -63,7 +63,7 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
     if (logconsolestr == "TRUE" || logconsolestr == "True" || logconsolestr == "true") {
       logconsole = true;
     } else {
-      logconsole = true;
+      logconsole = false;
     }
 
     // Format Filename of Log
@@ -160,6 +160,9 @@ void ssr::nanoros::init_nanoros(const int argc, const char* argv[]) {
 #else
 
 #endif
+
+
+    return options.unknown_args;
 }
 
 

@@ -75,6 +75,7 @@ public:
 
 		{
 			std::lock_guard<std::mutex> grd(tcpros_mutex_);
+			PLOGD << "ROSSubscriberWorker::connect() success. Updating tcpros member.";
 			tcpros_ = tcpros;
 		}
 		return true;
@@ -107,16 +108,18 @@ public:
 	}
 
 	virtual bool negotiateHeader(std::shared_ptr<TCPROS>& tcpros, const std::string& caller_id, const std::string& topicName, const std::string& topicTypeName, const std::string& md5sum, const bool latching, const double timeout=1.0) {
+	  PLOGD << "ROSSubscriberWorker::negotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ", " << md5sum << ", " << latching << ") called";
 		sendHeader(tcpros, caller_id, topicName, topicTypeName, md5sum, latching);
 		auto hdr = receiveHeader(tcpros, timeout);
 		for (auto& h : hdr) {
-			PLOGV << " - Header[" << h.first << "] = " << h.second ;
+			PLOGD << " - Header[" << h.first << "] = " << h.second ;
 		}
 		if (hdr["topic"] != topicName) {
 			PLOGE << "ROSSubscriberWorker::neotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
 			return false;
 		}
-	return true; 
+		PLOGD << "ROSSubscriberWorker::negotiateHeader() exit";
+		return true; 
 	}
 
 	virtual bool spinOnce() {
@@ -134,9 +137,14 @@ public:
 		PLOGE << "ROSSubscriberWorker::spinOnce() failed. maybePacket is invalid." ;
 		return false;
 	      }
+	      PLOGV << " - Packet received.";
 	      auto maybeMsg = packer_->toMsg(maybePacket);
+
 	      if (maybeMsg) {
+		PLOGV << " - Constructing from packet to msg success.";
+		PLOGV << " - Callback function calling";
 		callback_(maybeMsg);
+		PLOGV << " - Callback function exit";
 		return true;
 	      }
 	      else {
@@ -217,6 +225,7 @@ public:
 			PLOGE << "ROSSbuscriberImpl::connect(" << uri << ") failed. requestTopic method failed." ;
 			return false;
 		}
+		PLOGI << "ROSSubscriberImpl::connect(" << uri << "): SlaveServer(" << uri << ")::requestTopic success.";
 		auto worker = connect(result->protocolInfo.arg0, result->protocolInfo.arg1, latching, negotiateTimeout);
 		if (!worker) {
 			PLOGE << "ROSSbuscriberImpl::connect(" << uri << ") failed. Connecting worker failed." ;
@@ -224,6 +233,7 @@ public:
 		}
 		{
 			std::lock_guard<std::mutex> grd(workers_mutex_);
+			PLOGD << "ROSSubscriberImpl::connect(" << uri << ") success.";
 			workers_.push_back(worker);
 		}
 		return true;

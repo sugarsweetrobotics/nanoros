@@ -26,7 +26,6 @@ int main(const int argc, const char* argv[]) {
     master_server->start(false);
 
     master_server->spin();
-//    spin();
 
     return 0;
 }

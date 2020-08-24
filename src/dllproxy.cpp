@@ -6,11 +6,15 @@
 #include <dlfcn.h>
 #endif
 
+
+#include "plog/Log.h"
+
 using namespace ssr::nanoros;
 
 DLLProxy::DLLProxy(const std::string& name) {
 #ifdef WIN32
     dll_name_ = name + ".dll";
+    
     if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
 #elif linux
     dll_name_ = name + ".so";
@@ -28,14 +32,18 @@ DLLProxy::DLLProxy(std::string path, const std::string& name) {
     if (path.rfind("/") != path.length()) path = path + "/";
 #ifdef WIN32
     dll_name_ = path + name + ".dll";
+    PLOGV << "DLLProxy::DllProxy(" << path << ", " << name << ") - loadLibrary(" << dll_name_ << ")";
     if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
 #elif linux
     dll_name_ = path + name + ".so";
+    PLOGV << "DLLProxy::DllProxy(" << path << ", " << name << ") - loadLibrary(" << dll_name_ << ")";
     if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
 #else
     dll_name_ = path + name + ".dylib";
+    PLOGV << "DLLProxy::DllProxy(" << path << ", " << name << ") - loadLibrary(" << dll_name_ << ")";    
     if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
 #endif
+      PLOGV << " - loadLibrary failed." << std::endl;
         failed_ =true;
     }
     failed_ = false;

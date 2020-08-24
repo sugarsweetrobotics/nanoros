@@ -414,6 +414,19 @@ public:
 
 	std::queue<task_type> task_queue_;
 
+  virtual void spin() {
+                static int p = 0;
+                PLOGV << "ROSMasterServer::spin() entry";
+                while (!ssr::nanoros::is_shutdown()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    spinOnce();
+                    if (++p % 1000 == 0) {
+		      PLOGV << "ROSMasterServer::spin() is still alive.";
+                    }
+                }
+                PLOGV << "ROSMasterServer::spin() exit";
+  }
+  
 	virtual void spinOnce() {
 		static int p = 0;
 		++p;
