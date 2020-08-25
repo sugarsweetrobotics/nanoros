@@ -70,11 +70,15 @@ std::vector<std::string> ssr::nanoros::init_nanoros(const int argc, const char* 
     auto logfile = logfilestr;
     if (logfilestr.find("%t") != std::string::npos) {
       time_t now = ::time(0);
-      char buf[80];
+      char buf[255];
       struct tm tstruct = *localtime(&now);
       // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
       // for more information about date/time format
+#ifdef WIN32
+      strftime(buf, sizeof(buf), "%#Y%#m%#d%#H%#M%#S", &tstruct);
+#else
       strftime(buf, sizeof(buf), "%0Y%0m%0d%0H%0M%0S", &tstruct);
+#endif
       logfile = logfilestr.substr(0, logfilestr.find("%t")) + buf + logfilestr.substr(logfilestr.find("%t") + 2);
     }
     
