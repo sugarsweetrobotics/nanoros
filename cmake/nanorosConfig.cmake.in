@@ -7,4 +7,7 @@ set_and_check(nanoros_PACKER_INCLUDE_DIR "@PACKAGE_PACKER_INSTALL_DIR@")
 set_and_check(nanoros_LIB_DIR "@PACKAGE_LIB_INSTALL_DIR@")
 # set_and_check(nanoros_SYSCONFIG_DIR "@PACKAGE_SYSCONFIG_INSTALL_DIR@")
 
+set(nanoros_LIBRARIES optimized;nanoros;debug;nanorosd)
+
+
 check_required_components(nanoros)

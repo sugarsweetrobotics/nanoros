@@ -30,7 +30,9 @@ const std::string src_part[] = {
 const std::string msgcmk[] = {
     R"(
 
-set(CMAKE_DEBUG_POSTFIX d)
+if (WIN32)
+# set(CMAKE_DEBUG_POSTFIX d)
+endif (WIN32)
 
 function(add_msg_packer PKGNAME NAME)
   add_library(${PKGNAME}_${NAME} SHARED ${NAME}.h ${NAME}.cpp)
@@ -58,6 +60,14 @@ function(add_msg_packer PKGNAME NAME)
   install(FILES ${NAME}.msg
     DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg"
   )
+  if(WIN32)
+
+  INSTALL(FILES "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/msg/Debug/${NAME}d.dll" 
+    DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg")
+  INSTALL(FILES "${CMAKE_BINARY_DIR}/${PACKER_BASE_DIR}/${PKGNAME}/msg/Debug/${NAME}d.lib" 
+    DESTINATION "${PACKER_BASE_DIR}/${PKGNAME}/msg")
+
+  endif(WIN32)
 endfunction(add_msg_packer)
 
 )"

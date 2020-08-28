@@ -6,8 +6,17 @@
 
 using namespace ssr::nanoros;
 
-std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName, const std::string& funcName) {
+std::shared_ptr<DLLProxy> PackerFactoryBase::loadPackerFactoryDLL(const std::string& dirName, const std::string& fileName_, const std::string& funcName) {
+
+    std::string fileName = fileName_;
+#ifdef WIN32
+#ifdef _DEBUG
+    fileName = fileName + "d";
+#endif // _DEBUG
+#endif // WIN32
     PLOGD << "PackerFactoryBase::loadPackerFactoryDLL(" << dirName << ", " << fileName << ", " << funcName << ") called." ;
+
+
     for (auto dirHint : packerDirHints_) {
       if (dirHint.rfind('/') != dirHint.length() -1) {
 	dirHint += '/';
