@@ -29,6 +29,8 @@ Then, you can echo the data of topic
 > nanorostopic echo /test_topic
 ```
 
+![](image/nanorostopic_test.png)
+
 # Beginner Tutorial
 
 ## Building talker_listener project
