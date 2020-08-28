@@ -1,6 +1,6 @@
 # Tutorial
 
-## Using Topic In Out (for Windows users)
+# Using Topic In Out (for Windows users)
 
 Open your "command prompt".
 First, you must start "nanoroscore" process. Which is the main server for your ROS system.
@@ -28,4 +28,30 @@ Then, you can echo the data of topic
 ```
 > nanorostopic echo /test_topic
 ```
+
+# Beginner Tutorial
+
+## Building talker_listener project
+```
+> git clone https://github.com/sugarsweetrobotics/nanoros_beginner_tutorial
+> cd nanoros_beginner_tutorial/talker_listener
+> cmake . -D "Visual Studio 2019 14"
+> start talker_listener.sln
+```
+
+Then, build with your Visual Studio
+
+## Using listener
+Open command prompt,
+```
+> nanoroscore
+```
+
+Another command prompt,
+```
+> nanorostopic pub /hello std_msgs/String ^"{\^"data\^": \^"Hello nanoros!\^"}^"
+```
+
+Then, select your Visual Studio and set "listener" project as "a Startup Project" by right-clicking menu of the listener project.
+Do debug the listener project. You will get the message "Hello nanoros!".
 
