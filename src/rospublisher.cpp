@@ -90,7 +90,7 @@ public:
             PLOGD << " - Header[" << h.first << "] = " << h.second ;
         }
         if (hdr["topic"] != topicName) {
-            PLOGE << "ROSPublisherWorker::neotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
+            PLOGE << "ROSPublisherWorker::negotiateHeader(" << caller_id << ", " << topicName << ", " << topicTypeName << ") failed. TopicName is invalid(send=" << topicName << ", recv=" << hdr["topic"] << ")" ;
             return false;
         }
         return true; 
@@ -123,7 +123,11 @@ public:
         std::lock_guard<std::mutex> grd(tcpros_mutex_);
         if (tcpros_) {
 	  if (tcpros_->isConnected()) {
-	    return tcpros_->sendPacket(pkt);
+          if (!tcpros_->sendPacket(pkt)) {
+              PLOGE << "ROSPublisherWorker::sendPacket. TCPROS sendPacket failed. Disconnect TCPROS.";
+              tcpros_ = nullptr;
+              return false;
+        }
 	  } else {
 	    PLOGI << "ROSPublisherWorker::sendPacket(): Detect Socket is disconnected.";
 	    tcpros_ = nullptr;
@@ -173,8 +177,8 @@ public:
                 for(auto& worker : workers_) {
                     PLOGV << "ROSPublisherImpl::publish() worker is sending packet...";		  
                     if (!worker->sendPacket(pkt)) {
-		      PLOGE << "ROSPublisherImpl::publish() worker failed sending packet.";
-		    }
+		                PLOGE << "ROSPublisherImpl::publish() worker failed sending packet.";
+		            }
                 }
             }
             else {

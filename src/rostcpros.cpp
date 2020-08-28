@@ -202,9 +202,9 @@ public:
         return sendPacket(std::move(packet));
     }
 
-    virtual std::map<std::string, std::string> receiveHeader(const double timeout)  override {
+    virtual std::map<std::string, std::string> receiveHeader(const double timeoutSec)  override {
         std::map<std::string, std::string> hdr;
-        auto maybePacket = receivePacket(timeout);
+        auto maybePacket = receivePacket(timeoutSec*1000);
         if (!maybePacket) { return hdr; }
 
         while(true) {	

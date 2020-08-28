@@ -21,6 +21,7 @@ set(PACKER_INSTALL_DIR ${PACKER_BASE_DIR} )
 
 add_subdirectory(thirdparty)
 
+
 add_compile_definitions("NANOROS_VERSION_STRING=\"${PROJECT_VERSION}\"")
 
 add_subdirectory(include)

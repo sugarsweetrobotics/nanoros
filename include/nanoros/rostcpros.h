@@ -36,15 +36,15 @@ namespace ssr {
 
             virtual bool disconnect() { return false; }
         
-            virtual std::optional<uint8_t> receiveByte(const int32_t timeout = -1) { return std::nullopt; }
+            virtual std::optional<uint8_t> receiveByte(const int32_t timeoutMs = -1) { return std::nullopt; }
 
             virtual bool sendByte(const int8_t data) { return false; }
 
-            virtual std::optional<std::string> receiveString(const int32_t timeout = -1) { return std::nullopt; }
+            virtual std::optional<std::string> receiveString(const int32_t timeoutMs = -1) { return std::nullopt; }
 
             virtual bool sendString(const std::string& d) { return false; }
 
-            virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeout = -1) { return std::nullopt; }
+            virtual std::optional<TCPROSPacket> receivePacket(const int32_t timeoutMs = -1) { return std::nullopt; }
 
             virtual bool sendPacket(const std::shared_ptr<TCPROSPacket>& pkt) {return false; }
 
@@ -58,7 +58,7 @@ namespace ssr {
             virtual bool sendHeader(const std::map<std::string, std::string>& hdr) {
                 return false;
             }
-            virtual std::map<std::string, std::string> receiveHeader(const double timeout) { return {}; }
+            virtual std::map<std::string, std::string> receiveHeader(const double timeoutSec) { return {}; }
 
 
         };

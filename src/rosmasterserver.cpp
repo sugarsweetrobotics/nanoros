@@ -533,7 +533,7 @@ std::optional<UnregisterInfo> unregisterService(ROSMasterServerImpl* impl, const
 }
 
 std::optional<PublishersInfo> registerSubscriber(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri) {
-	std::cout << "MasterServer::registerSubscriber(" << caller_id << ", " << topic_name << ", " << topic_type << ", " << caller_uri << ")" ;
+	PLOGD << "MasterServer::registerSubscriber(" << caller_id << ", " << topic_name << ", " << topic_type << ", " << caller_uri << ")" ;
 	for (auto& topic : impl->topics_) {
 		if (topic.topicName == topic_name) {
 			//if (topic.topicTypeName != topic_type) {
@@ -596,10 +596,10 @@ std::optional<UnregisterInfo> unregisterSubscriber(ROSMasterServerImpl* impl, co
 }
 
 std::optional<SubscribersInfo> registerPublisher(ROSMasterServerImpl* impl, const std::string& caller_id, const std::string& topic_name, const std::string& topic_type, const std::string& caller_uri) {
-	std::cout << "MasterServer::registerPublisher(" << caller_id << ", " << topic_name << ", " << topic_type << ", " << caller_uri << ")" ;
+	PLOGD << "MasterServer::registerPublisher(" << caller_id << ", " << topic_name << ", " << topic_type << ", " << caller_uri << ")" ;
 	for (auto& topic : impl->topics_) {
 		if (topic.topicName == topic_name) {
-			std::cout << " - Found Topic (" << topic_name << ")" ;
+			PLOGD << " - Found Topic (" << topic_name << ")" ;
 			// TODO: Topic Type check must be done by roscore?
 			if (topic.topicTypeName == "*") {
 				//std::cout << " - Previously registered topic name is *. Update to " << topic_type ;
@@ -641,7 +641,7 @@ std::optional<SubscribersInfo> registerPublisher(ROSMasterServerImpl* impl, cons
 			return SubscribersInfo(1, "OK", subInfos);
 		}
 	}
-	std::cout << " - Topic(" << topic_name << ") not found. New topic." ;
+	PLOGD << " - Topic(" << topic_name << ") not found. New topic." ;
 
 	SystemTopicsInfo info;
 	SystemNodeInfo nodeInfo(caller_id, caller_uri);

@@ -164,9 +164,12 @@ std::vector<std::string> ssr::nanoros::init_nanoros(const int argc, const char* 
 #else
 
 #endif
-
-
-    return options.unknown_args;
+    std::vector<std::string> uargs;
+    for (auto arg : options.unknown_args) {
+        uargs.push_back(arg);
+    }
+    return uargs;
+//    return options.unknown_args;
 }
 
 

@@ -102,7 +102,7 @@ public:
         for(auto& pub: publishersInfo->publishers) {
             if (!subscriber->connect(pub, latching, negotiateTimeout)) {
                 PLOGE << "ROSNodeImpl(name=" << name() << ")::subscribe: - connecting the subscriber to the publisher(uri=" << pub << ") failed." ;
-                return nullptr;
+                //return nullptr;
             } else {
 	      PLOGI << "ROSNodeImpl::subscribe(" << topicName << ", " << typeName << "): subscriber->connect success";
 	    }

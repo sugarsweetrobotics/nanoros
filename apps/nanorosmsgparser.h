@@ -29,6 +29,9 @@ const std::string src_part[] = {
 
 const std::string msgcmk[] = {
     R"(
+
+set(CMAKE_DEBUG_POSTFIX d)
+
 function(add_msg_packer PKGNAME NAME)
   add_library(${PKGNAME}_${NAME} SHARED ${NAME}.h ${NAME}.cpp)
   target_link_libraries(${PKGNAME}_${NAME} ${EXT_LIBRARIES})
