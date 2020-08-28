@@ -29,7 +29,7 @@ Then, you can echo the data of topic
 > nanorostopic echo /test_topic
 ```
 
-![](image/nanorostopic_test.png)
+![image/nanorostopic_test.png](https://github.com/sugarsweetrobotics/nanoros/raw/master/docs/image/nanrostopic_test.png)
 
 # Beginner Tutorial
 
