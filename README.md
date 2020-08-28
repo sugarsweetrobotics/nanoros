@@ -6,10 +6,9 @@ Nano-size ROS (Robot Operating System) implimentation.
 ## Install
 
 ### Binary Install (Windows)
-Currently, exe installer can be built with this project.
-Wait for a moment...please
+[github release paage](https://github.com/sugarsweetrobotics/nanoros/releases/)
 
-### How to build
+### How to build (MacOS, Linux)
 ```
 $ git clone https://github.com/sugarsweetrobotics/nanoros.git
 $ cd nanoros
@@ -17,7 +16,29 @@ $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
 $ cmake ../
+$ make 
+```
+This process does not generate the datatype packers. Please generate datatypes with following.
+
+(You are in 'build' directory)
+```
+$ cd ../automatically_generated_packers
+$ sh generate_packer_from_data_types.sh
+```
+
+Then build again
+
+```
+$ cd ../build
+$ cmake ../
 $ make
+$ make install # Usually you need to add sudo
+```
+
+After install, please set environmental variables specific for nanoros.
+(You'd better modify your '~/.bash_profile')
+```
+$ export NANOROS_PACKER_DIR=/usr/local/share/nanoros/packers
 ```
 
 
@@ -31,13 +52,24 @@ $ export ROS_IP={your machine IP address that is installed nanoros}
 ```
 
 #### Add Data Types
-Currently nanoros searches Data type PACKER in CURRENT DIRECTORY and $NANOROS_PACKER_DIR. In the standard build process, the pre-installed data-type packers are placed in {nanoros_dir}/build/bin.
+Currently nanoros searches Data type packer in CURRENT DIRECTORY and $NANOROS_PACKER_DIR. 
+The "packer" is serializer/deserializer for ROS datatype.
+In the standard build process, the pre-installed data-type packers are placed in {nanoros_dir}/build/bin.
+
+
+##### Use topics
+```
+$ nanorostopic list # This will show rostopic list
+```
 
 ```
-$ cd ${nanoros_dir}/build/bin
-$ nanorostopic list # This will show rostopic list
-$ nanorosservice list # This will show rosservice list
+$ nanorostopic echo /hello # This will echo topic data
 ```
+
+```
+$ nanorostopic pub /hello std_msgs/Int32 '{"data": 4}' # This will publish topic
+```
+
 
 ## Current Status
 
